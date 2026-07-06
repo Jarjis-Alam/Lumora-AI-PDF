@@ -1,14 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AlignLeft, Layers, ListChecks, Maximize2, X, Share2, FileText, Upload, Cpu, CheckCircle2, ArrowRight } from 'lucide-react';
+import { X, Share2, FileText, Upload, Cpu, CheckCircle2, ArrowRight } from 'lucide-react';
 import { useStore } from '../store';
-import { useResizablePanels, useResizableRows } from '../lib/resize';
+import { useResizablePanels } from '../lib/resize';
 import { PdfViewer } from '../components/PdfViewer';
 import { ChatPanel } from '../components/ChatPanel';
-import { SummaryPanel } from '../components/SummaryPanel';
-import { FlashcardsPanel } from '../components/FlashcardsPanel';
-import { QuizPanel } from '../components/QuizPanel';
 import { KnowledgeGraphView } from '../components/KnowledgeGraphView';
 import { timeAgo } from '../lib/utils';
 
@@ -24,7 +21,6 @@ export function Workspace() {
   const [graphFullscreen, setGraphFullscreen] = useState(false);
 
   const panels = useResizablePanels();
-  const rows = useResizableRows();
 
   const doc = documents.find((d) => d.id === activeDocId);
 
@@ -153,99 +149,20 @@ export function Workspace() {
         onPointerMove={panels.onPointerMove}
         onPointerUp={panels.onPointerUp}
       >
-        {/* Center + Right + Bottom */}
-        <div className="flex flex-1 flex-col overflow-hidden">
-          {/* Top row: PDF + Chat */}
-          <div
-            ref={rows.containerRef}
-            className="flex flex-1 overflow-hidden"
-            onPointerMove={rows.onPointerMove}
-            onPointerUp={rows.onPointerUp}
-          >
-            {/* PDF Viewer */}
-            <div className="overflow-hidden" style={{ width: `${panels.sizes.center}%` }}>
-              <PdfViewer />
-            </div>
+        {/* PDF Viewer */}
+        <div className="overflow-hidden" style={{ width: `${panels.sizes.center}%` }}>
+          <PdfViewer />
+        </div>
 
-            {/* Resize handle */}
-            <div
-              className="resize-handle"
-              onPointerDown={panels.onPointerDown}
-            />
+        {/* Resize handle */}
+        <div
+          className="resize-handle"
+          onPointerDown={panels.onPointerDown}
+        />
 
-            {/* Chat */}
-            <div className="overflow-hidden" style={{ width: `${panels.sizes.right}%` }}>
-              <ChatPanel />
-            </div>
-          </div>
-
-          {/* Resize handle row */}
-          <div
-            className="resize-handle-row"
-            onPointerDown={rows.onPointerDown}
-          />
-
-          {/* Bottom panel */}
-          <div className="overflow-hidden border-t border-ink-100/80 bg-paper-100" style={{ height: `${rows.sizes.bottom}%` }}>
-            <div className="flex h-full flex-col">
-              {/* Tabs */}
-              <div className="flex items-center justify-between border-b border-ink-100/80 bg-paper-50/60 px-2">
-                <div className="flex">
-                  {[
-                    { id: 'summary' as const, label: 'Summary', icon: AlignLeft },
-                    { id: 'flashcards' as const, label: 'Flashcards', icon: Layers },
-                    { id: 'quiz' as const, label: 'Quiz', icon: ListChecks },
-                    { id: 'graph' as const, label: 'Graph', icon: Share2 },
-                  ].map((tab) => {
-                    const Icon = tab.icon;
-                    return (
-                      <button
-                        key={tab.id}
-                        onClick={() => setBottomTab(tab.id)}
-                        className={`flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-medium transition-colors ${
-                          bottomTab === tab.id
-                            ? 'border-crimson-500 text-crimson-700'
-                            : 'border-transparent text-ink-400 hover:text-ink-600'
-                        }`}
-                      >
-                        <Icon size={14} /> {tab.label}
-                      </button>
-                    );
-                  })}
-                </div>
-                <button
-                  onClick={() => navigate(`/app/${bottomTab}`)}
-                  className="btn-ghost btn-sm"
-                  title="Open in full page"
-                >
-                  <Maximize2 size={13} />
-                </button>
-              </div>
-
-              {/* Tab content */}
-              <div className="flex-1 overflow-hidden">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={bottomTab}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.15 }}
-                    className="h-full"
-                  >
-                    {bottomTab === 'summary' && <SummaryPanel docId={activeDocId} />}
-                    {bottomTab === 'flashcards' && <FlashcardsPanel docId={activeDocId} />}
-                    {bottomTab === 'quiz' && <QuizPanel docId={activeDocId} />}
-                    {bottomTab === 'graph' && doc.graph && (
-                      <div className="h-full p-4">
-                        <KnowledgeGraphView docId={activeDocId} />
-                      </div>
-                    )}
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-            </div>
-          </div>
+        {/* Chat */}
+        <div className="overflow-hidden" style={{ width: `${panels.sizes.right}%` }}>
+          <ChatPanel />
         </div>
       </div>
 
