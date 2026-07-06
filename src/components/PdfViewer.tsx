@@ -7,8 +7,6 @@ import {
   Bookmark,
   ChevronLeft,
   ChevronRight,
-  PanelLeftClose,
-  PanelLeftOpen,
   Maximize2,
   X,
   Loader2,
@@ -19,7 +17,7 @@ import { classNames } from '../lib/utils';
 
 const API_BASE = 'http://localhost:8000/api';
 
-export function PdfViewer({ onToggleSidebar, sidebarOpen }: { onToggleSidebar: () => void; sidebarOpen: boolean }) {
+export function PdfViewer() {
   const activeDocId = useStore((s) => s.activeDocId);
   const documents = useStore((s) => s.documents);
   const pdfPage = useStore((s) => s.pdfPage);
@@ -88,10 +86,6 @@ export function PdfViewer({ onToggleSidebar, sidebarOpen }: { onToggleSidebar: (
     <div className="flex h-full flex-col bg-paper-200/40">
       {/* Toolbar */}
       <div className="flex h-11 items-center gap-1 border-b border-ink-100/80 bg-paper-50/80 px-2 backdrop-blur-sm">
-        <button onClick={onToggleSidebar} className="btn-ghost btn-sm" title="Toggle sidebar">
-          {sidebarOpen ? <PanelLeftClose size={15} /> : <PanelLeftOpen size={15} />}
-        </button>
-        <div className="mx-1 h-5 w-px bg-ink-100" />
         <button onClick={() => setPdfZoom(Math.max(0.6, pdfZoom - 0.15))} className="btn-ghost btn-sm" title="Zoom out">
           <ZoomOut size={15} />
         </button>

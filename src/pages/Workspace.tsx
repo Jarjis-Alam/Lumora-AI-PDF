@@ -21,7 +21,6 @@ export function Workspace() {
   const openDocument = useStore((s) => s.openDocument);
   const readyDocs = documents.filter((d) => d.status === 'ready');
 
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [graphFullscreen, setGraphFullscreen] = useState(false);
 
   const panels = useResizablePanels();
@@ -147,52 +146,13 @@ export function Workspace() {
         </div>
       </div>
 
-      {/* Main 3-panel area */}
+      {/* Main 2-panel area */}
       <div
         ref={panels.containerRef}
         className="flex flex-1 overflow-hidden"
         onPointerMove={panels.onPointerMove}
         onPointerUp={panels.onPointerUp}
       >
-        {/* Left: Document Explorer */}
-        {sidebarOpen && (
-          <div
-            className="flex flex-col overflow-hidden border-r border-ink-100/80 bg-paper-200/40"
-            style={{ width: `${panels.sizes.left}%` }}
-          >
-            <div className="border-b border-ink-100/80 px-3 py-2">
-              <h3 className="text-2xs font-semibold uppercase tracking-wide2 text-ink-400">Document Explorer</h3>
-            </div>
-            <div className="flex-1 overflow-y-auto p-2">
-              {readyDocs.map((d) => (
-                <button
-                  key={d.id}
-                  onClick={() => openDocument(d.id)}
-                  className={`mb-1 flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left transition-colors ${
-                    d.id === activeDocId
-                      ? 'bg-crimson-50 text-crimson-700'
-                      : 'text-ink-500 hover:bg-paper-300/50'
-                  }`}
-                >
-                  <div className="h-1 w-6 rounded-full" style={{ backgroundColor: d.accent }} />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-xs font-medium">{d.name}</p>
-                    <p className="text-2xs text-ink-400">{d.pages} pages</p>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Resize handle left */}
-        {sidebarOpen && (
-          <div
-            className="resize-handle"
-            onPointerDown={panels.onPointerDown('left')}
-          />
-        )}
-
         {/* Center + Right + Bottom */}
         <div className="flex flex-1 flex-col overflow-hidden">
           {/* Top row: PDF + Chat */}
@@ -204,13 +164,13 @@ export function Workspace() {
           >
             {/* PDF Viewer */}
             <div className="overflow-hidden" style={{ width: `${panels.sizes.center}%` }}>
-              <PdfViewer onToggleSidebar={() => setSidebarOpen((v) => !v)} sidebarOpen={sidebarOpen} />
+              <PdfViewer />
             </div>
 
-            {/* Resize handle right */}
+            {/* Resize handle */}
             <div
               className="resize-handle"
-              onPointerDown={panels.onPointerDown('right')}
+              onPointerDown={panels.onPointerDown}
             />
 
             {/* Chat */}

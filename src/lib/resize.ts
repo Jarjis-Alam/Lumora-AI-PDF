@@ -1,37 +1,36 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
 
 interface PanelSize {
-  left: number;   // percentage
   center: number; // percentage
   right: number;  // percentage
 }
 
-const STORAGE_KEY = 'lumora-panel-sizes';
-const MIN = 15;
+const STORAGE_KEY = 'lumora-panel-sizes-2';
+const MIN = 20;
 
 function loadSizes(): PanelSize {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const p = JSON.parse(raw);
-      if (p.left && p.center && p.right) return p;
+      if (p.center && p.right) return p;
     }
   } catch { /* ignore */ }
-  return { left: 18, center: 52, right: 30 };
+  return { center: 70, right: 30 };
 }
 
 export function useResizablePanels() {
   const [sizes, setSizes] = useState<PanelSize>(loadSizes);
   const containerRef = useRef<HTMLDivElement>(null);
-  const dragging = useRef<'left' | 'right' | null>(null);
+  const dragging = useRef<boolean>(false);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(sizes));
   }, [sizes]);
 
-  const onPointerDown = useCallback((which: 'left' | 'right') => (e: React.PointerEvent) => {
+  const onPointerDown = useCallback((e: React.PointerEvent) => {
     e.preventDefault();
-    dragging.current = which;
+    dragging.current = true;
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
   }, []);
 
@@ -39,18 +38,12 @@ export function useResizablePanels() {
     if (!dragging.current || !containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
-
-    if (dragging.current === 'left') {
-      const left = Math.max(MIN, Math.min(x, 100 - MIN - sizes.right));
-      setSizes((s) => ({ ...s, left, center: 100 - left - s.right }));
-    } else {
-      const right = Math.max(MIN, Math.min(100 - x, 100 - sizes.left - MIN));
-      setSizes((s) => ({ ...s, right, center: 100 - s.left - right }));
-    }
-  }, [sizes]);
+    const center = Math.max(MIN, Math.min(x, 100 - MIN));
+    setSizes({ center, right: 100 - center });
+  }, []);
 
   const onPointerUp = useCallback(() => {
-    dragging.current = null;
+    dragging.current = false;
   }, []);
 
   return { sizes, containerRef, onPointerDown, onPointerMove, onPointerUp };
