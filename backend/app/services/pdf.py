@@ -3,6 +3,9 @@ PDF processing service powered by PyMuPDF (fitz) extracting paragraph blocks.
 """
 
 import fitz
+from app.core.logging import get_logger
+
+logger = get_logger("pdf")
 
 
 class PDFProcessor:
@@ -49,16 +52,47 @@ class PDFProcessor:
             # block_type is 0 for text, 1 for image.
             blocks = page.get_text("blocks")
 
-            for block_idx, block in enumerate(blocks):
+            page_has_text = False
+            for block in blocks:
                 x0, y0, x1, y1, text, block_no, block_type = block
-                if block_type == 0:  # Text block
-                    cleaned_text = text.strip()
-                    if cleaned_text:
-                        chunks.append({
-                            "page": page_idx + 1,  # 1-indexed for frontend
-                            "paragraph": block_idx,
-                            "text": cleaned_text,
-                        })
+                if block_type == 0 and text.strip():
+                    page_has_text = True
+                    break
+
+            if not page_has_text:
+                # Scanned page or image-only PDF page
+                logger.info("Page %d has no selectable text. Running OCR...", page_idx + 1)
+                try:
+                    # Render page as PNG image at 150 DPI for high-quality OCR
+                    pix = page.get_pixmap(dpi=150)
+                    image_bytes = pix.tobytes("png")
+
+                    from app.services.ai import AIService
+                    ai_service = AIService()
+
+                    transcribed_text = ai_service.perform_ocr(image_bytes)
+                    if transcribed_text:
+                        # Split by double newlines to simulate paragraph blocks
+                        paragraphs = [p.strip() for p in transcribed_text.split("\n\n") if p.strip()]
+                        for block_idx, para_text in enumerate(paragraphs):
+                            chunks.append({
+                                "page": page_idx + 1,
+                                "paragraph": block_idx,
+                                "text": para_text,
+                            })
+                except Exception as ocr_exc:
+                    logger.warning("OCR failed on page %d: %s", page_idx + 1, ocr_exc)
+            else:
+                for block_idx, block in enumerate(blocks):
+                    x0, y0, x1, y1, text, block_no, block_type = block
+                    if block_type == 0:  # Text block
+                        cleaned_text = text.strip()
+                        if cleaned_text:
+                            chunks.append({
+                                "page": page_idx + 1,
+                                "paragraph": block_idx,
+                                "text": cleaned_text,
+                            })
 
         doc.close()
         return num_pages, chunks

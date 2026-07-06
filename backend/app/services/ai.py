@@ -216,3 +216,44 @@ class AIService:
         except Exception as exc:
             logger.error("Chat completion failure: %s", exc)
             return "I failed to process the document chat question.", []
+
+    def perform_ocr(self, image_bytes: bytes) -> str:
+        """
+        Perform OCR on an image using Groq's multimodal model.
+        """
+        client = self._ensure_client()
+        import base64
+        base64_image = base64.b64encode(image_bytes).decode("utf-8")
+        try:
+            response = client.chat.completions.create(
+                model="meta-llama/llama-4-scout-17b-16e-instruct",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": (
+                                    "You are an expert OCR engine. Extract and transcribe "
+                                    "all text visible in this document page image exactly. "
+                                    "Preserve paragraph breaks. Do not add any conversational "
+                                    "filler, explanations, or formatting commentary. Output "
+                                    "only the transcribed text verbatim."
+                                ),
+                            },
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/png;base64,{base64_image}"
+                                },
+                            },
+                        ],
+                    }
+                ],
+                temperature=0.0,
+            )
+            content = response.choices[0].message.content
+            return content.strip() if content else ""
+        except Exception as exc:
+            logger.error("OCR API completion failure: %s", exc)
+            raise RuntimeError(f"OCR generation failed: {exc}") from exc

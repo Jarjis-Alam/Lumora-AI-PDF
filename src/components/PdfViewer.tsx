@@ -56,7 +56,7 @@ export function PdfViewer({ onToggleSidebar, sidebarOpen }: { onToggleSidebar: (
       .finally(() => {
         setLoading(false);
       });
-  }, [activeDocId]);
+  }, [activeDocId, doc?.status]);
 
   const totalPages = doc?.pages || 1;
   const pageChunks = chunks
