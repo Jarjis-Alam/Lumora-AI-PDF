@@ -170,7 +170,28 @@ export function PdfViewer() {
               — {pdfPage} —
             </div>
 
-            {loading ? (
+            {doc.status === 'processing' ? (
+              <div className="flex flex-col items-center justify-center py-20 text-center px-6 gap-4">
+                <Loader2 className="animate-spin text-crimson-500" size={32} />
+                <div>
+                  <h4 className="text-sm font-semibold text-ink-700">Processing "{doc.name}"</h4>
+                  <p className="text-xs mt-1 text-ink-400 max-w-xs leading-relaxed">
+                    Analyzing pages and preparing AI workspace features...
+                  </p>
+                </div>
+                <div className="w-full max-w-xs bg-ink-100 rounded-full h-1.5 overflow-hidden">
+                  <motion.div
+                    className="bg-crimson-500 h-full rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${doc.progress}%` }}
+                    transition={{ duration: 0.5 }}
+                  />
+                </div>
+                <span className="text-2xs text-sage font-semibold uppercase tracking-wider">
+                  {Math.round(doc.progress)}% Complete
+                </span>
+              </div>
+            ) : loading ? (
               <div className="flex flex-col items-center justify-center py-20 text-ink-400 gap-2">
                 <Loader2 className="animate-spin text-crimson-500" size={24} />
                 <span className="text-xs">Loading page content...</span>
