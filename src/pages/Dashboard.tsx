@@ -8,7 +8,6 @@ import {
   Share2,
   ArrowRight,
   Clock,
-  Sparkles,
   CheckCircle2,
   FileText,
 } from 'lucide-react';
@@ -33,7 +32,6 @@ export function Dashboard() {
   const openDocument = useStore((s) => s.openDocument);
 
   const readyDocs = documents.filter((d) => d.status === 'ready');
-  const recentDocs = [...documents].sort((a, b) => b.uploadedAt - a.uploadedAt).slice(0, 6);
   const continueReading = readyDocs
     .filter((d) => d.lastOpenedAt)
     .sort((a, b) => (b.lastOpenedAt || 0) - (a.lastOpenedAt || 0))
@@ -140,28 +138,7 @@ export function Dashboard() {
           </section>
         )}
 
-        {/* Recent Uploads */}
-        <section className="mt-10">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-serif text-lg font-semibold text-ink-800">Recent Documents</h2>
-            {documents.length > 0 && (
-              <span className="text-2xs text-ink-400">{documents.length} total</span>
-            )}
-          </div>
-          {recentDocs.length === 0 ? (
-            <EmptyState
-              icon={Sparkles}
-              title="No documents yet"
-              description="Upload your first PDF to start chatting, summarizing, and learning."
-            />
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {recentDocs.map((doc, i) => (
-                <DocumentCard key={doc.id} doc={doc} index={i} />
-              ))}
-            </div>
-          )}
-        </section>
+
 
       </div>
     </div>
