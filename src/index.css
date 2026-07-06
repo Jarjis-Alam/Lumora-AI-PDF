@@ -1,0 +1,166 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-paper-100 text-ink-700 font-sans antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+
+  ::selection {
+    @apply bg-crimson-200 text-ink-800;
+  }
+
+  /* Scrollbars */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-ink-200 rounded-full;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-ink-300;
+    background-clip: padding-box;
+  }
+
+  /* Focus ring */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-crimson-400 ring-offset-2 ring-offset-paper-100 rounded-md;
+  }
+}
+
+@layer components {
+  /* Subtle polka-dot paper texture */
+  .paper-texture {
+    background-color: #FAFAF8;
+    background-image: radial-gradient(circle, rgba(192, 57, 43, 0.035) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+
+  .paper-texture-faint {
+    background-color: #FFFDF9;
+    background-image: radial-gradient(circle, rgba(192, 57, 43, 0.022) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+
+  .glass {
+    @apply bg-paper-50/80 backdrop-blur-md;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 select-none disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+  .btn-primary {
+    @apply btn bg-crimson-600 text-paper-50 px-4 py-2.5 text-sm shadow-soft hover:bg-crimson-700 hover:shadow-card active:scale-[0.98];
+  }
+  .btn-secondary {
+    @apply btn bg-paper-50 text-ink-600 px-4 py-2.5 text-sm border border-ink-200 hover:border-ink-300 hover:bg-paper-200 active:scale-[0.98];
+  }
+  .btn-ghost {
+    @apply btn text-ink-500 px-3 py-2 text-sm hover:bg-paper-200 hover:text-ink-700;
+  }
+  .btn-sm {
+    @apply px-3 py-1.5 text-2xs;
+  }
+
+  .card {
+    @apply bg-paper-50 rounded-xl border border-ink-100/70 shadow-soft;
+  }
+
+  .input {
+    @apply w-full bg-paper-50 border border-ink-200 rounded-lg px-3.5 py-2.5 text-sm text-ink-700 placeholder:text-ink-300 transition-colors focus:border-crimson-400 focus:ring-0;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-2xs font-medium;
+  }
+
+  .skeleton {
+    @apply relative overflow-hidden bg-ink-100/60 rounded-md;
+  }
+  .skeleton::after {
+    content: '';
+    @apply absolute inset-0;
+    transform: translateX(-100%);
+    background-image: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.55),
+      transparent
+    );
+    animation: shimmer 1.6s infinite;
+  }
+
+  .prose-editorial {
+    @apply text-ink-600 leading-[1.7] text-[15px];
+  }
+  .prose-editorial h1,
+  .prose-editorial h2,
+  .prose-editorial h3 {
+    @apply font-serif text-ink-800 font-semibold;
+  }
+  .prose-editorial h1 { @apply text-2xl mt-8 mb-3; }
+  .prose-editorial h2 { @apply text-xl mt-6 mb-2; }
+  .prose-editorial h3 { @apply text-lg mt-5 mb-2; }
+  .prose-editorial p { @apply mb-4; }
+  .prose-editorial ul { @apply list-disc pl-5 mb-4 space-y-1.5; }
+  .prose-editorial ol { @apply list-decimal pl-5 mb-4 space-y-1.5; }
+  .prose-editorial blockquote {
+    @apply border-l-2 border-crimson-300 pl-4 italic text-ink-500 my-4;
+  }
+  .prose-editorial code {
+    @apply font-mono text-2xs bg-ink-100/70 px-1.5 py-0.5 rounded;
+  }
+  .prose-editorial pre {
+    @apply font-mono text-2xs bg-ink-800 text-paper-100 p-4 rounded-lg overflow-x-auto my-4;
+  }
+  .prose-editorial pre code {
+    @apply bg-transparent p-0 text-paper-100;
+  }
+  .prose-editorial table {
+    @apply w-full text-sm border-collapse my-4;
+  }
+  .prose-editorial th {
+    @apply text-left font-semibold border-b border-ink-200 py-2 px-3;
+  }
+  .prose-editorial td {
+    @apply border-b border-ink-100 py-2 px-3;
+  }
+  .prose-editorial a {
+    @apply text-crimson-600 underline underline-offset-2 hover:text-crimson-700;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .resize-handle {
+    @apply relative w-1.5 flex-shrink-0 cursor-col-resize transition-colors hover:bg-crimson-300/40 active:bg-crimson-400/50;
+  }
+  .resize-handle-row {
+    @apply relative h-1.5 flex-shrink-0 cursor-row-resize transition-colors hover:bg-crimson-300/40 active:bg-crimson-400/50;
+  }
+}

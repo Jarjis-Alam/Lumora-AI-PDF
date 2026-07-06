@@ -1,0 +1,364 @@
+"""
+FastAPI router declaring core REST endpoints for document intelligence operations.
+"""
+
+import time
+import random
+from datetime import datetime, timezone
+from typing import Optional
+
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status, BackgroundTasks
+
+from app import schemas
+from app.repositories import get_uow, UnitOfWork
+from app.models.document import Document, Flashcard, QuizQuestion, ChatMessage, DocumentChunk
+from app.services import AIService, EmbeddingsService, SemanticSearchService, process_document_pipeline
+from app.utils.mock_data import (
+    pick_accent,
+    make_summary,
+    make_flashcards,
+    make_quiz,
+    make_graph,
+)
+
+# Instantiate service singletons
+embeddings_service = EmbeddingsService()
+ai_service = AIService()
+search_service = SemanticSearchService(embeddings_service)
+
+router = APIRouter(tags=["documents"])
+
+
+
+# ── Document Endpoints ────────────────────────────────────────
+
+@router.get("/documents", response_model=list[schemas.Document])
+async def list_documents(uow: UnitOfWork = Depends(get_uow)):
+    """List all documents ordered by upload date."""
+    return await uow.documents.list_all()
+
+
+@router.post("/documents", response_model=schemas.Document, status_code=status.HTTP_201_CREATED)
+async def upload_document(
+    background_tasks: BackgroundTasks,
+    file: UploadFile = File(...),
+    uow: UnitOfWork = Depends(get_uow),
+):
+    """
+    Upload a document.
+    Initializes metadata in 'processing' status, and dispatches real-time background analysis.
+    """
+    doc_id = f"doc-{int(time.time() * 1000)}-{random.randint(1000, 9999)}"
+    
+    # Read content to determine file size
+    content = await file.read()
+    file_size = len(content)
+
+    doc = Document(
+        id=doc_id,
+        name=file.filename or "Unnamed Document",
+        pages=0,  # Determined during background processing
+        status="processing",
+        progress=0.0,
+        size=file_size,
+        accent=pick_accent(),
+        bookmarks=[],
+        uploaded_at=datetime.now(timezone.utc),
+    )
+
+    uow.documents.add(doc)
+    await uow.commit()
+
+    # Dispatch background task to parse and enrich document
+    background_tasks.add_task(process_document_pipeline, doc_id, content)
+
+
+    return await uow.documents.get_by_id(doc_id, load_relationships=True)
+
+
+
+
+@router.get("/documents/{id}", response_model=schemas.Document)
+async def get_document(id: str, uow: UnitOfWork = Depends(get_uow)):
+    """Fetch details of a single document by its ID."""
+    doc = await uow.documents.get_by_id(id)
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+    return doc
+
+
+@router.get("/documents/{id}/chunks")
+async def get_document_chunks(id: str, uow: UnitOfWork = Depends(get_uow)):
+    """Fetch all text chunks of a document, ordered by page and paragraph."""
+    doc = await uow.documents.get_by_id(id, load_relationships=False)
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    from sqlalchemy import select
+    stmt = (
+        select(DocumentChunk)
+        .where(DocumentChunk.document_id == id)
+        .order_by(DocumentChunk.page, DocumentChunk.paragraph)
+    )
+    result = await uow.session.execute(stmt)
+    chunks = result.scalars().all()
+    return [
+        {
+            "page": c.page,
+            "paragraph": c.paragraph,
+            "text": c.text,
+        }
+        for c in chunks
+    ]
+
+
+@router.patch("/documents/{id}", response_model=schemas.Document)
+async def rename_document(
+    id: str,
+    payload: dict[str, str],
+    uow: UnitOfWork = Depends(get_uow),
+):
+    """Rename a document's display name."""
+    new_name = payload.get("name")
+    if not new_name:
+        raise HTTPException(status_code=400, detail="Name is required")
+        
+    await uow.documents.update_metadata(id, name=new_name)
+    await uow.session.flush()
+    return await uow.documents.get_by_id(id, load_relationships=True)
+
+
+
+@router.delete("/documents/{id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_document(id: str, uow: UnitOfWork = Depends(get_uow)):
+    """Delete a document and all related sub-entities."""
+    doc = await uow.documents.get_by_id(id, load_relationships=False)
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+    await uow.documents.delete(doc)
+
+
+# ── AI Generation Endpoints ────────────────────────────────────
+
+@router.post("/documents/{id}/summary", response_model=schemas.Document)
+async def generate_summary(id: str, uow: UnitOfWork = Depends(get_uow)):
+    """Generate smart summaries for a document (AI mock fallback)."""
+    doc = await uow.documents.get_by_id(id)
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+        
+    summary_data = make_summary(doc.name, doc.pages)
+    await uow.documents.update_metadata(id, summary=summary_data, status="ready", progress=100.0)
+    await uow.session.flush()
+    return await uow.documents.get_by_id(id, load_relationships=True)
+
+
+
+@router.post("/documents/{id}/flashcards", response_model=schemas.Document)
+async def generate_flashcards(id: str, uow: UnitOfWork = Depends(get_uow)):
+    """Generate flashcards from a document (AI mock fallback)."""
+    doc = await uow.documents.get_by_id(id)
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    # Clear old cards to prevent duplicate key errors on regenerations
+    for card in list(doc.flashcards):
+        await uow.flashcards.delete(card)
+
+    cards_data = make_flashcards(int(time.time()))
+    for card in cards_data:
+        await uow.flashcards.create(
+            doc_id=id,
+            card_id=card["id"],
+            front=card["front"],
+            back=card["back"],
+        )
+    
+    # Reload document with fresh relationships
+    await uow.commit()
+    return await uow.documents.get_by_id(id)
+
+
+@router.post("/documents/{id}/quiz", response_model=schemas.Document)
+async def generate_quiz(id: str, uow: UnitOfWork = Depends(get_uow)):
+    """Generate quiz questions from a document (AI mock fallback)."""
+    doc = await uow.documents.get_by_id(id)
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    # Clear old questions
+    for q in list(doc.quiz_questions):
+        await uow.quizzes.delete(q)
+
+    questions_data = make_quiz(int(time.time()))
+    await uow.quizzes.bulk_create(id, questions_data)
+
+    await uow.commit()
+    return await uow.documents.get_by_id(id)
+
+
+@router.post("/documents/{id}/graph", response_model=schemas.Document)
+async def generate_graph(id: str, uow: UnitOfWork = Depends(get_uow)):
+    """Generate interactive knowledge graph from a document (AI mock fallback)."""
+    doc = await uow.documents.get_by_id(id)
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    graph_data = make_graph()
+    await uow.documents.update_metadata(id, graph=graph_data)
+    await uow.session.flush()
+    return await uow.documents.get_by_id(id, load_relationships=True)
+
+
+
+# ── Flashcard Mutations Endpoints ──────────────────────────────
+
+@router.post("/documents/{id}/flashcards/add", response_model=schemas.Document)
+async def add_flashcard(
+    id: str,
+    payload: schemas.FlashcardCreate,
+    uow: UnitOfWork = Depends(get_uow),
+):
+    """Add a custom study flashcard to the document."""
+    doc = await uow.documents.get_by_id(id, load_relationships=False)
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    card_id = f"fc-{int(time.time() * 1000)}-{random.randint(10, 99)}"
+    await uow.flashcards.create(
+        doc_id=id,
+        card_id=card_id,
+        front=payload.front,
+        back=payload.back,
+    )
+    
+    await uow.commit()
+    return await uow.documents.get_by_id(id)
+
+
+@router.patch("/documents/{id}/flashcards/{card_id}", response_model=schemas.Document)
+async def edit_flashcard(
+    id: str,
+    card_id: str,
+    payload: schemas.FlashcardUpdate,
+    uow: UnitOfWork = Depends(get_uow),
+):
+    """Edit the front or back question text of a flashcard."""
+    card = await uow.flashcards.get_by_id(card_id)
+    if not card or card.document_id != id:
+        raise HTTPException(status_code=404, detail="Flashcard not found")
+
+    update_fields = {}
+    if payload.front is not None:
+        update_fields["front"] = payload.front
+    if payload.back is not None:
+        update_fields["back"] = payload.back
+
+    await uow.flashcards.update(card_id, **update_fields)
+    
+    await uow.commit()
+    return await uow.documents.get_by_id(id)
+
+
+@router.delete("/documents/{id}/flashcards/{card_id}", response_model=schemas.Document)
+async def delete_flashcard(id: str, card_id: str, uow: UnitOfWork = Depends(get_uow)):
+    """Delete a specific flashcard."""
+    card = await uow.flashcards.get_by_id(card_id)
+    if not card or card.document_id != id:
+        raise HTTPException(status_code=404, detail="Flashcard not found")
+
+    await uow.flashcards.delete(card)
+    
+    await uow.commit()
+    return await uow.documents.get_by_id(id)
+
+
+# ── Chat Messaging Endpoints ───────────────────────────────────
+
+@router.post("/documents/{id}/chat", response_model=schemas.Document)
+async def send_chat_message(
+    id: str,
+    payload: schemas.ChatMessageCreate,
+    uow: UnitOfWork = Depends(get_uow),
+):
+    """
+    Send a message to the chat interface.
+    Saves user message and returns updated document with assistant answer.
+    """
+    doc = await uow.documents.get_by_id(id, load_relationships=False)
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    user_msg_id = f"msg-{int(time.time() * 1000)}-user"
+    assistant_msg_id = f"msg-{int(time.time() * 1000)}-assistant"
+
+    # Save User message
+    await uow.chat.create(
+        doc_id=id,
+        msg_id=user_msg_id,
+        role="user",
+        content=payload.content,
+    )
+
+    # 1. Query semantic search for relevant chunks
+    chunks = await search_service.search(uow, id, payload.content, limit=5)
+    context_chunks = [
+        {"page": c.page, "paragraph": c.paragraph, "text": c.text}
+        for c in chunks
+    ]
+
+    # 2. Fetch existing chat history for conversation context
+    history_models = await uow.chat.list_by_document(id)
+    chat_history = []
+    for m in history_models:
+        # Exclude the message we just saved
+        if m.id != user_msg_id:
+            chat_history.append({"role": m.role, "content": m.content})
+
+    # 3. Call AI Service, falling back gracefully if Groq API key is unconfigured
+    try:
+        ai_answer, citations = ai_service.generate_chat_response(
+            question=payload.content,
+            chat_history=chat_history,
+            context_chunks=context_chunks,
+        )
+    except Exception:
+        # Graceful fallback for local development or testing environments without keys
+        ai_answer = (
+            f"Mock RAG response to: '{payload.content}'. "
+            f"Retrieved {len(context_chunks)} source contexts."
+        )
+        citations = [
+            {
+                "page": c.page if chunks else 1,
+                "paragraph": c.paragraph if chunks else 0,
+                "text": c.text[:120] + "..." if chunks else "Mock context details...",
+            }
+            for c in (chunks[:1] if chunks else [None])
+        ]
+
+    # 4. Save Assistant response with citation references
+    await uow.chat.create(
+        doc_id=id,
+        msg_id=assistant_msg_id,
+        role="assistant",
+        content=ai_answer,
+        citations=citations,
+    )
+
+
+    await uow.commit()
+    return await uow.documents.get_by_id(id)
+
+
+@router.delete("/documents/{id}/chat", response_model=schemas.Document)
+async def clear_chat(id: str, uow: UnitOfWork = Depends(get_uow)):
+    """Clear chat thread history of a document."""
+    doc = await uow.documents.get_by_id(id, load_relationships=False)
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    await uow.chat.clear_chat(id)
+    
+    await uow.session.commit()
+    return await uow.documents.get_by_id(id)
