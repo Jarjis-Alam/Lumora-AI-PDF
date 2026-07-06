@@ -16,7 +16,6 @@ import { UploadZone } from '../components/UploadZone';
 import { DocumentCard } from '../components/DocumentCard';
 import { EmptyState } from '../components/EmptyState';
 import { useStore } from '../store';
-import { timeAgo } from '../lib/utils';
 
 const QUICK_ACTIONS = [
   { icon: AlignLeft, label: 'Generate Summary', desc: 'Chapter-level takeaways', view: 'summary' as const, color: '#C0392B' },
@@ -164,32 +163,6 @@ export function Dashboard() {
           )}
         </section>
 
-        {/* Recent activity strip */}
-        {readyDocs.length > 0 && (
-          <section className="mt-10">
-            <h2 className="mb-4 font-serif text-lg font-semibold text-ink-800">Recent Activity</h2>
-            <div className="card divide-y divide-ink-100/70">
-              {readyDocs.slice(0, 4).map((doc) => (
-                <button
-                  key={doc.id}
-                  onClick={() => handleOpen(doc.id)}
-                  className="flex w-full items-center gap-4 px-4 py-3 text-left transition-colors hover:bg-paper-200/40"
-                >
-                  <div className="h-1 w-8 rounded-full" style={{ backgroundColor: doc.accent }} />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-ink-700">{doc.name}</p>
-                    <p className="text-2xs text-ink-400">
-                      {doc.flashcards.length} flashcards · {doc.quiz.length} quiz questions ·{' '}
-                      {doc.graph ? `${doc.graph.nodes.length} concepts` : 'no graph'}
-                    </p>
-                  </div>
-                  <span className="text-2xs text-ink-400">{timeAgo(doc.uploadedAt)}</span>
-                  <ArrowRight size={14} className="text-ink-300" />
-                </button>
-              ))}
-            </div>
-          </section>
-        )}
       </div>
     </div>
   );
