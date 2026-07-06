@@ -1,7 +1,5 @@
 # Lumora
 
-[![Open in Bolt](https://bolt.new/static/open-in-bolt.svg)](https://bolt.new/~/sb1-gi8kaqn6)
-
 Lumora is an advanced, AI-powered document intelligence platform that transforms static PDFs into an interactive, multi-dimensional research workspace. Upload research papers, textbook chapters, documentation, or financial reports and use state-of-the-art AI to summarize, query, visualize, and study them.
 
 ---
