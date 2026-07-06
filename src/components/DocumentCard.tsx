@@ -170,11 +170,6 @@ export function DocumentCard({ doc, index = 0 }: { doc: Document; index?: number
       <div className="mt-3 flex items-center justify-between">
         {statusBadge()}
         <div className="flex items-center gap-3 text-2xs text-ink-400">
-          {doc.lastOpenedAt && (
-            <span className="flex items-center gap-1">
-              <Clock size={10} /> {timeAgo(doc.lastOpenedAt)}
-            </span>
-          )}
           {editing && (
             <button
               onClick={(e) => {

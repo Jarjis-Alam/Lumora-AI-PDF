@@ -92,7 +92,6 @@ export const useStore = create<LumoraState>((set) => ({
       view: 'documents',
       pdfPage: 1,
       pdfHighlight: null,
-      documents: updateDoc(s.documents, id, (d) => ({ ...d, lastOpenedAt: Date.now() })),
     })),
 
   addDocument: (name, size, fileObj) => {
