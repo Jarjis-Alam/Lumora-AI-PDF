@@ -34,12 +34,13 @@ export function SummaryPanel({ docId }: { docId: string | null }) {
         description="Generate a comprehensive summary with key takeaways, concepts, and chapter breakdowns."
         action={{
           label: 'Generate Summary',
-          onClick: () => {
+          onClick: async () => {
             setGenerating(true);
-            setTimeout(() => {
-              generateSummary(doc.id);
+            try {
+              await generateSummary(doc.id);
+            } finally {
               setGenerating(false);
-            }, 1500);
+            }
           },
         }}
       />
@@ -85,12 +86,13 @@ export function SummaryPanel({ docId }: { docId: string | null }) {
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => {
+              onClick={async () => {
                 setGenerating(true);
-                setTimeout(() => {
-                  generateSummary(doc.id);
+                try {
+                  await generateSummary(doc.id);
+                } finally {
                   setGenerating(false);
-                }, 1200);
+                }
               }}
               className="btn-secondary btn-sm"
             >

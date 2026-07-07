@@ -103,12 +103,13 @@ export function KnowledgeGraphView({ docId, fullscreen = false }: { docId: strin
         description="Extract concepts and relationships from your document into an interactive graph."
         action={{
           label: 'Build Knowledge Graph',
-          onClick: () => {
+          onClick: async () => {
             setGenerating(true);
-            setTimeout(() => {
-              generateGraph(doc.id);
+            try {
+              await generateGraph(doc.id);
+            } finally {
               setGenerating(false);
-            }, 1800);
+            }
           },
         }}
       />

@@ -26,16 +26,20 @@ class EmbeddingsService:
     to support compilation-free environments and high-speed unit test runs.
     """
 
+    _model = None
+
     def __init__(self) -> None:
-        self.model: Optional[Any] = None
+        self.model = None
         if SENTENCE_TRANSFORMERS_AVAILABLE:
-            try:
-                logger.info("Initializing BAAI/bge-small-en-v1.5 locally...")
-                self.model = SentenceTransformer("BAAI/bge-small-en-v1.5")
-                logger.info("BAAI/bge-small-en-v1.5 loaded successfully")
-            except Exception as exc:
-                logger.warning("Failed to load sentence-transformers model: %s. Using fallback.", exc)
-                self.model = None
+            if EmbeddingsService._model is None:
+                try:
+                    logger.info("Initializing BAAI/bge-small-en-v1.5 locally...")
+                    EmbeddingsService._model = SentenceTransformer("BAAI/bge-small-en-v1.5")
+                    logger.info("BAAI/bge-small-en-v1.5 loaded successfully")
+                except Exception as exc:
+                    logger.warning("Failed to load sentence-transformers model: %s. Using fallback.", exc)
+                    EmbeddingsService._model = None
+            self.model = EmbeddingsService._model
         else:
             logger.info("sentence-transformers not installed. Using high-speed feature hashing fallback.")
 

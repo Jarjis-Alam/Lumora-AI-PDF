@@ -60,12 +60,13 @@ export function FlashcardsPanel({ docId }: { docId: string | null }) {
         description="Generate flashcards from your document to start studying key concepts."
         action={{
           label: 'Generate Flashcards',
-          onClick: () => {
+          onClick: async () => {
             setGenerating(true);
-            setTimeout(() => {
-              generateFlashcards(doc.id);
+            try {
+              await generateFlashcards(doc.id);
+            } finally {
               setGenerating(false);
-            }, 1500);
+            }
           },
         }}
       />
@@ -168,12 +169,13 @@ export function FlashcardsPanel({ docId }: { docId: string | null }) {
               <Layers size={13} /> Study Mode
             </button>
             <button
-              onClick={() => {
+              onClick={async () => {
                 setGenerating(true);
-                setTimeout(() => {
-                  generateFlashcards(doc.id);
+                try {
+                  await generateFlashcards(doc.id);
+                } finally {
                   setGenerating(false);
-                }, 1200);
+                }
               }}
               className="btn-secondary btn-sm"
             >

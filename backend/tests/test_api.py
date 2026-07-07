@@ -8,16 +8,26 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.core.database import Base, get_db
+from app.models.document import Document, Flashcard, QuizQuestion, ChatMessage, DocumentChunk
 from app.main import create_app
 
 
 @pytest_io_fixture := pytest_asyncio.fixture(scope="function")
 async def api_client() -> AsyncClient:
     """
-    Spins up a FastAPI test client configured with an in-memory SQLite database.
+    Spins up a FastAPI test client configured with a local SQLite database.
     """
     from app.core import database
-    engine = create_async_engine("sqlite+aiosqlite:///file:testdb?mode=memory&cache=shared", echo=False)
+    import os
+    
+    # Ensure any stale test DB is removed first
+    if os.path.exists("testdb.db"):
+        try:
+            os.remove("testdb.db")
+        except Exception:
+            pass
+
+    engine = create_async_engine("sqlite+aiosqlite:///testdb.db", echo=False)
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
@@ -50,6 +60,12 @@ async def api_client() -> AsyncClient:
     # Clean up globals and engine connection nodes
     database.testing_session_factory = None
     await engine.dispose()
+
+    if os.path.exists("testdb.db"):
+        try:
+            os.remove("testdb.db")
+        except Exception:
+            pass
 
 
 

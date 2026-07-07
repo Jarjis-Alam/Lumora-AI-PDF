@@ -38,6 +38,15 @@ class Document(Base):
     size: Mapped[int] = mapped_column(nullable=False, default=0)
     accent: Mapped[str] = mapped_column(nullable=False, default="#C0392B")
 
+    # Detailed lifecycle statuses
+    upload_status: Mapped[str] = mapped_column(String, nullable=False, server_default="completed")
+    parsing_status: Mapped[str] = mapped_column(String, nullable=False, server_default="pending")
+    embedding_status: Mapped[str] = mapped_column(String, nullable=False, server_default="pending")
+    summary_status: Mapped[str] = mapped_column(String, nullable=False, server_default="pending")
+    flashcard_status: Mapped[str] = mapped_column(String, nullable=False, server_default="pending")
+    quiz_status: Mapped[str] = mapped_column(String, nullable=False, server_default="pending")
+    graph_status: Mapped[str] = mapped_column(String, nullable=False, server_default="pending")
+
     # JSON/JSONB columns for nested document schemas
     summary: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)
     graph: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)

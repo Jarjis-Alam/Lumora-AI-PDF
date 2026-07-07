@@ -49,12 +49,13 @@ export function QuizPanel({ docId }: { docId: string | null }) {
         description="Generate a quiz from your document to test your understanding."
         action={{
           label: 'Generate Quiz',
-          onClick: () => {
+          onClick: async () => {
             setGenerating(true);
-            setTimeout(() => {
-              generateQuiz(doc.id);
+            try {
+              await generateQuiz(doc.id);
+            } finally {
               setGenerating(false);
-            }, 1500);
+            }
           },
         }}
       />
@@ -100,16 +101,17 @@ export function QuizPanel({ docId }: { docId: string | null }) {
               <RotateCw size={15} /> Retry
             </button>
             <button
-              onClick={() => {
+              onClick={async () => {
                 setGenerating(true);
-                setTimeout(() => {
-                  generateQuiz(doc.id);
-                  setGenerating(false);
+                try {
+                  await generateQuiz(doc.id);
                   setSubmitted(false);
                   setStarted(false);
                   setAnswers({});
                   setCurrent(0);
-                }, 1200);
+                } finally {
+                  setGenerating(false);
+                }
               }}
               className="btn-secondary"
             >
@@ -181,12 +183,13 @@ export function QuizPanel({ docId }: { docId: string | null }) {
             Start Quiz <ChevronRight size={16} />
           </button>
           <button
-            onClick={() => {
+            onClick={async () => {
               setGenerating(true);
-              setTimeout(() => {
-                generateQuiz(doc.id);
+              try {
+                await generateQuiz(doc.id);
+              } finally {
                 setGenerating(false);
-              }, 1200);
+              }
             }}
             className="btn-secondary"
           >
