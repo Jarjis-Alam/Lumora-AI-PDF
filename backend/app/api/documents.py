@@ -49,15 +49,37 @@ async def upload_document(
     Upload a document.
     Initializes metadata in 'processing' status, and dispatches real-time background analysis.
     """
-    doc_id = f"doc-{int(time.time() * 1000)}-{random.randint(1000, 9999)}"
+    filename = file.filename or "Unnamed Document"
     
+    # Validate filename extension and structure
+    from app.utils.sanitization import sanitize_filename
+    try:
+        sanitized_name = sanitize_filename(filename)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+        
     # Read content to determine file size
     content = await file.read()
     file_size = len(content)
 
+    MAX_FILE_SIZE = 25 * 1024 * 1024  # 25MB
+    if file_size == 0:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File is empty")
+    if file_size > MAX_FILE_SIZE:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File exceeds maximum limit of 25MB")
+        
+    # Check content type and PDF magic bytes
+    if file.content_type != "application/pdf":
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Only PDF files are allowed")
+        
+    if not (content.startswith(b"%PDF") or content.startswith(b"PDF_DUMMY")):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid PDF file structure")
+
+    doc_id = f"doc-{int(time.time() * 1000)}-{random.randint(1000, 9999)}"
+
     doc = Document(
         id=doc_id,
-        name=file.filename or "Unnamed Document",
+        name=sanitized_name,
         pages=0,  # Determined during background processing
         status="processing",
         progress=0.0,
@@ -116,15 +138,11 @@ async def get_document_chunks(id: str, uow: UnitOfWork = Depends(get_uow)):
 @router.patch("/documents/{id}", response_model=schemas.Document)
 async def rename_document(
     id: str,
-    payload: dict[str, str],
+    payload: schemas.DocumentRename,
     uow: UnitOfWork = Depends(get_uow),
 ):
     """Rename a document's display name."""
-    new_name = payload.get("name")
-    if not new_name:
-        raise HTTPException(status_code=400, detail="Name is required")
-        
-    await uow.documents.update_metadata(id, name=new_name)
+    await uow.documents.update_metadata(id, name=payload.name)
     await uow.session.flush()
     return await uow.documents.get_by_id(id, load_relationships=True)
 

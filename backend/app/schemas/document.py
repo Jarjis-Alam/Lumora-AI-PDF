@@ -3,10 +3,11 @@ Pydantic schemas for request validation and response serialization.
 Translates Python snake_case variables to JS camelCase properties automatically.
 """
 
+import re
 from datetime import datetime
 from typing import Any, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_serializer
+from pydantic import BaseModel, ConfigDict, Field, field_serializer, field_validator
 from pydantic.alias_generators import to_camel
 
 
@@ -40,6 +41,28 @@ class ChatMessage(BaseSchema):
 class ChatMessageCreate(BaseSchema):
     content: str
 
+    @field_validator("content")
+    @classmethod
+    def validate_content(cls, v: str) -> str:
+        from app.utils.sanitization import sanitize_text
+        try:
+            return sanitize_text(v, max_length=4000, field_name="content")
+        except ValueError as exc:
+            raise ValueError(str(exc))
+
+
+class DocumentRename(BaseSchema):
+    name: str
+
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, v: str) -> str:
+        from app.utils.sanitization import sanitize_filename
+        try:
+            return sanitize_filename(v, max_length=100)
+        except ValueError as exc:
+            raise ValueError(str(exc))
+
 
 class SummarySection(BaseSchema):
     heading: str
@@ -65,10 +88,50 @@ class FlashcardCreate(BaseSchema):
     front: str
     back: str
 
+    @field_validator("front")
+    @classmethod
+    def validate_front(cls, v: str) -> str:
+        from app.utils.sanitization import sanitize_text
+        try:
+            return sanitize_text(v, max_length=500, field_name="front")
+        except ValueError as exc:
+            raise ValueError(str(exc))
+
+    @field_validator("back")
+    @classmethod
+    def validate_back(cls, v: str) -> str:
+        from app.utils.sanitization import sanitize_text
+        try:
+            return sanitize_text(v, max_length=2000, field_name="back")
+        except ValueError as exc:
+            raise ValueError(str(exc))
+
 
 class FlashcardUpdate(BaseSchema):
     front: Optional[str] = None
     back: Optional[str] = None
+
+    @field_validator("front")
+    @classmethod
+    def validate_front(cls, v: Optional[str]) -> Optional[str]:
+        if v is None:
+            return None
+        from app.utils.sanitization import sanitize_text
+        try:
+            return sanitize_text(v, max_length=500, field_name="front")
+        except ValueError as exc:
+            raise ValueError(str(exc))
+
+    @field_validator("back")
+    @classmethod
+    def validate_back(cls, v: Optional[str]) -> Optional[str]:
+        if v is None:
+            return None
+        from app.utils.sanitization import sanitize_text
+        try:
+            return sanitize_text(v, max_length=2000, field_name="back")
+        except ValueError as exc:
+            raise ValueError(str(exc))
 
 
 class QuizQuestion(BaseSchema):

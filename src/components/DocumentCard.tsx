@@ -42,6 +42,30 @@ export function DocumentCard({ doc, index = 0 }: { doc: Document; index?: number
     if (editing) inputRef.current?.select();
   }, [editing]);
 
+  const handleRename = () => {
+    const trimmed = name.trim();
+    if (!trimmed) {
+      alert("Name is required.");
+      setName(doc.name);
+      setEditing(false);
+      return;
+    }
+    if (trimmed.length > 100) {
+      alert("Name cannot exceed 100 characters.");
+      return;
+    }
+    const cleanName = trimmed.replace(/<[^>]*>/g, '');
+    if (!cleanName) {
+      alert("Invalid characters in name.");
+      setName(doc.name);
+      setEditing(false);
+      return;
+    }
+    const finalName = cleanName.toLowerCase().endsWith('.pdf') ? cleanName : `${cleanName}.pdf`;
+    renameDocument(doc.id, finalName);
+    setEditing(false);
+  };
+
   const statusBadge = () => {
     if (doc.status === 'processing')
       return (
@@ -89,8 +113,7 @@ export function DocumentCard({ doc, index = 0 }: { doc: Document; index?: number
               onClick={(e) => e.stopPropagation()}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
-                  renameDocument(doc.id, name.trim() || doc.name);
-                  setEditing(false);
+                  handleRename();
                 }
                 if (e.key === 'Escape') {
                   setName(doc.name);
@@ -174,8 +197,7 @@ export function DocumentCard({ doc, index = 0 }: { doc: Document; index?: number
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                renameDocument(doc.id, name.trim() || doc.name);
-                setEditing(false);
+                handleRename();
               }}
               className="text-crimson-600"
             >

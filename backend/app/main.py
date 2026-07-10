@@ -76,6 +76,10 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
+    # ── Rate Limiting ─────────────────────────────────────────
+    from app.core.rate_limit import RateLimitMiddleware
+    app.add_middleware(RateLimitMiddleware)
+
     # ── Exception handlers ────────────────────────────────────
     @app.exception_handler(Exception)
     async def unhandled_exception_handler(request: Request, exc: Exception):

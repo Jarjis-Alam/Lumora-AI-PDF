@@ -16,6 +16,20 @@ export function UploadZone({ compact = false }: { compact?: boolean }) {
     (files: FileList | null) => {
       if (!files || files.length === 0) return;
       const file = files[0];
+
+      // Client-side file type check
+      if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+        alert('Invalid file type. Only PDF files are allowed.');
+        return;
+      }
+
+      // Client-side file size check (25MB limit)
+      const maxLimit = 25 * 1024 * 1024;
+      if (file.size > maxLimit) {
+        alert('File is too large. Maximum allowed size is 25MB.');
+        return;
+      }
+
       setUploading(true);
       const sizeMB = file.size / (1024 * 1024) || 2.4;
       setTimeout(() => {
