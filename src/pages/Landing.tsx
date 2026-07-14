@@ -886,6 +886,44 @@ export function Landing() {
         </div>
       </section>
 
+      {/* ── About the Dev ── */}
+      <section id="developer" className="border-t border-ink-200/50 py-20 bg-paper-100">
+        <div className="mx-auto max-w-4xl px-6">
+          <div className="grid gap-12 md:grid-cols-3 md:items-center">
+            {/* Left col - Avatar / Logo */}
+            <div className="flex flex-col items-center text-center md:items-start md:text-left">
+              <div className="relative mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-tr from-crimson-600 to-crimson-400 font-serif text-3xl font-semibold text-white shadow-soft">
+                M
+                <div className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full border-2 border-paper-100 bg-emerald-500 text-[10px] text-white">
+                  💻
+                </div>
+              </div>
+              <h3 className="font-serif text-lg font-semibold text-ink-800">Munshi Jarjis Alam</h3>
+              <p className="text-2xs text-ink-400 font-medium mt-1">Creator of Lumora</p>
+            </div>
+
+            {/* Right col - Bio & Links */}
+            <div className="md:col-span-2 space-y-4">
+              <SectionLabel>About the Developer</SectionLabel>
+              <h2 className="font-serif text-3xl font-semibold text-ink-800">Building local-first AI workspace tooling</h2>
+              <p className="text-sm text-ink-500 leading-relaxed">
+                Munshi Jarjis Alam is a software engineer and AI builder dedicated to crafting performant web systems and local-first document intelligence workflows. Lumora was designed as a modern study workspace to help researchers and students parse and comprehend dense PDF textbooks and papers using Groq and lightweight, responsive UI layers.
+              </p>
+              <div className="flex items-center gap-4 pt-2">
+                <a
+                  href="https://github.com/Jarjis-Alam"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-1.5 text-xs text-ink-500 transition-colors hover:text-ink-800"
+                >
+                  <Github size={13} /> GitHub Profile
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── FAQ ── */}
       <section id="faq" className="border-t border-ink-200/50 bg-paper-50 py-20">
         <div className="mx-auto max-w-2xl px-6">
