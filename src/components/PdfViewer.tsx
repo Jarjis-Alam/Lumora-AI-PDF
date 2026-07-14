@@ -42,6 +42,13 @@ export function PdfViewer() {
   useEffect(() => {
     if (!activeDocId) return;
 
+    // Don't fetch with temporary frontend IDs — wait for real backend ID
+    if (activeDocId.startsWith('temp-')) {
+      setChunks([]);
+      setLoading(false);
+      return;
+    }
+
     // Only use cache if it has actual data
     const cached = getCachedChunks(activeDocId);
     if (cached && cached.length > 0) {
