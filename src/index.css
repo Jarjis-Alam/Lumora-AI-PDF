@@ -163,4 +163,274 @@
   .resize-handle-row {
     @apply relative h-1.5 flex-shrink-0 cursor-row-resize transition-colors hover:bg-crimson-300/40 active:bg-crimson-400/50;
   }
+
+  /* Tooltip styles */
+  .tooltip-bubble {
+    @apply pointer-events-none absolute z-50 whitespace-nowrap rounded-md bg-ink-800 px-2.5 py-1.5 text-2xs font-medium text-paper-100 shadow-lift;
+  }
+  .tooltip-arrow {
+    @apply absolute h-1.5 w-1.5 rotate-45 bg-ink-800;
+  }
+  .tooltip-arrow-top {
+    @apply -bottom-[3px] left-1/2 -translate-x-1/2;
+  }
+  .tooltip-arrow-bottom {
+    @apply -top-[3px] left-1/2 -translate-x-1/2;
+  }
+  .tooltip-arrow-left {
+    @apply -right-[3px] top-1/2 -translate-y-1/2;
+  }
+  .tooltip-arrow-right {
+    @apply -left-[3px] top-1/2 -translate-y-1/2;
+  }
+
+  /* Pulsing dot for processing states */
+  .processing-dot {
+    @apply inline-block h-1.5 w-1.5 rounded-full bg-amber-500;
+    animation: pulse-soft 1.4s ease-in-out infinite;
+  }
+
+  /* Breathing icon animation for empty states */
+  .breathe {
+    animation: breathe 3s ease-in-out infinite;
+  }
+
+  /* Card interactive glow */
+  .card-interactive {
+    @apply transition-all duration-200;
+  }
+  .card-interactive:hover {
+    @apply shadow-card;
+  }
+
+  /* Smooth placeholder transition */
+  input::placeholder,
+  textarea::placeholder {
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  input:focus::placeholder,
+  textarea:focus::placeholder {
+    opacity: 0.5;
+    transform: translateX(4px);
+  }
+
+  /* Concentric circle loader (pl) */
+  .pl {
+    width: 8em;
+    height: 8em;
+  }
+
+  .pl circle {
+    transform-box: fill-box;
+    transform-origin: 50% 50%;
+  }
+
+  .pl__ring1 {
+    animation: ring1_ 4s 0s ease-in-out infinite;
+  }
+
+  .pl__ring2 {
+    animation: ring2_ 4s 0.04s ease-in-out infinite;
+  }
+
+  .pl__ring3 {
+    animation: ring3_ 4s 0.08s ease-in-out infinite;
+  }
+
+  .pl__ring4 {
+    animation: ring4_ 4s 0.12s ease-in-out infinite;
+  }
+
+  .pl__ring5 {
+    animation: ring5_ 4s 0.16s ease-in-out infinite;
+  }
+
+  .pl__ring6 {
+    animation: ring6_ 4s 0.2s ease-in-out infinite;
+  }
+
+  /* Animations */
+  @keyframes ring1_ {
+    from {
+      stroke-dashoffset: -376.237129776;
+      transform: rotate(-0.25turn);
+      animation-timing-function: ease-in;
+    }
+    23% {
+      stroke-dashoffset: -94.247778;
+      transform: rotate(1turn);
+      animation-timing-function: ease-out;
+    }
+    46%, 50% {
+      stroke-dashoffset: -376.237129776;
+      transform: rotate(2.25turn);
+      animation-timing-function: ease-in;
+    }
+    73% {
+      stroke-dashoffset: -94.247778;
+      transform: rotate(3.5turn);
+      animation-timing-function: ease-out;
+    }
+    96%, to {
+      stroke-dashoffset: -376.237129776;
+      transform: rotate(4.75turn);
+    }
+  }
+
+  @keyframes ring2_ {
+    from {
+      stroke-dashoffset: -329.207488554;
+      transform: rotate(-0.25turn);
+      animation-timing-function: ease-in;
+    }
+    23% {
+      stroke-dashoffset: -82.46680575;
+      transform: rotate(1turn);
+      animation-timing-function: ease-out;
+    }
+    46%, 50% {
+      stroke-dashoffset: -329.207488554;
+      transform: rotate(2.25turn);
+      animation-timing-function: ease-in;
+    }
+    73% {
+      stroke-dashoffset: -82.46680575;
+      transform: rotate(3.5turn);
+      animation-timing-function: ease-out;
+    }
+    96%, to {
+      stroke-dashoffset: -329.207488554;
+      transform: rotate(4.75turn);
+    }
+  }
+
+  @keyframes ring3_ {
+    from {
+      stroke-dashoffset: -288.4484661616;
+      transform: rotate(-0.25turn);
+      animation-timing-function: ease-in;
+    }
+    23% {
+      stroke-dashoffset: -72.2566298;
+      transform: rotate(1turn);
+      animation-timing-function: ease-out;
+    }
+    46%, 50% {
+      stroke-dashoffset: -288.4484661616;
+      transform: rotate(2.25turn);
+      animation-timing-function: ease-in;
+    }
+    73% {
+      stroke-dashoffset: -72.2566298;
+      transform: rotate(3.5turn);
+      animation-timing-function: ease-out;
+    }
+    96%, to {
+      stroke-dashoffset: -288.4484661616;
+      transform: rotate(4.75turn);
+    }
+  }
+
+  @keyframes ring4_ {
+    from {
+      stroke-dashoffset: -253.9600625988;
+      transform: rotate(-0.25turn);
+      animation-timing-function: ease-in;
+    }
+    23% {
+      stroke-dashoffset: -63.61725015;
+      transform: rotate(1turn);
+      animation-timing-function: ease-out;
+    }
+    46%, 50% {
+      stroke-dashoffset: -253.9600625988;
+      transform: rotate(2.25turn);
+      animation-timing-function: ease-in;
+    }
+    73% {
+      stroke-dashoffset: -63.61725015;
+      transform: rotate(3.5turn);
+      animation-timing-function: ease-out;
+    }
+    96%, to {
+      stroke-dashoffset: -253.9600625988;
+      transform: rotate(4.75turn);
+    }
+  }
+
+  @keyframes ring5_ {
+    from {
+      stroke-dashoffset: -225.7422778656;
+      transform: rotate(-0.25turn);
+      animation-timing-function: ease-in;
+    }
+    23% {
+      stroke-dashoffset: -56.5486668;
+      transform: rotate(1turn);
+      animation-timing-function: ease-out;
+    }
+    46%, 50% {
+      stroke-dashoffset: -225.7422778656;
+      transform: rotate(2.25turn);
+      animation-timing-function: ease-in;
+    }
+    73% {
+      stroke-dashoffset: -56.5486668;
+      transform: rotate(3.5turn);
+      animation-timing-function: ease-out;
+    }
+    96%, to {
+      stroke-dashoffset: -225.7422778656;
+      transform: rotate(4.75turn);
+    }
+  }
+
+  @keyframes ring6_ {
+    from {
+      stroke-dashoffset: -203.795111962;
+      transform: rotate(-0.25turn);
+      animation-timing-function: ease-in;
+    }
+    23% {
+      stroke-dashoffset: -51.05087975;
+      transform: rotate(1turn);
+      animation-timing-function: ease-out;
+    }
+    46%, 50% {
+      stroke-dashoffset: -203.795111962;
+      transform: rotate(2.25turn);
+      animation-timing-function: ease-in;
+    }
+    73% {
+      stroke-dashoffset: -51.05087975;
+      transform: rotate(3.5turn);
+      animation-timing-function: ease-out;
+    }
+    96%, to {
+      stroke-dashoffset: -203.795111962;
+      transform: rotate(4.75turn);
+    }
+  }
+
+  .loader-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+  }
+
+  .lumora-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    @apply text-ink-900;
+    margin: 0;
+  }
+
+  .lumora-status {
+    font-size: 0.95rem;
+    @apply text-ink-400;
+    letter-spacing: 0.04em;
+  }
 }

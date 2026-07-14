@@ -5,18 +5,17 @@ import {
   Trash2,
   Pencil,
   Check,
-  Loader2,
   AlignLeft,
   Layers,
   ListChecks,
   Share2,
-  Clock,
 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Document } from '../types';
 import { useStore } from '../store';
 import { timeAgo, formatBytes } from '../lib/utils';
+import { Tooltip } from './Tooltip';
 
 export function DocumentCard({ doc, index = 0 }: { doc: Document; index?: number }) {
   const navigate = useNavigate();
@@ -70,7 +69,10 @@ export function DocumentCard({ doc, index = 0 }: { doc: Document; index?: number
     if (doc.status === 'processing')
       return (
         <span className="chip bg-amber-50 text-amber-700">
-          <Loader2 size={11} className="animate-spin" /> Processing {Math.round(doc.progress)}%
+          <span className="processing-dot" style={{ animationDelay: '0ms' }} />
+          <span className="processing-dot" style={{ animationDelay: '200ms' }} />
+          <span className="processing-dot" style={{ animationDelay: '400ms' }} />
+          Processing {Math.round(doc.progress)}%
         </span>
       );
     if (doc.status === 'error') return <span className="chip bg-red-50 text-red-700">Error</span>;
@@ -97,6 +99,11 @@ export function DocumentCard({ doc, index = 0 }: { doc: Document; index?: number
         navigate('/app/workspace');
       }}
     >
+      {/* Accent stripe at top */}
+      <div
+        className="absolute inset-x-0 top-0 h-0.5 rounded-t-xl opacity-60"
+        style={{ backgroundColor: doc.accent }}
+      />
       <div className="flex items-start gap-3">
         <div
           className="flex h-12 w-10 shrink-0 items-center justify-center rounded-md text-paper-50 shadow-soft"
@@ -130,15 +137,17 @@ export function DocumentCard({ doc, index = 0 }: { doc: Document; index?: number
           </p>
         </div>
         <div ref={menuRef} className="relative">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setMenuOpen((v) => !v);
-            }}
-            className="rounded p-1 text-ink-300 opacity-0 transition-opacity hover:bg-paper-200 hover:text-ink-600 group-hover:opacity-100"
-          >
-            <MoreVertical size={16} />
-          </button>
+          <Tooltip label="More options" position="left">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setMenuOpen((v) => !v);
+              }}
+              className="rounded p-1 text-ink-300 opacity-0 transition-opacity hover:bg-paper-200 hover:text-ink-600 group-hover:opacity-100"
+            >
+              <MoreVertical size={16} />
+            </button>
+          </Tooltip>
           {menuOpen && (
             <div
               className="absolute right-0 top-8 z-20 w-36 rounded-lg border border-ink-100 bg-paper-50 py-1 shadow-lift"

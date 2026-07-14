@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
   Layers,
@@ -8,11 +8,8 @@ import {
   FileText,
   ArrowRight,
   RotateCw,
-  ArrowLeft,
-  ArrowRight as ArrowRightIcon,
 } from 'lucide-react';
 import { useStore } from '../store';
-import { FlashcardsPanel } from '../components/FlashcardsPanel';
 import { timeAgo } from '../lib/utils';
 
 const SAMPLE_CARD = {
@@ -20,22 +17,26 @@ const SAMPLE_CARD = {
   back: 'Attention allows parallel computation across the entire sequence, whereas recurrence forces sequential processing and cannot exploit modern hardware fully.',
 };
 
+import { useEffect } from 'react';
+
 export function FlashcardsPage() {
   const navigate = useNavigate();
   const activeDocId = useStore((s) => s.activeDocId);
   const documents = useStore((s) => s.documents);
   const openDocument = useStore((s) => s.openDocument);
+  const setWorkspaceTab = useStore((s) => s.setWorkspaceTab);
   const doc = documents.find((d) => d.id === activeDocId);
   const readyDocs = documents.filter((d) => d.status === 'ready');
   const [flipped, setFlipped] = useState(false);
 
-  if (doc) {
-    return (
-      <div className="h-full overflow-hidden">
-        <FlashcardsPanel docId={activeDocId!} />
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (doc) {
+      setWorkspaceTab('flashcards');
+      navigate('/app/workspace', { replace: true });
+    }
+  }, [doc, navigate, setWorkspaceTab]);
+
+  if (doc) return null;
 
   return (
     <div className="h-full overflow-y-auto paper-texture">

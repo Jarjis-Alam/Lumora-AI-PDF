@@ -12,7 +12,6 @@ import {
   Trophy,
 } from 'lucide-react';
 import { useStore } from '../store';
-import { QuizPanel } from '../components/QuizPanel';
 import { timeAgo } from '../lib/utils';
 
 const DIFFICULTIES = [
@@ -27,22 +26,26 @@ const SAMPLE_QUESTIONS = [
   { type: 'Short Answer', q: 'In one sentence, what does multi-head attention enable?', preview: 'Free text' },
 ];
 
+import { useEffect } from 'react';
+
 export function QuizPage() {
   const navigate = useNavigate();
   const activeDocId = useStore((s) => s.activeDocId);
   const documents = useStore((s) => s.documents);
   const openDocument = useStore((s) => s.openDocument);
+  const setWorkspaceTab = useStore((s) => s.setWorkspaceTab);
   const doc = documents.find((d) => d.id === activeDocId);
   const readyDocs = documents.filter((d) => d.status === 'ready');
   const [difficulty, setDifficulty] = useState<string>('medium');
 
-  if (doc) {
-    return (
-      <div className="h-full overflow-hidden">
-        <QuizPanel docId={activeDocId!} />
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (doc) {
+      setWorkspaceTab('quiz');
+      navigate('/app/workspace', { replace: true });
+    }
+  }, [doc, navigate, setWorkspaceTab]);
+
+  if (doc) return null;
 
   return (
     <div className="h-full overflow-y-auto paper-texture">

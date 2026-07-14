@@ -9,11 +9,12 @@ import {
   ChevronRight,
   Maximize2,
   X,
-  Loader2,
   AlertCircle,
 } from 'lucide-react';
-import { useStore } from '../store';
+import { useStore, getCachedChunks, setCachedChunks } from '../store';
 import { classNames } from '../lib/utils';
+import { SkeletonPdfPage } from './Skeletons';
+import { Tooltip } from './Tooltip';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 
@@ -38,6 +39,15 @@ export function PdfViewer() {
 
   useEffect(() => {
     if (!activeDocId) return;
+
+    // Check cache first
+    const cached = getCachedChunks(activeDocId);
+    if (cached) {
+      setChunks(cached);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     fetch(`${API_BASE}/documents/${activeDocId}/chunks`)
       .then((res) => {
@@ -46,6 +56,8 @@ export function PdfViewer() {
       })
       .then((data) => {
         setChunks(data);
+        // Cache for future use
+        setCachedChunks(activeDocId, data);
       })
       .catch((err) => {
         console.error(err);
@@ -86,45 +98,58 @@ export function PdfViewer() {
     <div className="flex h-full flex-col bg-paper-200/40">
       {/* Toolbar */}
       <div className="flex h-11 items-center gap-1 border-b border-ink-100/80 bg-paper-50/80 px-2 backdrop-blur-sm">
-        <button onClick={() => setPdfZoom(Math.max(0.6, pdfZoom - 0.15))} className="btn-ghost btn-sm" title="Zoom out">
-          <ZoomOut size={15} />
-        </button>
-        <span className="w-10 text-center text-2xs text-ink-400">{Math.round(pdfZoom * 100)}%</span>
-        <button onClick={() => setPdfZoom(Math.min(2, pdfZoom + 0.15))} className="btn-ghost btn-sm" title="Zoom in">
-          <ZoomIn size={15} />
-        </button>
-        <div className="mx-1 h-5 w-px bg-ink-100" />
-        <button onClick={() => setSearchOpen((v) => !v)} className="btn-ghost btn-sm" title="Search">
-          <Search size={15} />
-        </button>
-        <button
-          onClick={() => setPdfPage(pdfPage)}
-          className={classNames('btn-ghost btn-sm', doc.bookmarks.includes(pdfPage) && 'text-crimson-600')}
-          title="Bookmark page"
-        >
-          <Bookmark size={15} fill={doc.bookmarks.includes(pdfPage) ? 'currentColor' : 'none'} />
-        </button>
-        <button onClick={() => setReadingMode((v) => !v)} className="btn-ghost btn-sm" title="Reading mode">
-          <Maximize2 size={15} />
-        </button>
-        <div className="ml-auto flex items-center gap-1">
-          <button
-            onClick={() => setPdfPage(Math.max(1, pdfPage - 1))}
-            disabled={pdfPage <= 1}
-            className="btn-ghost btn-sm"
-          >
-            <ChevronLeft size={15} />
+        <Tooltip label="Zoom out" position="bottom">
+          <button onClick={() => setPdfZoom(Math.max(0.6, pdfZoom - 0.15))} className="btn-ghost btn-sm">
+            <ZoomOut size={15} />
           </button>
+        </Tooltip>
+        <span className="w-10 text-center text-2xs text-ink-400">{Math.round(pdfZoom * 100)}%</span>
+        <Tooltip label="Zoom in" position="bottom">
+          <button onClick={() => setPdfZoom(Math.min(2, pdfZoom + 0.15))} className="btn-ghost btn-sm">
+            <ZoomIn size={15} />
+          </button>
+        </Tooltip>
+        <div className="mx-1 h-5 w-px bg-ink-100" />
+        <Tooltip label="Search in document" position="bottom">
+          <button onClick={() => setSearchOpen((v) => !v)} className="btn-ghost btn-sm">
+            <Search size={15} />
+          </button>
+        </Tooltip>
+        <Tooltip label={doc.bookmarks.includes(pdfPage) ? 'Remove bookmark' : 'Bookmark page'} position="bottom">
+          <button
+            onClick={() => setPdfPage(pdfPage)}
+            className={classNames('btn-ghost btn-sm', doc.bookmarks.includes(pdfPage) && 'text-crimson-600')}
+          >
+            <Bookmark size={15} fill={doc.bookmarks.includes(pdfPage) ? 'currentColor' : 'none'} />
+          </button>
+        </Tooltip>
+        <Tooltip label={readingMode ? 'Exit reading mode' : 'Reading mode'} position="bottom">
+          <button onClick={() => setReadingMode((v) => !v)} className="btn-ghost btn-sm">
+            <Maximize2 size={15} />
+          </button>
+        </Tooltip>
+        <div className="ml-auto flex items-center gap-1">
+          <Tooltip label="Previous page" position="bottom">
+            <button
+              onClick={() => setPdfPage(Math.max(1, pdfPage - 1))}
+              disabled={pdfPage <= 1}
+              className="btn-ghost btn-sm"
+            >
+              <ChevronLeft size={15} />
+            </button>
+          </Tooltip>
           <span className="text-2xs text-ink-400">
             {pdfPage} / {totalPages}
           </span>
-          <button
-            onClick={() => setPdfPage(Math.min(totalPages, pdfPage + 1))}
-            disabled={pdfPage >= totalPages}
-            className="btn-ghost btn-sm"
-          >
-            <ChevronRight size={15} />
-          </button>
+          <Tooltip label="Next page" position="bottom">
+            <button
+              onClick={() => setPdfPage(Math.min(totalPages, pdfPage + 1))}
+              disabled={pdfPage >= totalPages}
+              className="btn-ghost btn-sm"
+            >
+              <ChevronRight size={15} />
+            </button>
+          </Tooltip>
         </div>
       </div>
 
@@ -171,31 +196,30 @@ export function PdfViewer() {
             </div>
 
             {doc.status === 'processing' ? (
-              <div className="flex flex-col items-center justify-center py-20 text-center px-6 gap-4">
-                <Loader2 className="animate-spin text-crimson-500" size={32} />
-                <div>
+              <div className="py-8">
+                <div className="mb-4 text-center">
                   <h4 className="text-sm font-semibold text-ink-700">Processing "{doc.name}"</h4>
-                  <p className="text-xs mt-1 text-ink-400 max-w-xs leading-relaxed">
+                  <p className="text-xs mt-1 text-ink-400 max-w-xs mx-auto leading-relaxed">
                     Analyzing pages and preparing AI workspace features...
                   </p>
                 </div>
-                <div className="w-full max-w-xs bg-ink-100 rounded-full h-1.5 overflow-hidden">
-                  <motion.div
-                    className="bg-crimson-500 h-full rounded-full"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${doc.progress}%` }}
-                    transition={{ duration: 0.5 }}
-                  />
+                <SkeletonPdfPage />
+                <div className="mt-6 w-full max-w-xs mx-auto">
+                  <div className="bg-ink-100 rounded-full h-1.5 overflow-hidden">
+                    <motion.div
+                      className="bg-crimson-500 h-full rounded-full"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${doc.progress}%` }}
+                      transition={{ duration: 0.5 }}
+                    />
+                  </div>
+                  <p className="mt-2 text-center text-2xs text-sage font-semibold uppercase tracking-wider">
+                    {Math.round(doc.progress)}% Complete
+                  </p>
                 </div>
-                <span className="text-2xs text-sage font-semibold uppercase tracking-wider">
-                  {Math.round(doc.progress)}% Complete
-                </span>
               </div>
             ) : loading ? (
-              <div className="flex flex-col items-center justify-center py-20 text-ink-400 gap-2">
-                <Loader2 className="animate-spin text-crimson-500" size={24} />
-                <span className="text-xs">Loading page content...</span>
-              </div>
+              <SkeletonPdfPage />
             ) : pageContent.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-center text-ink-400 px-6">
                 <AlertCircle className="text-amber-500 mb-2" size={28} />

@@ -88,6 +88,10 @@ export default {
           '0%, 100%': { opacity: '1' },
           '50%': { opacity: '0' },
         },
+        breathe: {
+          '0%, 100%': { transform: 'scale(1)', opacity: '1' },
+          '50%': { transform: 'scale(1.06)', opacity: '0.85' },
+        },
       },
       animation: {
         'fade-in': 'fade-in 0.4s ease-out',
@@ -95,6 +99,7 @@ export default {
         'scale-in': 'scale-in 0.3s ease-out',
         'pulse-soft': 'pulse-soft 1.6s ease-in-out infinite',
         'blink-caret': 'blink-caret 1s step-end infinite',
+        breathe: 'breathe 3s ease-in-out infinite',
       },
     },
   },

@@ -11,8 +11,9 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 import { useStore } from '../store';
 import { EmptyState } from './EmptyState';
-import { ProcessingOverlay } from './Skeletons';
+import { SkeletonGraph } from './Skeletons';
 import { Share2, Search, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { KnowledgeGraph as KG } from '../types';
 
 const NODE_COLORS: Record<string, string> = {
@@ -26,6 +27,7 @@ export function KnowledgeGraphView({ docId, fullscreen = false }: { docId: strin
   const generateGraph = useStore((s) => s.generateGraph);
   const setPdfHighlight = useStore((s) => s.setPdfHighlight);
   const setPdfPage = useStore((s) => s.setPdfPage);
+  const graphNodeHighlight = useStore((s) => s.graphNodeHighlight);
   const setGraphNodeHighlight = useStore((s) => s.setGraphNodeHighlight);
 
   const [generating, setGenerating] = useState(false);
@@ -92,7 +94,7 @@ export function KnowledgeGraphView({ docId, fullscreen = false }: { docId: strin
   }
 
   if (generating) {
-    return <ProcessingOverlay label="Building knowledge graph..." />;
+    return <SkeletonGraph />;
   }
 
   if (!graph) {
@@ -120,6 +122,11 @@ export function KnowledgeGraphView({ docId, fullscreen = false }: { docId: strin
     ? nodes.filter((n) => (n.data as any).label.toLowerCase().includes(search.toLowerCase()))
     : nodes;
 
+  const highlightedNode = graph?.nodes.find((n) => n.id === graphNodeHighlight);
+  const matchingConcept = doc?.summary?.concepts.find(
+    (c) => c.term.toLowerCase() === highlightedNode?.label.toLowerCase()
+  );
+
   return (
     <div className="relative h-full w-full bg-paper-200/30">
       <div className="absolute right-4 top-4 z-10 flex items-center gap-2">
@@ -129,7 +136,7 @@ export function KnowledgeGraphView({ docId, fullscreen = false }: { docId: strin
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search nodes..."
-            className="w-32 bg-transparent text-sm text-ink-700 placeholder:text-ink-300 focus:outline-none"
+            className="w-32 bg-transparent text-xs text-ink-700 placeholder:text-ink-300 focus:outline-none"
           />
           {search && (
             <button onClick={() => setSearch('')} className="text-ink-300 hover:text-ink-500">
@@ -168,9 +175,52 @@ export function KnowledgeGraphView({ docId, fullscreen = false }: { docId: strin
         {fullscreen && <MiniMap className="!border-ink-100 !bg-paper-50" nodeColor={(n) => NODE_COLORS[(n.data as any).type] || '#C9C6BF'} />}
       </ReactFlow>
 
-      <div className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-ink-800/80 px-3 py-1.5 text-2xs text-paper-100 backdrop-blur-sm">
-        Click a node to jump to its location in the document
-      </div>
+      {/* Floating Detailed Node Panel */}
+      <AnimatePresence>
+        {highlightedNode && (
+          <motion.div
+            initial={{ opacity: 0, y: 12, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 12, scale: 0.95 }}
+            className="absolute bottom-4 right-4 z-10 w-72 card p-4 shadow-lift space-y-3 bg-paper-50 border border-ink-200"
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <span className="chip uppercase tracking-wider text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ backgroundColor: `${NODE_COLORS[highlightedNode.type]}12`, color: NODE_COLORS[highlightedNode.type] }}>
+                  {highlightedNode.type}
+                </span>
+                <h4 className="font-serif text-sm font-semibold text-ink-800 mt-1">{highlightedNode.label}</h4>
+              </div>
+              <button onClick={() => setGraphNodeHighlight(null)} className="text-ink-300 hover:text-ink-600">
+                <X size={14} />
+              </button>
+            </div>
+            
+            <p className="text-xs text-ink-500 leading-relaxed font-body">
+              {matchingConcept?.definition || `Concept mentioned in ${doc.name} on page ${highlightedNode.page}.`}
+            </p>
+
+            <div className="flex items-center justify-between border-t border-ink-100/30 pt-2.5 text-[10px]">
+              <span className="font-semibold text-crimson-700">Page {highlightedNode.page} · Para {highlightedNode.paragraph + 1}</span>
+              <button
+                onClick={() => {
+                  setPdfPage(highlightedNode.page);
+                  setPdfHighlight({ page: highlightedNode.page, paragraph: highlightedNode.paragraph });
+                }}
+                className="text-crimson-600 hover:underline font-semibold"
+              >
+                Jump to Section →
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {!highlightedNode && (
+        <div className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-ink-800/80 px-3 py-1.5 text-2xs text-paper-100 backdrop-blur-sm">
+          Click a node to highlight its relations and display details
+        </div>
+      )}
     </div>
   );
 }

@@ -15,25 +15,29 @@ const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false, staleTime: Infinity } },
 });
 
+import { SplashTransition } from './components/SplashTransition';
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/app" element={<AppLayout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="workspace" element={<Workspace />} />
-            <Route path="chat" element={<ChatPage />} />
-            <Route path="summary" element={<SummaryPage />} />
-            <Route path="flashcards" element={<FlashcardsPage />} />
-            <Route path="quiz" element={<QuizPage />} />
-            <Route path="graph" element={<GraphPage />} />
-            <Route path="search" element={<SearchPage />} />
-          </Route>
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
+      <SplashTransition>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/app" element={<AppLayout />}>
+              <Route index element={<Dashboard />} />
+              <Route path="workspace" element={<Workspace />} />
+              <Route path="chat" element={<ChatPage />} />
+              <Route path="summary" element={<SummaryPage />} />
+              <Route path="flashcards" element={<FlashcardsPage />} />
+              <Route path="quiz" element={<QuizPage />} />
+              <Route path="graph" element={<GraphPage />} />
+              <Route path="search" element={<SearchPage />} />
+            </Route>
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </SplashTransition>
     </QueryClientProvider>
   );
 }

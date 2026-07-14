@@ -11,7 +11,6 @@ import {
   Clock,
 } from 'lucide-react';
 import { useStore } from '../store';
-import { SummaryPanel } from '../components/SummaryPanel';
 import { timeAgo } from '../lib/utils';
 
 const SUMMARY_CARDS = [
@@ -47,21 +46,25 @@ const SUMMARY_CARDS = [
   },
 ];
 
+import { useEffect } from 'react';
+
 export function SummaryPage() {
   const navigate = useNavigate();
   const activeDocId = useStore((s) => s.activeDocId);
   const documents = useStore((s) => s.documents);
   const openDocument = useStore((s) => s.openDocument);
+  const setWorkspaceTab = useStore((s) => s.setWorkspaceTab);
   const doc = documents.find((d) => d.id === activeDocId);
   const readyDocs = documents.filter((d) => d.status === 'ready');
 
-  if (doc) {
-    return (
-      <div className="h-full overflow-hidden">
-        <SummaryPanel docId={activeDocId!} />
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (doc) {
+      setWorkspaceTab('summary');
+      navigate('/app/workspace', { replace: true });
+    }
+  }, [doc, navigate, setWorkspaceTab]);
+
+  if (doc) return null;
 
   return (
     <div className="h-full overflow-y-auto paper-texture">

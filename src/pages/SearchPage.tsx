@@ -6,7 +6,6 @@ import {
   FileText,
   ArrowRight,
   Sparkles,
-  Loader2,
   Clock,
   TrendingUp,
   Filter,
@@ -63,18 +62,32 @@ const TRENDING_SEARCHES = [
   'Layer normalization',
 ];
 
+import { useEffect } from 'react';
+
 export function SearchPage() {
   const documents = useStore((s) => s.documents);
   const activeDocId = useStore((s) => s.activeDocId);
   const setPdfPage = useStore((s) => s.setPdfPage);
   const setPdfHighlight = useStore((s) => s.setPdfHighlight);
   const openDocument = useStore((s) => s.openDocument);
+  const setWorkspaceTab = useStore((s) => s.setWorkspaceTab);
   const navigate = useNavigate();
 
   const [query, setQuery] = useState('');
   const [searching, setSearching] = useState(false);
   const [results, setResults] = useState<SearchResult[] | null>(null);
   const [filter, setFilter] = useState<string>('all');
+
+  const doc = documents.find((d) => d.id === activeDocId);
+
+  useEffect(() => {
+    if (doc) {
+      setWorkspaceTab('search');
+      navigate('/app/workspace', { replace: true });
+    }
+  }, [doc, navigate, setWorkspaceTab]);
+
+  if (doc) return null;
 
   const readyDocs = useMemo(() => documents.filter((d) => d.status === 'ready'), [documents]);
 
@@ -164,7 +177,13 @@ export function SearchPage() {
               disabled={!query.trim() || searching}
               className="btn-primary"
             >
-              {searching ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} />}
+              {searching ? (
+                <span className="flex items-center gap-0.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-paper-50 animate-pulse-soft" style={{ animationDelay: '0ms' }} />
+                  <span className="h-1.5 w-1.5 rounded-full bg-paper-50 animate-pulse-soft" style={{ animationDelay: '150ms' }} />
+                  <span className="h-1.5 w-1.5 rounded-full bg-paper-50 animate-pulse-soft" style={{ animationDelay: '300ms' }} />
+                </span>
+              ) : <Sparkles size={15} />}
               Search
             </button>
           </div>

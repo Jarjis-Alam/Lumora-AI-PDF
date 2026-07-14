@@ -2,20 +2,22 @@ import { create } from 'zustand';
 import type { Document, ChatMessage, Flashcard } from './types';
 
 export type View = 'documents' | 'chat' | 'summary' | 'flashcards' | 'quiz' | 'graph' | 'search';
+export type WorkspaceTab = 'chat' | 'summary' | 'flashcards' | 'quiz' | 'graph' | 'search';
 
 interface LumoraState {
   documents: Document[];
   activeDocId: string | null;
   view: View;
-  bottomTab: 'summary' | 'flashcards' | 'quiz' | 'graph';
+  workspaceTab: WorkspaceTab;
   searchQuery: string;
   graphNodeHighlight: string | null;
   pdfPage: number;
   pdfZoom: number;
   pdfHighlight: { page: number; paragraph: number } | null;
+  isDocumentsLoading: boolean;
 
   setView: (v: View) => void;
-  setBottomTab: (t: 'summary' | 'flashcards' | 'quiz') => void;
+  setWorkspaceTab: (t: WorkspaceTab) => void;
   selectDocument: (id: string | null) => void;
   openDocument: (id: string) => void;
   addDocument: (name: string, size: number, fileObj?: File) => string;
@@ -49,6 +51,20 @@ function updateDoc(docs: Document[], id: string, fn: (d: Document) => Document):
   return docs.map((d) => (d.id === id ? fn(d) : d));
 }
 
+/* ─── Simple cache for documents API data ─── */
+let _cachedDocuments: Document[] | null = null;
+let _cachedDocumentsAt = 0;
+const CACHE_TTL = 30_000; // 30 seconds stale-while-revalidate window
+
+/* ─── Chunk cache for PdfViewer ─── */
+const _chunkCache = new Map<string, { page: number; paragraph: number; text: string }[]>();
+export function getCachedChunks(docId: string) {
+  return _chunkCache.get(docId) ?? null;
+}
+export function setCachedChunks(docId: string, chunks: { page: number; paragraph: number; text: string }[]) {
+  _chunkCache.set(docId, chunks);
+}
+
 const pollDocumentStatus = (docId: string) => {
   const interval = setInterval(async () => {
     try {
@@ -59,7 +75,7 @@ const pollDocumentStatus = (docId: string) => {
           documents: s.documents.map((d) => (d.id === docId ? doc : d)),
         }));
 
-        if (doc.status === 'ready' || doc.status === 'failed') {
+        if (doc.status === 'ready' || doc.status === 'error') {
           clearInterval(interval);
         }
       } else {
@@ -76,20 +92,22 @@ export const useStore = create<LumoraState>((set) => ({
   documents: [],
   activeDocId: null,
   view: 'documents',
-  bottomTab: 'summary',
+  workspaceTab: 'chat',
   searchQuery: '',
   graphNodeHighlight: null,
   pdfPage: 1,
   pdfZoom: 1,
   pdfHighlight: null,
+  isDocumentsLoading: true,
 
   setView: (v) => set({ view: v }),
-  setBottomTab: (t) => set({ bottomTab: t }),
+  setWorkspaceTab: (t) => set({ workspaceTab: t }),
   selectDocument: (id) => set({ activeDocId: id }),
   openDocument: (id) =>
-    set((s) => ({
+    set(() => ({
       activeDocId: id,
       view: 'documents',
+      workspaceTab: 'chat',
       pdfPage: 1,
       pdfHighlight: null,
     })),
@@ -110,6 +128,8 @@ export const useStore = create<LumoraState>((set) => ({
       graph: null,
       chat: [],
       bookmarks: [],
+      pages: 0,
+      accent: '#C0392B',
     };
 
     set((s) => ({ documents: [tempDoc, ...s.documents] }));
@@ -135,17 +155,20 @@ export const useStore = create<LumoraState>((set) => ({
             documents: s.documents.map((d) => (d.id === tempId ? realDoc : d)),
             activeDocId: s.activeDocId === tempId ? realDoc.id : s.activeDocId,
           }));
+          // Update cache
+          _cachedDocuments = useStore.getState().documents;
+          _cachedDocumentsAt = Date.now();
 
           pollDocumentStatus(realDoc.id);
         } else {
           set((s) => ({
-            documents: updateDoc(s.documents, tempId, (d) => ({ ...d, status: 'failed', progress: 100 })),
+            documents: updateDoc(s.documents, tempId, (d) => ({ ...d, status: 'error', progress: 100 })),
           }));
         }
       } catch (e) {
         console.error(e);
         set((s) => ({
-          documents: updateDoc(s.documents, tempId, (d) => ({ ...d, status: 'failed', progress: 100 })),
+          documents: updateDoc(s.documents, tempId, (d) => ({ ...d, status: 'error', progress: 100 })),
         }));
       }
     })();
@@ -153,21 +176,42 @@ export const useStore = create<LumoraState>((set) => ({
     return tempId;
   },
 
+  /* ─── Optimistic removeDocument ─── */
   removeDocument: async (id) => {
+    // Snapshot for rollback
+    const snapshot = useStore.getState().documents;
+    // Optimistic: remove immediately
+    set((s) => ({
+      documents: s.documents.filter((d) => d.id !== id),
+      activeDocId: s.activeDocId === id ? null : s.activeDocId,
+    }));
+
     try {
       const res = await fetch(`${API_BASE}/documents/${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        set((s) => ({
-          documents: s.documents.filter((d) => d.id !== id),
-          activeDocId: s.activeDocId === id ? null : s.activeDocId,
-        }));
+      if (!res.ok) {
+        // Rollback on failure
+        set({ documents: snapshot });
+      } else {
+        // Update cache
+        _cachedDocuments = useStore.getState().documents;
+        _cachedDocumentsAt = Date.now();
       }
     } catch (e) {
       console.error(e);
+      // Rollback on error
+      set({ documents: snapshot });
     }
   },
 
+  /* ─── Optimistic renameDocument ─── */
   renameDocument: async (id, name) => {
+    // Snapshot for rollback
+    const snapshot = useStore.getState().documents;
+    // Optimistic: apply rename immediately
+    set((s) => ({
+      documents: updateDoc(s.documents, id, (d) => ({ ...d, name })),
+    }));
+
     try {
       const res = await fetch(`${API_BASE}/documents/${id}`, {
         method: 'PATCH',
@@ -179,9 +223,14 @@ export const useStore = create<LumoraState>((set) => ({
         set((s) => ({
           documents: updateDoc(s.documents, id, () => updatedDoc),
         }));
+        _cachedDocuments = useStore.getState().documents;
+        _cachedDocumentsAt = Date.now();
+      } else {
+        set({ documents: snapshot });
       }
     } catch (e) {
       console.error(e);
+      set({ documents: snapshot });
     }
   },
 
@@ -225,7 +274,14 @@ export const useStore = create<LumoraState>((set) => ({
       })),
     })),
 
+  /* ─── Optimistic clearChat ─── */
   clearChat: async (docId) => {
+    const snapshot = useStore.getState().documents;
+    // Optimistic: clear chat immediately
+    set((s) => ({
+      documents: updateDoc(s.documents, docId, (d) => ({ ...d, chat: [] })),
+    }));
+
     try {
       const res = await fetch(`${API_BASE}/documents/${docId}/chat`, { method: 'DELETE' });
       if (res.ok) {
@@ -233,9 +289,12 @@ export const useStore = create<LumoraState>((set) => ({
         set((s) => ({
           documents: updateDoc(s.documents, docId, () => doc),
         }));
+      } else {
+        set({ documents: snapshot });
       }
     } catch (e) {
       console.error(e);
+      set({ documents: snapshot });
     }
   },
 
@@ -287,7 +346,17 @@ export const useStore = create<LumoraState>((set) => ({
     }
   },
 
+  /* ─── Optimistic editFlashcard ─── */
   editFlashcard: async (docId, cardId, patch) => {
+    const snapshot = useStore.getState().documents;
+    // Optimistic: apply edit immediately
+    set((s) => ({
+      documents: updateDoc(s.documents, docId, (d) => ({
+        ...d,
+        flashcards: d.flashcards.map((c) => (c.id === cardId ? { ...c, ...patch } : c)),
+      })),
+    }));
+
     try {
       const res = await fetch(`${API_BASE}/documents/${docId}/flashcards/${cardId}`, {
         method: 'PATCH',
@@ -297,13 +366,26 @@ export const useStore = create<LumoraState>((set) => ({
       if (res.ok) {
         const doc = await res.json();
         set((s) => ({ documents: updateDoc(s.documents, docId, () => doc) }));
+      } else {
+        set({ documents: snapshot });
       }
     } catch (e) {
       console.error(e);
+      set({ documents: snapshot });
     }
   },
 
+  /* ─── Optimistic deleteFlashcard ─── */
   deleteFlashcard: async (docId, cardId) => {
+    const snapshot = useStore.getState().documents;
+    // Optimistic: remove card immediately
+    set((s) => ({
+      documents: updateDoc(s.documents, docId, (d) => ({
+        ...d,
+        flashcards: d.flashcards.filter((c) => c.id !== cardId),
+      })),
+    }));
+
     try {
       const res = await fetch(`${API_BASE}/documents/${docId}/flashcards/${cardId}`, {
         method: 'DELETE',
@@ -311,13 +393,25 @@ export const useStore = create<LumoraState>((set) => ({
       if (res.ok) {
         const doc = await res.json();
         set((s) => ({ documents: updateDoc(s.documents, docId, () => doc) }));
+      } else {
+        set({ documents: snapshot });
       }
     } catch (e) {
       console.error(e);
+      set({ documents: snapshot });
     }
   },
 
+  /* ─── Optimistic addFlashcard ─── */
   addFlashcard: async (docId, card) => {
+    // Optimistic: add card immediately
+    set((s) => ({
+      documents: updateDoc(s.documents, docId, (d) => ({
+        ...d,
+        flashcards: [...d.flashcards, card],
+      })),
+    }));
+
     try {
       const res = await fetch(`${API_BASE}/documents/${docId}/flashcards/add`, {
         method: 'POST',
@@ -333,21 +427,32 @@ export const useStore = create<LumoraState>((set) => ({
     }
   },
 
+  /* ─── fetchDocuments with stale-while-revalidate cache ─── */
   fetchDocuments: async () => {
+    // Serve from cache instantly if available
+    if (_cachedDocuments && Date.now() - _cachedDocumentsAt < CACHE_TTL) {
+      set({ documents: _cachedDocuments, isDocumentsLoading: false });
+    }
+
     try {
       const res = await fetch(`${API_BASE}/documents`);
       if (res.ok) {
         const documents = await res.json();
-        set({ documents });
+        _cachedDocuments = documents;
+        _cachedDocumentsAt = Date.now();
+        set({ documents, isDocumentsLoading: false });
         // Start polling for any document that is currently processing
         documents.forEach((doc: Document) => {
           if (doc.status === 'processing') {
             pollDocumentStatus(doc.id);
           }
         });
+      } else {
+        set({ isDocumentsLoading: false });
       }
     } catch (e) {
       console.error(e);
+      set({ isDocumentsLoading: false });
     }
   },
 }));

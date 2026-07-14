@@ -17,15 +17,11 @@ import {
   Scale,
   Upload,
   Cpu,
-  HelpCircle,
   Quote,
   Zap,
   Shield,
   Lock,
-  Database,
-  FileSearch,
   Network,
-  Brain,
   CheckCircle2,
   Paperclip,
   Hash,
@@ -335,7 +331,7 @@ function HeroPreview() {
 /*  Feature card                                                                */
 /* ─────────────────────────────────────────────────────────────────────────── */
 
-function FeatureCard({ f, i }: { f: (typeof FEATURES)[number]; i: number }) {
+function FeatureCard({ f, i: _i }: { f: (typeof FEATURES)[number]; i: number }) {
   const Icon = f.icon;
   return (
     <motion.div

@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     # ── AI ────────────────────────────────────────────────────
     groq_api_key: str = ""
     groq_model: str = "llama-3.3-70b-versatile"
+    enable_local_embeddings: bool = False
 
 
     # ── Application ───────────────────────────────────────────

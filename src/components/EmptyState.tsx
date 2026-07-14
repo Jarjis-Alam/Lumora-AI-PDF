@@ -18,7 +18,7 @@ export function EmptyState({ icon: Icon, title, description, action, accent = '#
       className="flex flex-col items-center justify-center px-6 py-16 text-center"
     >
       <div
-        className="relative mb-5 flex h-20 w-20 items-center justify-center rounded-2xl"
+        className="relative mb-5 flex h-20 w-20 items-center justify-center rounded-2xl animate-breathe"
         style={{ backgroundColor: `${accent}12` }}
       >
         <div

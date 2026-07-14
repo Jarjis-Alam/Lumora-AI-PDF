@@ -11,14 +11,6 @@ from app.core.logging import get_logger
 
 logger = get_logger("embeddings")
 
-try:
-    # Try importing sentence_transformers
-    from sentence_transformers import SentenceTransformer
-    SENTENCE_TRANSFORMERS_AVAILABLE = True
-except ImportError:
-    SENTENCE_TRANSFORMERS_AVAILABLE = False
-
-
 class EmbeddingsService:
     """
     Computes 384-dimensional vector embeddings for document text chunks.
@@ -29,19 +21,32 @@ class EmbeddingsService:
     _model = None
 
     def __init__(self) -> None:
-        self.model = None
-        if SENTENCE_TRANSFORMERS_AVAILABLE:
-            if EmbeddingsService._model is None:
-                try:
-                    logger.info("Initializing BAAI/bge-small-en-v1.5 locally...")
-                    EmbeddingsService._model = SentenceTransformer("BAAI/bge-small-en-v1.5")
-                    logger.info("BAAI/bge-small-en-v1.5 loaded successfully")
-                except Exception as exc:
-                    logger.warning("Failed to load sentence-transformers model: %s. Using fallback.", exc)
-                    EmbeddingsService._model = None
-            self.model = EmbeddingsService._model
-        else:
-            logger.info("sentence-transformers not installed. Using high-speed feature hashing fallback.")
+        pass
+
+    @property
+    def model(self):
+        """Lazy load local sentence-transformers model only if enabled."""
+        try:
+            from app.core.config import get_settings
+            settings = get_settings()
+            enable_local = settings.enable_local_embeddings
+        except Exception:
+            import os
+            enable_local = os.getenv("ENABLE_LOCAL_EMBEDDINGS", "false").lower() in ("true", "1", "yes")
+
+        if not enable_local:
+            return None
+
+        if EmbeddingsService._model is None:
+            try:
+                logger.info("Initializing BAAI/bge-small-en-v1.5 locally...")
+                from sentence_transformers import SentenceTransformer
+                EmbeddingsService._model = SentenceTransformer("BAAI/bge-small-en-v1.5")
+                logger.info("BAAI/bge-small-en-v1.5 loaded successfully")
+            except Exception as exc:
+                logger.warning("Failed to load sentence-transformers model: %s. Using fallback.", exc)
+                EmbeddingsService._model = None
+        return EmbeddingsService._model
 
     def _fallback_embedding(self, text: str) -> list[float]:
         """

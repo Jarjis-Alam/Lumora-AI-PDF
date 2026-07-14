@@ -2,7 +2,6 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Share2, FileText, ArrowRight, Sparkles, Network } from 'lucide-react';
 import { useStore } from '../store';
-import { KnowledgeGraphView } from '../components/KnowledgeGraphView';
 import { timeAgo } from '../lib/utils';
 
 const MOCK_NODES = [
@@ -19,21 +18,25 @@ const MOCK_EDGES = [
   ['n1', 'n6'], ['n2', 'n6'], ['n3', 'n5'], ['n2', 'n4'],
 ];
 
+import { useEffect } from 'react';
+
 export function GraphPage() {
   const navigate = useNavigate();
   const activeDocId = useStore((s) => s.activeDocId);
   const documents = useStore((s) => s.documents);
   const openDocument = useStore((s) => s.openDocument);
+  const setWorkspaceTab = useStore((s) => s.setWorkspaceTab);
   const doc = documents.find((d) => d.id === activeDocId);
   const readyDocs = documents.filter((d) => d.status === 'ready' && d.graph);
 
-  if (doc && doc.graph) {
-    return (
-      <div className="h-full overflow-hidden">
-        <KnowledgeGraphView docId={activeDocId!} fullscreen />
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (doc) {
+      setWorkspaceTab('graph');
+      navigate('/app/workspace', { replace: true });
+    }
+  }, [doc, navigate, setWorkspaceTab]);
+
+  if (doc) return null;
 
   return (
     <div className="h-full overflow-y-auto paper-texture">

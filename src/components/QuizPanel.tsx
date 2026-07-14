@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { useStore } from '../store';
 import { EmptyState } from './EmptyState';
-import { ProcessingOverlay } from './Skeletons';
+import { SkeletonQuiz } from './Skeletons';
 
 export function QuizPanel({ docId }: { docId: string | null }) {
   const documents = useStore((s) => s.documents);
@@ -38,7 +38,7 @@ export function QuizPanel({ docId }: { docId: string | null }) {
   }
 
   if (generating) {
-    return <ProcessingOverlay label="Generating quiz..." />;
+    return <SkeletonQuiz />;
   }
 
   if (quiz.length === 0) {
@@ -70,56 +70,65 @@ export function QuizPanel({ docId }: { docId: string | null }) {
     const score = Math.round((correct / quiz.length) * 100);
 
     return (
-      <div className="h-full overflow-y-auto">
+      <div className="h-full overflow-y-auto bg-paper-50/20">
         <div className="mx-auto max-w-2xl px-6 py-8">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="mb-6 text-center"
+            className="mb-6 text-center card p-6 space-y-4"
           >
-            <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-crimson-50">
-              <Award size={36} className="text-crimson-600" />
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-crimson-50 text-crimson-600">
+              <Award size={30} />
             </div>
-            <h2 className="font-serif text-2xl font-semibold text-ink-800">Quiz Complete</h2>
-            <p className="mt-1 text-sm text-ink-400">You scored</p>
-            <p className="font-serif text-4xl font-bold text-crimson-600">{score}%</p>
-            <p className="mt-1 text-sm text-ink-500">
-              {correct} out of {quiz.length} correct
-            </p>
-          </motion.div>
+            <div>
+              <h2 className="font-serif text-xl font-bold text-ink-800">Quiz Complete</h2>
+              <p className="mt-1 text-xs text-ink-400">Review your answers below</p>
+            </div>
+            <div className="flex justify-center gap-6 pt-2">
+              <div className="text-center">
+                <div className="font-serif text-3xl font-bold text-crimson-600">{score}%</div>
+                <div className="text-[10px] font-semibold text-ink-400 uppercase tracking-wide2">Score</div>
+              </div>
+              <div className="h-10 w-px bg-ink-100" />
+              <div className="text-center">
+                <div className="font-serif text-3xl font-bold text-ink-800">{correct} / {quiz.length}</div>
+                <div className="text-[10px] font-semibold text-ink-400 uppercase tracking-wide2">Correct</div>
+              </div>
+            </div>
 
-          <div className="mb-6 flex justify-center gap-3">
-            <button
-              onClick={() => {
-                setSubmitted(false);
-                setStarted(false);
-                setAnswers({});
-                setCurrent(0);
-              }}
-              className="btn-primary"
-            >
-              <RotateCw size={15} /> Retry
-            </button>
-            <button
-              onClick={async () => {
-                setGenerating(true);
-                try {
-                  await generateQuiz(doc.id);
+            <div className="flex justify-center gap-2 pt-2">
+              <button
+                onClick={() => {
                   setSubmitted(false);
                   setStarted(false);
                   setAnswers({});
                   setCurrent(0);
-                } finally {
-                  setGenerating(false);
-                }
-              }}
-              className="btn-secondary"
-            >
-              <RefreshCw size={15} /> Generate Again
-            </button>
-          </div>
+                }}
+                className="btn-primary btn-sm rounded px-3 py-2 flex items-center gap-1"
+              >
+                <RotateCw size={12} /> Retry Quiz
+              </button>
+              <button
+                onClick={async () => {
+                  setGenerating(true);
+                  try {
+                    await generateQuiz(doc.id);
+                    setSubmitted(false);
+                    setStarted(false);
+                    setAnswers({});
+                    setCurrent(0);
+                  } finally {
+                    setGenerating(false);
+                  }
+                }}
+                className="btn-secondary btn-sm rounded px-3 py-2 flex items-center gap-1"
+              >
+                <RefreshCw size={12} /> Generate Again
+              </button>
+            </div>
+          </motion.div>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             {quiz.map((q, i) => {
               const userAnswer = answers[q.id] || '(no answer)';
               const isCorrect = userAnswer.trim().toLowerCase() === q.answer.trim().toLowerCase();
@@ -129,25 +138,28 @@ export function QuizPanel({ docId }: { docId: string | null }) {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  className="card p-4"
+                  className="card p-4 hover:shadow-card transition-shadow space-y-3 border-l-4"
+                  style={{ borderLeftColor: isCorrect ? '#10B981' : '#EF4444' }}
                 >
-                  <div className="mb-2 flex items-start gap-2">
+                  <div className="flex items-start gap-2.5">
                     {isCorrect ? (
                       <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-emerald-500" />
                     ) : (
                       <XCircle size={16} className="mt-0.5 shrink-0 text-red-500" />
                     )}
-                    <p className="text-sm font-medium text-ink-700">{q.question}</p>
+                    <h4 className="text-sm font-semibold text-ink-800 leading-normal">{q.question}</h4>
                   </div>
-                  <div className="ml-6 space-y-1 text-xs">
-                    <p className={isCorrect ? 'text-emerald-600' : 'text-red-600'}>
-                      Your answer: {userAnswer}
-                    </p>
-                    {!isCorrect && <p className="text-emerald-600">Correct: {q.answer}</p>}
-                    <p className="pt-1 text-ink-400">
-                      <HelpCircle size={11} className="mr-1 inline" />
-                      {q.explanation}
-                    </p>
+                  <div className="pl-6 space-y-2 text-xs">
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-2xs font-semibold">
+                      <span className={isCorrect ? 'text-emerald-700' : 'text-red-700'}>
+                        Your Answer: {userAnswer}
+                      </span>
+                      {!isCorrect && <span className="text-emerald-700">Correct Answer: {q.answer}</span>}
+                    </div>
+                    <div className="bg-paper-100 p-2.5 rounded text-xs text-ink-500 font-body leading-relaxed flex gap-2">
+                      <HelpCircle size={14} className="shrink-0 mt-0.5 text-crimson-600" />
+                      <span>{q.explanation}</span>
+                    </div>
                   </div>
                 </motion.div>
               );
@@ -160,27 +172,30 @@ export function QuizPanel({ docId }: { docId: string | null }) {
 
   if (!started) {
     return (
-      <div className="flex h-full flex-col items-center justify-center px-6 text-center">
-        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-crimson-50 text-crimson-600">
+      <div className="flex h-full flex-col items-center justify-center px-6 text-center space-y-6">
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-crimson-50 text-crimson-600 shadow-soft">
           <ListChecks size={28} strokeWidth={1.5} />
         </div>
-        <h2 className="font-serif text-xl font-semibold text-ink-800">Ready to test your knowledge?</h2>
-        <p className="mt-1.5 max-w-sm text-sm text-ink-400">
-          {quiz.length} questions · MCQ, True/False, and Short Answer
-        </p>
-        <div className="mt-4 flex gap-2">
+        <div className="space-y-1.5">
+          <h2 className="font-serif text-xl font-bold text-ink-800 tracking-editorial">Ready to test your knowledge?</h2>
+          <p className="max-w-xs text-xs text-ink-400 leading-relaxed mx-auto">
+            {quiz.length} auto-generated questions from {doc.name} to assess your understanding.
+          </p>
+        </div>
+        <div className="flex flex-wrap justify-center gap-1.5 pt-1">
           {['easy', 'medium', 'hard'].map((d) => {
             const count = quiz.filter((q) => q.difficulty === d).length;
+            if (count === 0) return null;
             return (
-              <span key={d} className="chip border border-ink-200 bg-paper-50 text-ink-500 capitalize">
-                {d}: {count}
+              <span key={d} className="chip border border-ink-200 bg-paper-50 text-ink-500 capitalize px-2 py-0.5 text-[10px]">
+                {d}: {count} Q
               </span>
             );
           })}
         </div>
-        <div className="mt-6 flex gap-3">
-          <button onClick={() => setStarted(true)} className="btn-primary">
-            Start Quiz <ChevronRight size={16} />
+        <div className="flex gap-2.5 pt-2">
+          <button onClick={() => setStarted(true)} className="btn-primary btn-sm rounded px-4 py-2 flex items-center gap-1.5 text-xs">
+            Start Quiz <ChevronRight size={14} />
           </button>
           <button
             onClick={async () => {
@@ -191,9 +206,9 @@ export function QuizPanel({ docId }: { docId: string | null }) {
                 setGenerating(false);
               }
             }}
-            className="btn-secondary"
+            className="btn-secondary btn-sm rounded px-3 py-2 flex items-center gap-1.5 text-xs"
           >
-            <RefreshCw size={15} /> Regenerate
+            <RefreshCw size={12} /> Regenerate
           </button>
         </div>
       </div>
@@ -204,47 +219,53 @@ export function QuizPanel({ docId }: { docId: string | null }) {
   const progress = ((current + 1) / quiz.length) * 100;
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="border-b border-ink-100/80 px-6 pt-4">
-        <div className="mb-2 flex items-center justify-between text-2xs text-ink-400">
+    <div className="flex h-full flex-col bg-paper-50/20">
+      {/* Quiz Progress header */}
+      <div className="border-b border-ink-100/40 px-6 py-3.5 bg-paper-50">
+        <div className="mb-2 flex items-center justify-between text-[10px] font-semibold text-ink-400 uppercase tracking-wide2">
           <span>Question {current + 1} of {quiz.length}</span>
-          <span className="capitalize chip bg-paper-200 text-ink-500">{q.difficulty}</span>
+          <span className="chip border border-ink-200 bg-paper-100 text-ink-500">{q.difficulty}</span>
         </div>
-        <div className="h-1 overflow-hidden rounded-full bg-ink-100">
+        <div className="h-1.5 overflow-hidden rounded-full bg-ink-100">
           <motion.div
             className="h-full rounded-full bg-crimson-500"
             animate={{ width: `${progress}%` }}
+            transition={{ duration: 0.3 }}
           />
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 py-6">
-        <div className="mx-auto max-w-2xl">
-          <span className="chip bg-ink-100/60 text-ink-500 capitalize mb-3">{q.type.replace('truefalse', 'True/False')}</span>
-          <h3 className="mb-6 font-serif text-xl font-semibold leading-relaxed text-ink-800">{q.question}</h3>
+      <div className="flex-1 overflow-y-auto px-6 py-6 font-body">
+        <div className="mx-auto max-w-2xl space-y-5">
+          <div className="space-y-2">
+            <span className="chip bg-crimson-50 text-crimson-700 font-semibold tracking-wider text-[9px] uppercase px-1.5 py-0.5 rounded">
+              {q.type === 'truefalse' ? 'True / False' : q.type.toUpperCase()}
+            </span>
+            <h3 className="font-serif text-lg font-bold leading-relaxed text-ink-800">{q.question}</h3>
+          </div>
 
           {q.type === 'mcq' && q.options && (
-            <div className="space-y-2.5">
+            <div className="space-y-2">
               {q.options.map((opt) => {
                 const selected = answers[q.id] === opt;
                 return (
                   <button
                     key={opt}
                     onClick={() => setAnswers((a) => ({ ...a, [q.id]: opt }))}
-                    className={`flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-left text-sm transition-all ${
+                    className={`flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-left text-xs font-semibold transition-all ${
                       selected
-                        ? 'border-crimson-400 bg-crimson-50/50 text-ink-800'
-                        : 'border-ink-100 bg-paper-50 text-ink-600 hover:border-ink-200'
+                        ? 'border-crimson-400 bg-crimson-50/40 text-ink-850 shadow-soft'
+                        : 'border-ink-100 bg-paper-50 text-ink-600 hover:border-ink-250 hover:bg-paper-100/50'
                     }`}
                   >
                     <span
-                      className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${
-                        selected ? 'border-crimson-500 bg-crimson-500' : 'border-ink-200'
+                      className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${
+                        selected ? 'border-crimson-500 bg-crimson-500 text-white' : 'border-ink-200'
                       }`}
                     >
-                      {selected && <div className="h-2 w-2 rounded-full bg-paper-50" />}
+                      {selected && <div className="h-1.5 w-1.5 rounded-full bg-paper-50" />}
                     </span>
-                    {opt}
+                    <span>{opt}</span>
                   </button>
                 );
               })}
@@ -259,10 +280,10 @@ export function QuizPanel({ docId }: { docId: string | null }) {
                   <button
                     key={opt}
                     onClick={() => setAnswers((a) => ({ ...a, [q.id]: opt }))}
-                    className={`rounded-lg border px-4 py-6 text-center font-serif text-lg font-medium transition-all ${
+                    className={`rounded-lg border px-4 py-5 text-center font-serif text-base font-bold transition-all ${
                       selected
-                        ? 'border-crimson-400 bg-crimson-50/50 text-crimson-700'
-                        : 'border-ink-100 bg-paper-50 text-ink-600 hover:border-ink-200'
+                        ? 'border-crimson-400 bg-crimson-50/40 text-crimson-700'
+                        : 'border-ink-100 bg-paper-50 text-ink-600 hover:border-ink-250 hover:bg-paper-100/50'
                     }`}
                   >
                     {opt}
@@ -276,19 +297,19 @@ export function QuizPanel({ docId }: { docId: string | null }) {
             <textarea
               value={answers[q.id] || ''}
               onChange={(e) => setAnswers((a) => ({ ...a, [q.id]: e.target.value }))}
-              placeholder="Type your answer..."
+              placeholder="Type your explanation..."
               rows={4}
-              className="input"
+              className="input text-xs font-body"
             />
           )}
         </div>
       </div>
 
-      <div className="flex items-center justify-between border-t border-ink-100/80 px-6 py-3">
+      <div className="flex items-center justify-between border-t border-ink-100/40 px-6 py-3.5 bg-paper-50">
         <button
           onClick={() => setCurrent((c) => Math.max(0, c - 1))}
           disabled={current === 0}
-          className="btn-ghost"
+          className="btn-ghost btn-sm rounded px-3 py-1.5 text-xs font-semibold"
         >
           Previous
         </button>
@@ -296,7 +317,7 @@ export function QuizPanel({ docId }: { docId: string | null }) {
           <button
             onClick={() => setSubmitted(true)}
             disabled={!answers[q.id]}
-            className="btn-primary"
+            className="btn-primary btn-sm rounded px-4 py-2 text-xs"
           >
             Submit Quiz
           </button>
@@ -304,9 +325,9 @@ export function QuizPanel({ docId }: { docId: string | null }) {
           <button
             onClick={() => setCurrent((c) => Math.min(quiz.length - 1, c + 1))}
             disabled={!answers[q.id]}
-            className="btn-primary"
+            className="btn-primary btn-sm rounded px-4 py-2 flex items-center gap-1 text-xs"
           >
-            Next <ChevronRight size={15} />
+            Next <ChevronRight size={13} />
           </button>
         )}
       </div>

@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Send, Copy, RefreshCw, Trash2, Sparkles, User, Loader2 } from 'lucide-react';
+import { Send, Copy, RefreshCw, Trash2, Sparkles, User } from 'lucide-react';
 import { useStore } from '../store';
 import { Markdown } from './Markdown';
 import { EmptyState } from './EmptyState';
+import { Tooltip } from './Tooltip';
 import { streamResponse, makeAssistantMessageId } from '../lib/ai';
 import { uid } from '../lib/utils';
 import type { ChatMessage } from '../types';
@@ -16,6 +17,11 @@ const SUGGESTED_PROMPTS = [
   'Generate flashcards',
   'Create a quiz',
 ];
+
+function formatTime(ts: number) {
+  const d = new Date(ts);
+  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
 
 export function ChatPanel() {
   const activeDocId = useStore((s) => s.activeDocId);
@@ -99,13 +105,14 @@ export function ChatPanel() {
           <span className="text-sm font-medium text-ink-700">AI Chat</span>
         </div>
         {doc.chat.length > 0 && (
-          <button
-            onClick={() => clearChat(doc.id)}
-            className="btn-ghost btn-sm text-ink-400"
-            title="Clear chat"
-          >
-            <Trash2 size={13} />
-          </button>
+          <Tooltip label="Clear conversation" position="bottom">
+            <button
+              onClick={() => clearChat(doc.id)}
+              className="btn-ghost btn-sm text-ink-400"
+            >
+              <Trash2 size={13} />
+            </button>
+          </Tooltip>
         )}
       </div>
 
@@ -164,13 +171,23 @@ export function ChatPanel() {
             className="max-h-32 flex-1 resize-none bg-transparent px-2 py-1.5 text-sm text-ink-700 placeholder:text-ink-300 focus:outline-none"
             style={{ minHeight: '36px' }}
           />
-          <button
-            onClick={() => send(input)}
-            disabled={!input.trim() || streaming}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-crimson-600 text-paper-50 transition-all hover:bg-crimson-700 disabled:opacity-40"
-          >
-            {streaming ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
-          </button>
+          <Tooltip label={streaming ? 'Generating...' : 'Send message'} position="top">
+            <button
+              onClick={() => send(input)}
+              disabled={!input.trim() || streaming}
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-crimson-600 text-paper-50 transition-all hover:bg-crimson-700 disabled:opacity-40"
+            >
+              {streaming ? (
+                <span className="flex items-center gap-0.5">
+                  <span className="h-1 w-1 rounded-full bg-paper-50 animate-pulse-soft" style={{ animationDelay: '0ms' }} />
+                  <span className="h-1 w-1 rounded-full bg-paper-50 animate-pulse-soft" style={{ animationDelay: '150ms' }} />
+                  <span className="h-1 w-1 rounded-full bg-paper-50 animate-pulse-soft" style={{ animationDelay: '300ms' }} />
+                </span>
+              ) : (
+                <Send size={15} />
+              )}
+            </button>
+          </Tooltip>
         </div>
         <p className="mt-1.5 text-center text-2xs text-ink-300">
           Press Enter to send · Shift+Enter for new line
@@ -216,6 +233,9 @@ function ChatBubble({
           <span className="text-2xs font-medium text-ink-400">
             {isUser ? 'You' : 'Lumora AI'}
           </span>
+          <span className="text-2xs text-ink-300">
+            {formatTime(msg.createdAt)}
+          </span>
         </div>
         <div
           className={
@@ -229,10 +249,13 @@ function ChatBubble({
           ) : msg.content ? (
             <Markdown content={msg.content} citations={msg.citations} />
           ) : (
-            <div className="flex items-center gap-1.5 py-1">
-              <span className="h-2 w-2 animate-pulse-soft rounded-full bg-crimson-400" style={{ animationDelay: '0ms' }} />
-              <span className="h-2 w-2 animate-pulse-soft rounded-full bg-crimson-400" style={{ animationDelay: '150ms' }} />
-              <span className="h-2 w-2 animate-pulse-soft rounded-full bg-crimson-400" style={{ animationDelay: '300ms' }} />
+            <div className="flex items-center gap-2 py-2">
+              <span className="flex items-center gap-1">
+                <span className="h-2 w-2 rounded-full bg-crimson-400 animate-pulse-soft" style={{ animationDelay: '0ms' }} />
+                <span className="h-2 w-2 rounded-full bg-crimson-400 animate-pulse-soft" style={{ animationDelay: '200ms' }} />
+                <span className="h-2 w-2 rounded-full bg-crimson-400 animate-pulse-soft" style={{ animationDelay: '400ms' }} />
+              </span>
+              <span className="text-2xs text-ink-400">Thinking...</span>
             </div>
           )}
           {msg.streaming && msg.content && (
@@ -241,12 +264,16 @@ function ChatBubble({
         </div>
         {!isUser && msg.content && !msg.streaming && (
           <div className="mt-1.5 flex items-center gap-1">
-            <button onClick={copy} className="flex items-center gap-1 rounded px-1.5 py-1 text-2xs text-ink-400 hover:bg-paper-200 hover:text-ink-600">
-              {copied ? 'Copied' : <><Copy size={11} /> Copy</>}
-            </button>
-            <button onClick={onRegenerate} className="flex items-center gap-1 rounded px-1.5 py-1 text-2xs text-ink-400 hover:bg-paper-200 hover:text-ink-600">
-              <RefreshCw size={11} /> Regenerate
-            </button>
+            <Tooltip label={copied ? 'Copied!' : 'Copy response'} position="top">
+              <button onClick={copy} className="flex items-center gap-1 rounded px-1.5 py-1 text-2xs text-ink-400 hover:bg-paper-200 hover:text-ink-600">
+                {copied ? 'Copied' : <><Copy size={11} /> Copy</>}
+              </button>
+            </Tooltip>
+            <Tooltip label="Regenerate response" position="top">
+              <button onClick={onRegenerate} className="flex items-center gap-1 rounded px-1.5 py-1 text-2xs text-ink-400 hover:bg-paper-200 hover:text-ink-600">
+                <RefreshCw size={11} /> Regenerate
+              </button>
+            </Tooltip>
             {msg.content.toLowerCase().includes('flashcard') && (
               <button onClick={() => onNavigate('flashcards')} className="flex items-center gap-1 rounded px-1.5 py-1 text-2xs text-crimson-600 hover:bg-crimson-50">
                 View Flashcards →
