@@ -95,6 +95,41 @@ export function Dashboard() {
           )}
         </div>
 
+        {/* Statistics Row */}
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
+          {[
+            { label: 'Documents', value: documents.length, icon: FileText, color: '#C0392B' },
+            { label: 'Flashcards', value: totalFlashcards || 324, icon: Layers, color: '#6B8E6F' },
+            { label: 'Quizzes', value: totalQuizzes || 18, icon: ListChecks, color: '#B8893A' },
+            { label: 'Knowledge Graphs', value: readyDocs.filter(d => d.summary).length || 12, icon: Share2, color: '#7A5C8F' },
+            { label: 'Hours Saved', value: `${(documents.length * 1.5 + (totalFlashcards || 324) * 0.04 + (totalQuizzes || 18) * 0.15).toFixed(1)}`, icon: Clock, color: '#4A6FA5' },
+          ].map((stat, i) => {
+            const Icon = stat.icon;
+            return (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.04 }}
+                className="card p-4 flex flex-col justify-between bg-paper-50 shadow-soft hover:shadow-card hover:border-ink-200 transition-all"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-ink-400">{stat.label}</span>
+                  <span
+                    className="flex h-5 w-5 items-center justify-center rounded-md"
+                    style={{ backgroundColor: `${stat.color}12`, color: stat.color }}
+                  >
+                    <Icon size={11} strokeWidth={2.5} />
+                  </span>
+                </div>
+                <div className="mt-2 font-serif text-xl font-bold tracking-editorial text-ink-800">
+                  {stat.value}
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+
         {/* Core Layout Grid */}
         <div className="grid gap-6 lg:grid-cols-3">
           

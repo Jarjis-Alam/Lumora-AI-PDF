@@ -25,6 +25,7 @@ import { FlashcardsPanel } from '../components/FlashcardsPanel';
 import { QuizPanel } from '../components/QuizPanel';
 import { KnowledgeGraphView } from '../components/KnowledgeGraphView';
 import { Tooltip } from '../components/Tooltip';
+import { UploadZone } from '../components/UploadZone';
 import { timeAgo } from '../lib/utils';
 
 export function Workspace() {
@@ -55,23 +56,28 @@ export function Workspace() {
   if (!doc) {
     return (
       <div className="h-full overflow-y-auto paper-texture">
-        <div className="mx-auto max-w-3xl px-6 py-12">
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-8 text-center">
-            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-crimson-50 text-crimson-600">
-              <FileText size={28} strokeWidth={1.5} />
+        <div className="mx-auto max-w-2xl px-6 py-16">
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-8 text-center flex flex-col items-center">
+            <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-crimson-50 text-3xl font-semibold shadow-soft animate-breathe">
+              📄
             </div>
-            <h1 className="font-serif text-2xl font-semibold text-ink-800">Workspace</h1>
-            <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-ink-500">
-              Select a document to open the full workspace — PDF viewer, AI chat, summaries,
-              flashcards, quizzes, and knowledge graph in one place.
+            <h1 className="font-serif text-2xl font-semibold tracking-editorial text-ink-800">
+              Upload a PDF to begin your research
+            </h1>
+            <p className="mx-auto mt-2 max-w-sm text-xs leading-relaxed text-ink-500">
+              Upload a document to extract concept structures, flashcards, interactive quizzes, and zoomable knowledge graphs.
             </p>
           </motion.div>
 
+          <div className="mb-12">
+            <UploadZone />
+          </div>
+
           {/* Document picker */}
-          {readyDocs.length > 0 ? (
-            <div>
-              <p className="mb-3 text-2xs font-semibold uppercase tracking-wide2 text-ink-400">
-                Open a document
+          {readyDocs.length > 0 && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}>
+              <p className="mb-3 text-[10px] font-bold uppercase tracking-wider text-ink-400">
+                Or open an existing document
               </p>
               <div className="space-y-2">
                 {readyDocs.slice(0, 5).map((d) => (
@@ -96,14 +102,7 @@ export function Workspace() {
                   </motion.button>
                 ))}
               </div>
-            </div>
-          ) : (
-            <div className="rounded-xl border border-dashed border-ink-200 bg-paper-50/50 p-8 text-center">
-              <p className="text-sm text-ink-500">Upload a document to start working.</p>
-              <button onClick={() => navigate('/app')} className="btn-primary mt-4">
-                Browse Documents
-              </button>
-            </div>
+            </motion.div>
           )}
         </div>
       </div>

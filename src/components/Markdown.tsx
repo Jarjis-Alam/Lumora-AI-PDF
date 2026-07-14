@@ -27,7 +27,8 @@ type Block =
   | { type: 'ol'; items: string[] }
   | { type: 'code'; text: string }
   | { type: 'table'; header: string[]; rows: string[][] }
-  | { type: 'quote'; text: string };
+  | { type: 'quote'; text: string }
+  | { type: 'math'; text: string };
 
 function parseBlocks(src: string): Block[] {
   const lines = src.split('\n');
@@ -39,7 +40,16 @@ function parseBlocks(src: string): Block[] {
       i++;
       continue;
     }
-    if (line.startsWith('### ')) {
+    if (line.startsWith('$$')) {
+      const math: string[] = [];
+      i++;
+      while (i < lines.length && !lines[i].startsWith('$$')) {
+        math.push(lines[i]);
+        i++;
+      }
+      i++;
+      blocks.push({ type: 'math', text: math.join('\n') });
+    } else if (line.startsWith('### ')) {
       blocks.push({ type: 'h3', text: line.slice(4) });
       i++;
     } else if (line.startsWith('## ')) {
@@ -105,7 +115,7 @@ function parseBlocks(src: string): Block[] {
 
 function renderInline(text: string): (string | JSX.Element)[] {
   const parts: (string | JSX.Element)[] = [];
-  const regex = /(\*\*(.+?)\*\*|\*(.+?)\*|`(.+?)`)/g;
+  const regex = /(\*\*(.+?)\*\*|\*(.+?)\*|`(.+?)`|\$(.+?)\$)/g;
   let last = 0;
   let m: RegExpExecArray | null;
   let key = 0;
@@ -113,7 +123,8 @@ function renderInline(text: string): (string | JSX.Element)[] {
     if (m.index > last) parts.push(text.slice(last, m.index));
     if (m[2]) parts.push(<strong key={key++} className="font-semibold text-ink-800">{m[2]}</strong>);
     else if (m[3]) parts.push(<em key={key++}>{m[3]}</em>);
-    else if (m[4]) parts.push(<code key={key++}>{m[4]}</code>);
+    else if (m[4]) parts.push(<code key={key++} className="text-2xs bg-paper-200 px-1 py-0.5 rounded font-mono text-crimson-800">{m[4]}</code>);
+    else if (m[5]) parts.push(<span key={key++} className="font-serif italic text-ink-800 bg-paper-200/40 px-1 rounded">{m[5]}</span>);
     last = m.index + m[0].length;
   }
   if (last < text.length) parts.push(text.slice(last));
@@ -128,18 +139,24 @@ function renderBlock(block: Block, i: number): JSX.Element {
     case 'p': return <p key={i}>{renderInline(block.text)}</p>;
     case 'ul': return <ul key={i}>{block.items.map((it, j) => <li key={j}>{renderInline(it)}</li>)}</ul>;
     case 'ol': return <ol key={i}>{block.items.map((it, j) => <li key={j}>{renderInline(it)}</li>)}</ol>;
-    case 'code': return <pre key={i}><code>{block.text}</code></pre>;
+    case 'code': return <pre key={i} className="text-xs bg-paper-250 border border-ink-100/40 rounded p-3 font-mono text-ink-700 overflow-x-auto my-3"><code>{block.text}</code></pre>;
     case 'quote': return <blockquote key={i}>{block.text}</blockquote>;
+    case 'math':
+      return (
+        <div key={i} className="my-4 p-4 bg-paper-200/50 rounded-lg text-center font-serif text-sm italic border border-ink-100/50 text-ink-800 select-all">
+          {block.text}
+        </div>
+      );
     case 'table':
       return (
-        <div key={i} className="overflow-x-auto">
-          <table>
-            <thead>
-              <tr>{block.header.map((h, j) => <th key={j}>{renderInline(h)}</th>)}</tr>
+        <div key={i} className="overflow-x-auto my-4 border border-ink-100/40 rounded-lg">
+          <table className="min-w-full divide-y divide-ink-100">
+            <thead className="bg-paper-200">
+              <tr>{block.header.map((h, j) => <th key={j} className="px-3 py-2 text-left text-xs font-semibold text-ink-800">{renderInline(h)}</th>)}</tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-ink-100 bg-white">
               {block.rows.map((row, j) => (
-                <tr key={j}>{row.map((c, k) => <td key={k}>{renderInline(c)}</td>)}</tr>
+                <tr key={j} className={j % 2 === 0 ? 'bg-white' : 'bg-paper-50/50'}>{row.map((c, k) => <td key={k} className="px-3 py-2 text-xs text-ink-600">{renderInline(c)}</td>)}</tr>
               ))}
             </tbody>
           </table>

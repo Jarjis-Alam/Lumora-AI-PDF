@@ -18,6 +18,8 @@ export function QuizPanel({ docId }: { docId: string | null }) {
   const documents = useStore((s) => s.documents);
   const generateQuiz = useStore((s) => s.generateQuiz);
 
+  const setWorkspaceTab = useStore((s) => s.setWorkspaceTab);
+
   const [generating, setGenerating] = useState(false);
   const [started, setStarted] = useState(false);
   const [current, setCurrent] = useState(0);
@@ -69,13 +71,32 @@ export function QuizPanel({ docId }: { docId: string | null }) {
     }).length;
     const score = Math.round((correct / quiz.length) * 100);
 
+    const incorrectQuestions = quiz.filter((q) => {
+      const a = answers[q.id]?.trim().toLowerCase();
+      return !a || a !== q.answer.trim().toLowerCase();
+    });
+
+    const weakTopics = Array.from(new Set(
+      incorrectQuestions.map((q) => {
+        const text = q.question.toLowerCase();
+        if (text.includes('self-attention') || text.includes('self attention')) return 'Self-Attention';
+        if (text.includes('multi-head') || text.includes('multi head')) return 'Multi-Head Attention';
+        if (text.includes('attention')) return 'Attention Mechanisms';
+        if (text.includes('recurrence') || text.includes('rnn')) return 'Recurrent Connections';
+        if (text.includes('positional')) return 'Positional Encoding';
+        if (text.includes('encoder') || text.includes('decoder')) return 'Encoder-Decoder Architecture';
+        if (text.includes('feed-forward') || text.includes('feed forward')) return 'Feed-Forward Networks';
+        return 'General Concepts';
+      })
+    ));
+
     return (
       <div className="h-full overflow-y-auto bg-paper-50/20">
         <div className="mx-auto max-w-2xl px-6 py-8">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="mb-6 text-center card p-6 space-y-4"
+            className="mb-6 text-center card p-6 space-y-4 bg-paper-50 border border-ink-200"
           >
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-crimson-50 text-crimson-600">
               <Award size={30} />
@@ -96,6 +117,19 @@ export function QuizPanel({ docId }: { docId: string | null }) {
               </div>
             </div>
 
+            {weakTopics.length > 0 && (
+              <div className="border-t border-ink-100/35 pt-4 text-left max-w-sm mx-auto">
+                <h4 className="text-[10px] font-bold uppercase tracking-wider text-amber-700 mb-1.5 flex items-center gap-1">
+                  ⚠️ Weak Topics detected:
+                </h4>
+                <ul className="list-disc list-inside text-xs text-ink-500 space-y-0.5">
+                  {weakTopics.map((topic) => (
+                    <li key={topic} className="font-medium">{topic}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             <div className="flex justify-center gap-2 pt-2">
               <button
                 onClick={() => {
@@ -104,10 +138,18 @@ export function QuizPanel({ docId }: { docId: string | null }) {
                   setAnswers({});
                   setCurrent(0);
                 }}
-                className="btn-primary btn-sm rounded px-3 py-2 flex items-center gap-1"
+                className="btn-primary btn-sm rounded px-3 py-2 flex items-center gap-1 cursor-pointer"
               >
                 <RotateCw size={12} /> Retry Quiz
               </button>
+              {weakTopics.length > 0 && (
+                <button
+                  onClick={() => setWorkspaceTab('flashcards')}
+                  className="btn-secondary btn-sm rounded px-3 py-2 flex items-center gap-1 border-amber-200 bg-amber-50/20 text-amber-800 hover:bg-amber-50 cursor-pointer"
+                >
+                  Review Flashcards
+                </button>
+              )}
               <button
                 onClick={async () => {
                   setGenerating(true);
@@ -121,7 +163,7 @@ export function QuizPanel({ docId }: { docId: string | null }) {
                     setGenerating(false);
                   }
                 }}
-                className="btn-secondary btn-sm rounded px-3 py-2 flex items-center gap-1"
+                className="btn-secondary btn-sm rounded px-3 py-2 flex items-center gap-1 cursor-pointer"
               >
                 <RefreshCw size={12} /> Generate Again
               </button>

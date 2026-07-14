@@ -18,6 +18,29 @@ const SUGGESTED_PROMPTS = [
   'Create a quiz',
 ];
 
+function getFollowUps(lastMsgContent: string): string[] {
+  const content = lastMsgContent.toLowerCase();
+  if (content.includes('attention') || content.includes('transformer')) {
+    return [
+      'Explain multi-head attention in detail.',
+      'How do self-attention and recurrence compare?',
+      'Generate a quiz on transformer architecture.',
+    ];
+  }
+  if (content.includes('summary') || content.includes('overview')) {
+    return [
+      'What are the key takeaways of this chapter?',
+      'Define the primary terms used here.',
+      'Generate flashcards for this summary.',
+    ];
+  }
+  return [
+    'Can you explain this with a real-world example?',
+    'What are the main limitations or assumptions here?',
+    'Generate study flashcards for this explanation.',
+  ];
+}
+
 function formatTime(ts: number) {
   const d = new Date(ts);
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -81,6 +104,17 @@ export function ChatPanel() {
       cancelRef.current
     );
     setStreaming(false);
+  };
+
+  const stopGeneration = () => {
+    if (cancelRef.current) {
+      cancelRef.current.cancelled = true;
+      setStreaming(false);
+      const lastMsg = [...doc.chat].reverse().find((m) => m.role === 'assistant');
+      if (lastMsg) {
+        updateChatMessage(doc.id, lastMsg.id, { streaming: false });
+      }
+    }
   };
 
   const regenerate = async () => {
@@ -150,6 +184,25 @@ export function ChatPanel() {
                 onNavigate={(v) => { setView(v); navigate(`/app/${v}`); }}
               />
             ))}
+
+            {/* Suggested Follow-Ups */}
+            {!streaming && doc.chat.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="mt-6 flex flex-wrap gap-2 justify-start pt-2 border-t border-ink-100/30"
+              >
+                {getFollowUps(doc.chat[doc.chat.length - 1].content).map((prompt) => (
+                  <button
+                    key={prompt}
+                    onClick={() => send(prompt)}
+                    className="rounded-full border border-ink-200 bg-paper-100 px-3 py-1.5 text-[11px] font-medium text-ink-600 hover:border-crimson-300 hover:bg-crimson-50/20 hover:text-crimson-800 transition-all cursor-pointer"
+                  >
+                    💬 {prompt}
+                  </button>
+                ))}
+              </motion.div>
+            )}
           </div>
         )}
       </div>
@@ -171,23 +224,26 @@ export function ChatPanel() {
             className="max-h-32 flex-1 resize-none bg-transparent px-2 py-1.5 text-sm text-ink-700 placeholder:text-ink-300 focus:outline-none"
             style={{ minHeight: '36px' }}
           />
-          <Tooltip label={streaming ? 'Generating...' : 'Send message'} position="top">
-            <button
-              onClick={() => send(input)}
-              disabled={!input.trim() || streaming}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-crimson-600 text-paper-50 transition-all hover:bg-crimson-700 disabled:opacity-40"
-            >
-              {streaming ? (
-                <span className="flex items-center gap-0.5">
-                  <span className="h-1 w-1 rounded-full bg-paper-50 animate-pulse-soft" style={{ animationDelay: '0ms' }} />
-                  <span className="h-1 w-1 rounded-full bg-paper-50 animate-pulse-soft" style={{ animationDelay: '150ms' }} />
-                  <span className="h-1 w-1 rounded-full bg-paper-50 animate-pulse-soft" style={{ animationDelay: '300ms' }} />
-                </span>
-              ) : (
+          {streaming ? (
+            <Tooltip label="Stop generating" position="top">
+              <button
+                onClick={stopGeneration}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-ink-800 text-paper-50 transition-all hover:bg-ink-950 animate-pulse cursor-pointer"
+              >
+                <span className="h-2.5 w-2.5 bg-white rounded-sm" />
+              </button>
+            </Tooltip>
+          ) : (
+            <Tooltip label="Send message" position="top">
+              <button
+                onClick={() => send(input)}
+                disabled={!input.trim()}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-crimson-600 text-paper-50 transition-all hover:bg-crimson-700 disabled:opacity-40 cursor-pointer"
+              >
                 <Send size={15} />
-              )}
-            </button>
-          </Tooltip>
+              </button>
+            </Tooltip>
+          )}
         </div>
         <p className="mt-1.5 text-center text-2xs text-ink-300">
           Press Enter to send · Shift+Enter for new line

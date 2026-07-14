@@ -105,12 +105,33 @@ export function DocumentCard({ doc, index = 0 }: { doc: Document; index?: number
         style={{ backgroundColor: doc.accent }}
       />
       <div className="flex items-start gap-3">
+        {/* Mock PDF page cover thumbnail */}
         <div
-          className="flex h-12 w-10 shrink-0 items-center justify-center rounded-md text-paper-50 shadow-soft"
-          style={{ backgroundColor: doc.accent }}
+          className="relative flex h-14 w-11 shrink-0 flex-col justify-between rounded border border-ink-200/60 bg-white p-1.5 shadow-soft group-hover:shadow-card transition-all"
         >
-          <FileText size={18} strokeWidth={1.5} />
+          {/* Header lines */}
+          <div className="space-y-0.5">
+            <div className="h-[2px] w-5/6 rounded bg-ink-200" />
+            <div className="h-[2px] w-full rounded bg-ink-100" />
+            <div className="h-[2px] w-2/3 rounded bg-ink-100" />
+          </div>
+          {/* Graphic marker block */}
+          <div
+            className="h-3 w-full rounded-sm opacity-20"
+            style={{ backgroundColor: doc.accent }}
+          />
+          {/* Footer lines */}
+          <div className="flex justify-between items-center text-[6px] text-ink-300">
+            <span>PDF</span>
+            <span>{doc.pages}p</span>
+          </div>
+          {/* Corner folded badge */}
+          <div
+            className="absolute top-0 right-0 h-1.5 w-1.5 rounded-bl-sm opacity-80"
+            style={{ backgroundColor: doc.accent }}
+          />
         </div>
+
         <div className="min-w-0 flex-1">
           {editing ? (
             <input
@@ -133,8 +154,22 @@ export function DocumentCard({ doc, index = 0 }: { doc: Document; index?: number
             <h3 className="truncate text-sm font-semibold text-ink-800">{doc.name}</h3>
           )}
           <p className="mt-0.5 text-2xs text-ink-400">
-            {doc.pages} pages · {formatBytes(doc.size)} · {timeAgo(doc.uploadedAt)}
+            {formatBytes(doc.size)} · {timeAgo(doc.uploadedAt)}
           </p>
+
+          {doc.status === 'ready' && (
+            <div className="mt-2.5 flex items-center justify-between gap-2">
+              <div className="h-1 flex-1 rounded-full bg-ink-100/70 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-crimson-600/70"
+                  style={{ width: `${doc.id === useStore.getState().activeDocId ? 45 : 15}%` }}
+                />
+              </div>
+              <span className="text-[9px] font-semibold text-ink-400">
+                {doc.id === useStore.getState().activeDocId ? '45%' : '15%'} read
+              </span>
+            </div>
+          )}
         </div>
         <div ref={menuRef} className="relative">
           <Tooltip label="More options" position="left">

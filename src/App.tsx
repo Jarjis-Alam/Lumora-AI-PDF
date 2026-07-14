@@ -15,6 +15,7 @@ import { LicensePage } from './pages/LicensePage';
 import { ChangelogPage } from './pages/ChangelogPage';
 import { PrivacyPage } from './pages/PrivacyPage';
 import { TermsPage } from './pages/TermsPage';
+import { CommandPalette } from './components/CommandPalette';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false, staleTime: Infinity } },
@@ -27,6 +28,7 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <SplashTransition>
         <BrowserRouter>
+          <CommandPalette />
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/docs" element={<DocsPage />} />

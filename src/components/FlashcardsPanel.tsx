@@ -39,35 +39,49 @@ export function FlashcardsPanel({ docId }: { docId: string | null }) {
   const [adding, setAdding] = useState(false);
 
   // Study progress state
+  const [sessionCards, setSessionCards] = useState<Flashcard[]>([]);
   const [masteredIds, setMasteredIds] = useState<Set<string>>(new Set());
   const [reviewIds, setReviewIds] = useState<Set<string>>(new Set());
   const [sessionComplete, setSessionComplete] = useState(false);
 
   const doc = documents.find((d) => d.id === docId);
-  const cards = shuffled || doc?.flashcards || [];
+  const cards = sessionCards;
 
-  const markCard = (id: string, status: 'mastered' | 'review') => {
-    setMasteredIds((prev) => {
-      const next = new Set(prev);
-      if (status === 'mastered') {
+  const markCard = (id: string, difficulty: 'hard' | 'medium' | 'easy') => {
+    const card = sessionCards[studyIndex];
+    if (!card) return;
+
+    if (difficulty === 'easy') {
+      setMasteredIds((prev) => {
+        const next = new Set(prev);
         next.add(id);
-      } else {
-        next.delete(id);
-      }
-      return next;
-    });
-    setReviewIds((prev) => {
-      const next = new Set(prev);
-      if (status === 'review') {
+        return next;
+      });
+    } else if (difficulty === 'medium') {
+      setReviewIds((prev) => {
+        const next = new Set(prev);
         next.add(id);
-      } else {
-        next.delete(id);
-      }
-      return next;
-    });
+        return next;
+      });
+      // Spaced repetition: review again later in the session (end of queue)
+      setSessionCards((prev) => [...prev, card]);
+    } else if (difficulty === 'hard') {
+      setReviewIds((prev) => {
+        const next = new Set(prev);
+        next.add(id);
+        return next;
+      });
+      // Spaced repetition: review again very soon (insert 3 cards down)
+      setSessionCards((prev) => {
+        const next = [...prev];
+        const targetIndex = Math.min(next.length, studyIndex + 4);
+        next.splice(targetIndex, 0, card);
+        return next;
+      });
+    }
 
     // Advance or complete
-    if (studyIndex < cards.length - 1) {
+    if (studyIndex < sessionCards.length - 1) {
       setFlipped(false);
       setTimeout(() => {
         setStudyIndex((i) => i + 1);
@@ -96,12 +110,15 @@ export function FlashcardsPanel({ docId }: { docId: string | null }) {
       } else if (e.key === 'ArrowRight') {
         setFlipped(false);
         setStudyIndex((i) => Math.min(cards.length - 1, i + 1));
-      } else if (e.key === '1' || e.key === 'ArrowUp') {
+      } else if (e.key === '1') {
         e.preventDefault();
-        markCard(cards[studyIndex].id, 'review');
-      } else if (e.key === '2' || e.key === 'ArrowDown') {
+        markCard(cards[studyIndex].id, 'hard');
+      } else if (e.key === '2') {
         e.preventDefault();
-        markCard(cards[studyIndex].id, 'mastered');
+        markCard(cards[studyIndex].id, 'medium');
+      } else if (e.key === '3') {
+        e.preventDefault();
+        markCard(cards[studyIndex].id, 'easy');
       }
     };
 
@@ -145,7 +162,8 @@ export function FlashcardsPanel({ docId }: { docId: string | null }) {
   }
 
   const handleStartStudy = () => {
-    setShuffled(null);
+    const deck = shuffled || doc?.flashcards || [];
+    setSessionCards([...deck]);
     setStudyIndex(0);
     setFlipped(false);
     setMasteredIds(new Set());
@@ -202,8 +220,9 @@ export function FlashcardsPanel({ docId }: { docId: string | null }) {
     }
 
     const card = cards[studyIndex];
-    const studiedCount = masteredIds.size + reviewIds.size;
-    const progressPercent = (studiedCount / cards.length) * 100;
+    // Calculate progress as completed (easy) cards divided by base deck size
+    const baseLength = doc?.flashcards.length || 1;
+    const progressPercent = Math.min(100, (masteredIds.size / baseLength) * 100);
 
     return (
       <div className="flex h-full flex-col bg-paper-50/30 px-6 py-6 overflow-y-auto">
@@ -219,7 +238,7 @@ export function FlashcardsPanel({ docId }: { docId: string | null }) {
                   setStudyMode(false);
                   setShuffled(null);
                 }}
-                className="text-ink-400 hover:text-ink-700 flex items-center gap-1 transition-colors font-semibold"
+                className="text-ink-400 hover:text-ink-700 flex items-center gap-1 transition-colors font-semibold cursor-pointer"
               >
                 <X size={13} /> Exit Study
               </button>
@@ -234,48 +253,57 @@ export function FlashcardsPanel({ docId }: { docId: string | null }) {
 
           {/* Flashcard container */}
           <div className="w-full" style={{ perspective: '1000px' }}>
-            <motion.button
+            <motion.div
               onClick={() => setFlipped((v) => !v)}
-              className="relative w-full cursor-pointer text-left block focus:outline-none"
+              className="relative w-full h-[260px] cursor-pointer text-left block focus:outline-none"
               style={{ transformStyle: 'preserve-3d' }}
               animate={{ rotateY: flipped ? 180 : 0 }}
-              transition={{ duration: 0.45, ease: 'easeInOut' }}
+              transition={{ duration: 0.5, ease: 'easeInOut' }}
             >
               {/* Front */}
               <div
-                className="flex min-h-[260px] flex-col justify-between rounded-xl border border-ink-200/60 bg-paper-50 p-6 shadow-soft"
+                className="absolute inset-0 flex flex-col justify-between rounded-xl border border-ink-200/60 bg-paper-50 p-6 shadow-soft"
                 style={{ backfaceVisibility: 'hidden' }}
               >
                 <span className="text-[10px] font-bold uppercase tracking-wide2 text-crimson-600 bg-crimson-50 rounded px-1.5 py-0.5 w-fit">Question</span>
-                <p className="font-serif text-lg font-semibold leading-relaxed text-ink-800 my-4 text-center">{card.front}</p>
+                <p className="font-serif text-base font-semibold leading-relaxed text-ink-800 my-4 text-center">{card.front}</p>
                 <span className="text-[10px] text-ink-300 text-center uppercase tracking-wider block">Click or space to flip</span>
               </div>
               {/* Back */}
               <div
-                className="absolute inset-0 flex min-h-[260px] flex-col justify-between rounded-xl border border-crimson-200/50 bg-crimson-50/20 p-6 shadow-soft"
+                className="absolute inset-0 flex flex-col justify-between rounded-xl border border-crimson-200/50 bg-crimson-50/20 p-6 shadow-soft"
                 style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
               >
                 <span className="text-[10px] font-bold uppercase tracking-wide2 text-crimson-700 bg-crimson-50 rounded px-1.5 py-0.5 w-fit">Answer</span>
-                <p className="text-sm leading-relaxed text-ink-700 my-4 text-center font-body">{card.back}</p>
+                <p className="text-xs leading-relaxed text-ink-700 my-4 text-center font-body">{card.back}</p>
                 <span className="text-[10px] text-ink-400 text-center uppercase tracking-wider block">Click or space to flip back</span>
               </div>
-            </motion.button>
+            </motion.div>
           </div>
 
-          {/* Action buttons / study feedback */}
+          {/* Action buttons / difficulty ratings spaced repetition */}
           <div className="flex flex-col gap-4 items-center">
             <div className="flex gap-2 w-full">
               <button
-                onClick={() => markCard(card.id, 'review')}
-                className="flex-1 flex items-center justify-center gap-1.5 border border-amber-200 bg-amber-50/50 rounded-lg py-2.5 text-xs font-semibold text-amber-800 hover:bg-amber-100/50 active:scale-[0.98] transition-all"
+                onClick={() => markCard(card.id, 'hard')}
+                className="flex-1 flex flex-col items-center justify-center gap-0.5 border border-red-200 bg-red-50/30 rounded-lg py-2.5 text-red-800 hover:bg-red-100/50 active:scale-[0.98] transition-all cursor-pointer"
               >
-                <AlertCircle size={14} /> Need Review
+                <span className="text-xs font-semibold">Hard</span>
+                <span className="text-[8px] text-red-500 font-medium">Re-queue very soon</span>
               </button>
               <button
-                onClick={() => markCard(card.id, 'mastered')}
-                className="flex-1 flex items-center justify-center gap-1.5 border border-emerald-200 bg-emerald-50/50 rounded-lg py-2.5 text-xs font-semibold text-emerald-800 hover:bg-emerald-100/50 active:scale-[0.98] transition-all"
+                onClick={() => markCard(card.id, 'medium')}
+                className="flex-1 flex flex-col items-center justify-center gap-0.5 border border-amber-200 bg-amber-50/30 rounded-lg py-2.5 text-amber-800 hover:bg-amber-100/50 active:scale-[0.98] transition-all cursor-pointer"
               >
-                <CheckCircle size={14} /> Mastered
+                <span className="text-xs font-semibold">Medium</span>
+                <span className="text-[8px] text-amber-500 font-medium">Later in session</span>
+              </button>
+              <button
+                onClick={() => markCard(card.id, 'easy')}
+                className="flex-1 flex flex-col items-center justify-center gap-0.5 border border-emerald-200 bg-emerald-50/30 rounded-lg py-2.5 text-emerald-800 hover:bg-emerald-100/50 active:scale-[0.98] transition-all cursor-pointer"
+              >
+                <span className="text-xs font-semibold">Easy</span>
+                <span className="text-[8px] text-emerald-500 font-medium">Mastered</span>
               </button>
             </div>
 
@@ -284,8 +312,9 @@ export function FlashcardsPanel({ docId }: { docId: string | null }) {
               <span className="space-x-1.5">
                 <span className="px-1 py-0.5 rounded bg-paper-200">Space: flip</span>
                 <span className="px-1 py-0.5 rounded bg-paper-200">Arrows: nav</span>
-                <span className="px-1 py-0.5 rounded bg-paper-200">1: review</span>
-                <span className="px-1 py-0.5 rounded bg-paper-200">2: master</span>
+                <span className="px-1 py-0.5 rounded bg-paper-200">1: hard</span>
+                <span className="px-1 py-0.5 rounded bg-paper-200">2: medium</span>
+                <span className="px-1 py-0.5 rounded bg-paper-200">3: easy</span>
               </span>
             </div>
           </div>

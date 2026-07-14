@@ -76,12 +76,19 @@ export function PdfViewer() {
 
   useEffect(() => {
     if (pdfHighlight && scrollRef.current) {
-      const el = scrollRef.current.querySelector(`[data-paragraph="${pdfHighlight.paragraph}"]`);
-      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      const timer = setTimeout(() => setPdfHighlight(null), 3000);
-      return () => clearTimeout(timer);
+      const timerScroll = setTimeout(() => {
+        const el = scrollRef.current?.querySelector(`[data-paragraph="${pdfHighlight.paragraph}"]`);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 150);
+      const timerHighlight = setTimeout(() => setPdfHighlight(null), 3000);
+      return () => {
+        clearTimeout(timerScroll);
+        clearTimeout(timerHighlight);
+      };
     }
-  }, [pdfHighlight, setPdfHighlight]);
+  }, [pdfHighlight, pdfPage, setPdfHighlight]);
 
   if (!doc) {
     return (

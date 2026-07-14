@@ -32,6 +32,7 @@ export function KnowledgeGraphView({ docId, fullscreen = false }: { docId: strin
 
   const [generating, setGenerating] = useState(false);
   const [search, setSearch] = useState('');
+  const [visibleTypes, setVisibleTypes] = useState<string[]>(['topic', 'concept', 'entity']);
 
   const doc = documents.find((d) => d.id === docId);
   const graph: KG | null = doc?.graph || null;
@@ -118,9 +119,27 @@ export function KnowledgeGraphView({ docId, fullscreen = false }: { docId: strin
     );
   }
 
-  const filteredNodes = search
-    ? nodes.filter((n) => (n.data as any).label.toLowerCase().includes(search.toLowerCase()))
-    : nodes;
+  const toggleType = useCallback((type: string) => {
+    setVisibleTypes((prev) =>
+      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
+    );
+  }, []);
+
+  const filteredNodes = useMemo(() => {
+    let result = nodes.filter((n) => visibleTypes.includes((n.data as any).type));
+    if (search) {
+      result = result.filter((n) => (n.data as any).label.toLowerCase().includes(search.toLowerCase()));
+    }
+    return result;
+  }, [nodes, search, visibleTypes]);
+
+  const filteredEdges = useMemo(() => {
+    return edges.filter(
+      (e) =>
+        filteredNodes.some((n) => n.id === e.source) &&
+        filteredNodes.some((n) => n.id === e.target)
+    );
+  }, [edges, filteredNodes]);
 
   const highlightedNode = graph?.nodes.find((n) => n.id === graphNodeHighlight);
   const matchingConcept = doc?.summary?.concepts.find(
@@ -147,20 +166,32 @@ export function KnowledgeGraphView({ docId, fullscreen = false }: { docId: strin
       </div>
 
       <div className="absolute left-4 top-4 z-10 rounded-lg border border-ink-100 bg-paper-50/90 px-3 py-2 shadow-soft backdrop-blur-sm">
-        <p className="mb-1.5 text-2xs font-medium text-ink-400">Legend</p>
+        <p className="mb-1.5 text-2xs font-semibold text-ink-400">Toggle Categories</p>
         <div className="space-y-1">
-          {Object.entries(NODE_COLORS).map(([type, color]) => (
-            <div key={type} className="flex items-center gap-1.5 text-2xs text-ink-500">
-              <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: color }} />
-              <span className="capitalize">{type}</span>
-            </div>
-          ))}
+          {Object.entries(NODE_COLORS).map(([type, color]) => {
+            const isVisible = visibleTypes.includes(type);
+            return (
+              <button
+                key={type}
+                onClick={() => toggleType(type)}
+                className={`flex w-full items-center gap-2 rounded px-1.5 py-0.5 text-2xs transition-colors text-left hover:bg-paper-250 cursor-pointer ${
+                  isVisible ? 'text-ink-600 font-medium' : 'text-ink-300 opacity-60 line-through'
+                }`}
+              >
+                <span
+                  className="h-2 w-2 rounded-full shrink-0"
+                  style={{ backgroundColor: isVisible ? color : '#C9C6BF' }}
+                />
+                <span className="capitalize">{type}s</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
       <ReactFlow
         nodes={filteredNodes}
-        edges={edges}
+        edges={filteredEdges}
         onNodeClick={onNodeClick}
         fitView
         fitViewOptions={{ padding: 0.2 }}

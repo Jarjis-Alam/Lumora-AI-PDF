@@ -21,6 +21,7 @@ export function SummaryPanel({ docId }: { docId: string | null }) {
   const generateSummary = useStore((s) => s.generateSummary);
   const [generating, setGenerating] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [activeTab, setActiveTab] = useState<'overview' | 'takeaways' | 'chapters' | 'definitions' | 'timeline'>('overview');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const doc = documents.find((d) => d.id === docId);
@@ -150,74 +151,135 @@ export function SummaryPanel({ docId }: { docId: string | null }) {
           </div>
         </div>
 
+        {/* Tabs Bar */}
+        <div className="flex border-b border-ink-100/50 pb-2 mb-4 overflow-x-auto gap-2 no-scrollbar">
+          {[
+            { id: 'overview' as const, label: 'Overview' },
+            { id: 'takeaways' as const, label: 'Key Takeaways' },
+            { id: 'chapters' as const, label: 'Chapter Summary' },
+            { id: 'definitions' as const, label: 'Definitions' },
+            { id: 'timeline' as const, label: 'Timeline' },
+          ].map((tab) => {
+            const active = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-3 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer ${
+                  active
+                    ? 'bg-crimson-50 text-crimson-800 shadow-soft'
+                    : 'text-ink-500 hover:bg-paper-200/50 hover:text-ink-850'
+                }`}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+
         <div className="space-y-3">
-          <Section icon={BookOpen} title="Overall Summary">
-            <p className="prose-editorial text-sm leading-relaxed text-ink-600 font-body">{s.overall}</p>
-          </Section>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.15 }}
+            >
+              {activeTab === 'overview' && (
+                <div className="space-y-4">
+                  <Section icon={BookOpen} title="Overall Summary">
+                    <p className="prose-editorial text-sm leading-relaxed text-ink-600 font-body">{s.overall}</p>
+                  </Section>
+                  <Section icon={List} title="Bullet Summary">
+                    <ul className="space-y-2">
+                      {s.bulletSummary.map((b, i) => (
+                        <li key={i} className="flex items-start gap-2.5 text-xs text-ink-600 font-body">
+                          <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-crimson-400 animate-pulse-soft" />
+                          <span>{b}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </Section>
+                </div>
+              )}
 
-          <Section icon={List} title="Chapter Summaries">
-            <div className="space-y-3">
-              {s.chapters.map((c, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                  className="rounded-lg border border-ink-100 bg-paper-50 p-4 shadow-soft hover:shadow-card transition-shadow"
-                >
-                  <h4 className="mb-1 font-serif text-sm font-semibold text-ink-800">{c.heading}</h4>
-                  <p className="text-xs leading-relaxed text-ink-500 font-body">{c.body}</p>
-                </motion.div>
-              ))}
-            </div>
-          </Section>
+              {activeTab === 'takeaways' && (
+                <Section icon={CheckCircle2} title="Key Takeaways">
+                  <ul className="space-y-2">
+                    {s.keyTakeaways.map((t, i) => (
+                      <motion.li
+                        key={i}
+                        initial={{ opacity: 0, x: -6 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.04 }}
+                        className="flex items-start gap-2.5"
+                      >
+                        <span className="mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full bg-crimson-50 text-[10px] font-bold text-crimson-700">
+                          {i + 1}
+                        </span>
+                        <span className="text-xs leading-relaxed text-ink-600 font-body">{t}</span>
+                      </motion.li>
+                    ))}
+                  </ul>
+                </Section>
+              )}
 
-          <Section icon={CheckCircle2} title="Key Takeaways">
-            <ul className="space-y-2">
-              {s.keyTakeaways.map((t, i) => (
-                <motion.li
-                  key={i}
-                  initial={{ opacity: 0, x: -6 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.04 }}
-                  className="flex items-start gap-2.5"
-                >
-                  <span className="mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full bg-crimson-50 text-[10px] font-bold text-crimson-700">
-                    {i + 1}
-                  </span>
-                  <span className="text-xs leading-relaxed text-ink-600 font-body">{t}</span>
-                </motion.li>
-              ))}
-            </ul>
-          </Section>
+              {activeTab === 'chapters' && (
+                <Section icon={List} title="Chapter Summaries">
+                  <div className="space-y-3">
+                    {s.chapters.map((c, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.05 }}
+                        className="rounded-lg border border-ink-100 bg-paper-50 p-4 shadow-soft hover:shadow-card transition-shadow"
+                      >
+                        <h4 className="mb-1 font-serif text-sm font-semibold text-ink-800">{c.heading}</h4>
+                        <p className="text-xs leading-relaxed text-ink-500 font-body">{c.body}</p>
+                      </motion.div>
+                    ))}
+                  </div>
+                </Section>
+              )}
 
-          <Section icon={Lightbulb} title="Important Concepts">
-            <div className="grid gap-3 sm:grid-cols-2">
-              {s.concepts.map((c, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, scale: 0.98 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: i * 0.04 }}
-                  className="rounded-lg border border-ink-100 bg-paper-50 p-3.5 shadow-soft hover:shadow-card transition-shadow"
-                >
-                  <p className="font-serif text-sm font-semibold text-crimson-800">{c.term}</p>
-                  <p className="mt-1 text-xs leading-relaxed text-ink-500 font-body">{c.definition}</p>
-                </motion.div>
-              ))}
-            </div>
-          </Section>
+              {activeTab === 'definitions' && (
+                <Section icon={Lightbulb} title="Important Concepts">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {s.concepts.map((c, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, scale: 0.98 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: i * 0.04 }}
+                        className="rounded-lg border border-ink-100 bg-paper-50 p-3.5 shadow-soft hover:shadow-card transition-shadow"
+                      >
+                        <p className="font-serif text-sm font-semibold text-crimson-800">{c.term}</p>
+                        <p className="mt-1 text-xs leading-relaxed text-ink-500 font-body">{c.definition}</p>
+                      </motion.div>
+                    ))}
+                  </div>
+                </Section>
+              )}
 
-          <Section icon={List} title="Bullet Summary">
-            <ul className="space-y-2">
-              {s.bulletSummary.map((b, i) => (
-                <li key={i} className="flex items-start gap-2.5 text-xs text-ink-600 font-body">
-                  <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-crimson-400 animate-pulse-soft" />
-                  <span>{b}</span>
-                </li>
-              ))}
-            </ul>
-          </Section>
+              {activeTab === 'timeline' && (
+                <Section icon={Clock} title="Document Timeline">
+                  <div className="relative border-l border-ink-200/70 pl-6 ml-3 space-y-6">
+                    {s.chapters.map((c, i) => (
+                      <div key={i} className="relative">
+                        <span className="absolute -left-[31px] top-1.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-crimson-600 text-[9px] font-bold text-white shadow-soft">
+                          {i + 1}
+                        </span>
+                        <h4 className="font-serif text-sm font-semibold text-ink-800">{c.heading}</h4>
+                        <p className="text-xs text-ink-500 mt-1 font-body leading-relaxed">{c.body.slice(0, 160)}...</p>
+                      </div>
+                    ))}
+                  </div>
+                </Section>
+              )}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
     </div>

@@ -10,6 +10,7 @@ export function UploadZone({ compact = false }: { compact?: boolean }) {
   const openDocument = useStore((s) => s.openDocument);
   const [dragging, setDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFiles = useCallback(
@@ -31,14 +32,27 @@ export function UploadZone({ compact = false }: { compact?: boolean }) {
       }
 
       setUploading(true);
+      setUploadProgress(10);
+      const interval = setInterval(() => {
+        setUploadProgress((p) => {
+          if (p >= 90) {
+            clearInterval(interval);
+            return 90;
+          }
+          return p + 15;
+        });
+      }, 80);
+
       const sizeMB = file.size / (1024 * 1024) || 2.4;
       setTimeout(() => {
-        const id = addDocument(file.name.replace(/\.pdf$/i, ''), sizeMB, file);
-        setUploading(false);
+        clearInterval(interval);
+        setUploadProgress(100);
         setTimeout(() => {
+          const id = addDocument(file.name.replace(/\.pdf$/i, ''), sizeMB, file);
+          setUploading(false);
           openDocument(id);
           navigate('/app/workspace');
-        }, 600);
+        }, 150);
       }, 800);
     },
     [addDocument, openDocument, navigate]
@@ -98,10 +112,24 @@ export function UploadZone({ compact = false }: { compact?: boolean }) {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
-            className="flex flex-col items-center gap-3 py-4"
+            className="flex flex-col items-center gap-4 py-4 w-full max-w-xs"
           >
             <Loader2 size={36} className="animate-spin text-crimson-500" />
-            <p className="text-sm font-medium text-ink-600">Uploading your document...</p>
+            <div className="w-full text-center">
+              <p className="text-sm font-semibold text-ink-700">Processing document...</p>
+              <p className="text-[10px] text-ink-400 mt-1">Extracting layout & concepts</p>
+            </div>
+            
+            <div className="w-full bg-ink-100 rounded-full h-1.5 overflow-hidden">
+              <motion.div
+                className="bg-crimson-500 h-full rounded-full"
+                animate={{ width: `${uploadProgress}%` }}
+                transition={{ duration: 0.2 }}
+              />
+            </div>
+            <span className="text-[9px] font-bold text-sage uppercase tracking-wider">
+              {uploadProgress}% Complete
+            </span>
           </motion.div>
         ) : (
           <motion.div
