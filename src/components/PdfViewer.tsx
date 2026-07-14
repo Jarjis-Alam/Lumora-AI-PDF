@@ -37,6 +37,7 @@ export function PdfViewer() {
   const [chunks, setChunks] = useState<{ page: number; paragraph: number; text: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [fetchAttempt, setFetchAttempt] = useState(0);
+  const [fetchError, setFetchError] = useState(false);
 
   useEffect(() => {
     if (!activeDocId) return;
@@ -57,25 +58,51 @@ export function PdfViewer() {
     }
 
     setLoading(true);
-    fetch(`${API_BASE}/documents/${activeDocId}/chunks`)
-      .then((res) => {
-        if (res.ok) return res.json();
-        throw new Error('Failed to fetch chunks');
-      })
-      .then((data) => {
-        setChunks(data);
-        // Only cache non-empty results
-        if (data.length > 0) {
-          setCachedChunks(activeDocId, data);
-        }
-      })
-      .catch((err) => {
-        console.error(err);
-        setChunks([]);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    setFetchError(false);
+
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
+    let cancelled = false;
+
+    const doFetch = (attempt: number) => {
+      fetch(`${API_BASE}/documents/${activeDocId}/chunks`)
+        .then((res) => {
+          if (res.ok) return res.json();
+          throw new Error('Failed to fetch chunks');
+        })
+        .then((data) => {
+          if (cancelled) return;
+          if (data.length > 0) {
+            setChunks(data);
+            setCachedChunks(activeDocId, data);
+            setLoading(false);
+          } else if (attempt < 10) {
+            // Backend may still be processing — auto-retry in 3s
+            retryTimer = setTimeout(() => doFetch(attempt + 1), 3000);
+          } else {
+            setChunks([]);
+            setLoading(false);
+          }
+        })
+        .catch((err) => {
+          if (cancelled) return;
+          console.error(err);
+          if (attempt < 5) {
+            // Network error — retry in 3s (backend might be cold-starting)
+            retryTimer = setTimeout(() => doFetch(attempt + 1), 3000);
+          } else {
+            setChunks([]);
+            setFetchError(true);
+            setLoading(false);
+          }
+        });
+    };
+
+    doFetch(0);
+
+    return () => {
+      cancelled = true;
+      if (retryTimer) clearTimeout(retryTimer);
+    };
   }, [activeDocId, doc?.status, fetchAttempt]);
 
   const totalPages = doc?.pages || 1;
@@ -236,23 +263,44 @@ export function PdfViewer() {
                 </div>
               </div>
             ) : loading ? (
-              <SkeletonPdfPage />
+              <div>
+                <SkeletonPdfPage />
+                <p className="mt-4 text-center text-2xs text-ink-400 font-medium animate-pulse">
+                  Loading document content...
+                </p>
+              </div>
             ) : pageContent.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-center text-ink-400 px-6">
                 {chunks.length === 0 ? (
-                  <>
-                    <AlertCircle className="text-amber-500 mb-2" size={28} />
-                    <h4 className="text-sm font-semibold text-ink-700">Content Loading</h4>
-                    <p className="text-xs mt-1 max-w-xs leading-relaxed">
-                      Document text is still being processed. This may take a moment for scanned or large PDFs.
-                    </p>
-                    <button
-                      onClick={() => setFetchAttempt((n) => n + 1)}
-                      className="mt-4 btn-secondary btn-sm rounded px-3 py-1.5 text-xs cursor-pointer"
-                    >
-                      Retry Loading
-                    </button>
-                  </>
+                  fetchError ? (
+                    <>
+                      <AlertCircle className="text-red-400 mb-2" size={28} />
+                      <h4 className="text-sm font-semibold text-ink-700">Unable to Connect</h4>
+                      <p className="text-xs mt-1 max-w-xs leading-relaxed">
+                        Could not reach the server. The backend may be starting up — this can take up to 60 seconds on the free tier.
+                      </p>
+                      <button
+                        onClick={() => setFetchAttempt((n) => n + 1)}
+                        className="mt-4 btn-primary btn-sm rounded px-4 py-2 text-xs cursor-pointer"
+                      >
+                        Try Again
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <AlertCircle className="text-amber-500 mb-2" size={28} />
+                      <h4 className="text-sm font-semibold text-ink-700">Content Loading</h4>
+                      <p className="text-xs mt-1 max-w-xs leading-relaxed">
+                        Document text is still being processed. This may take a moment for scanned or large PDFs.
+                      </p>
+                      <button
+                        onClick={() => setFetchAttempt((n) => n + 1)}
+                        className="mt-4 btn-secondary btn-sm rounded px-3 py-1.5 text-xs cursor-pointer"
+                      >
+                        Retry Loading
+                      </button>
+                    </>
+                  )
                 ) : (
                   <>
                     <AlertCircle className="text-amber-500 mb-2" size={28} />
