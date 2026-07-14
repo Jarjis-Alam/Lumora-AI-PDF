@@ -34,6 +34,30 @@ export function ChangelogPage() {
         <hr className="border-ink-200/50 mb-10" />
 
         <div className="relative border-l border-ink-200/70 pl-8 ml-4 space-y-12">
+          {/* Release 2 */}
+          <div className="relative">
+            {/* Timeline dot */}
+            <span className="absolute -left-[41px] top-1.5 flex h-6 w-6 items-center justify-center rounded-full border border-ink-200 bg-paper-100 text-crimson-600 text-xs font-semibold shadow-soft">
+              •
+            </span>
+            <div className="flex flex-wrap items-baseline gap-2 mb-2">
+              <h2 className="font-serif text-2xl font-semibold text-ink-800">v1.1.0 — Cloud Deployment & UX Optimization</h2>
+              <span className="text-2xs font-semibold uppercase bg-emerald-500/10 text-emerald-700 px-2 py-0.5 rounded-full">
+                July 14, 2026
+              </span>
+            </div>
+            <p className="text-sm text-ink-500 mb-4 leading-relaxed">
+              This update resolves critical cloud deployment issues and upgrades the landing page user experience:
+            </p>
+            <ul className="list-disc list-inside space-y-1.5 text-xs text-ink-600 leading-relaxed ml-2 mb-8">
+              <li><strong>Backend Memory Optimization (Render OOM Fix):</strong> Removed local PyTorch and SentenceTransformers packages from the production backend to satisfy Render's 512 MB memory limit. Optimized startup RAM usage to under 80 MB by using a built-in deterministic feature hashing fallback for text embeddings.</li>
+              <li><strong>Vercel Static Route Reversion:</strong> Reverted multi-service `vercel.json` configurations to pure static hosting, resolving the Vercel 404 routing error.</li>
+              <li><strong>Dynamic Smooth Scrolling Navigation:</strong> Linked all footer product headings to scroll smoothly to their landing page sections. Preserved search hash parameters and browser history with `pushState`.</li>
+              <li><strong>Scroll Intersection Observer:</strong> Implemented real-time tracking of the viewport to dynamically highlight active landing page sections in the main navigation menu.</li>
+              <li><strong>Resources & Legal Pages:</strong> Created and routed dedicated static page layouts for `/docs`, `/license`, `/changelog`, `/privacy`, and `/terms`.</li>
+            </ul>
+          </div>
+
           {/* Release 1 */}
           <div className="relative">
             {/* Timeline dot */}
