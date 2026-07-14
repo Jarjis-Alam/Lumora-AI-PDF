@@ -36,14 +36,22 @@ export function PdfViewer() {
   
   const [chunks, setChunks] = useState<{ page: number; paragraph: number; text: string }[]>([]);
   const [loading, setLoading] = useState(false);
+  const [fetchAttempt, setFetchAttempt] = useState(0);
 
   useEffect(() => {
     if (!activeDocId) return;
 
-    // Check cache first
+    // Only use cache if it has actual data
     const cached = getCachedChunks(activeDocId);
-    if (cached) {
+    if (cached && cached.length > 0) {
       setChunks(cached);
+      setLoading(false);
+      return;
+    }
+
+    // Don't fetch chunks while document is still processing
+    if (doc?.status === 'processing') {
+      setChunks([]);
       setLoading(false);
       return;
     }
@@ -56,8 +64,10 @@ export function PdfViewer() {
       })
       .then((data) => {
         setChunks(data);
-        // Cache for future use
-        setCachedChunks(activeDocId, data);
+        // Only cache non-empty results
+        if (data.length > 0) {
+          setCachedChunks(activeDocId, data);
+        }
       })
       .catch((err) => {
         console.error(err);
@@ -66,7 +76,7 @@ export function PdfViewer() {
       .finally(() => {
         setLoading(false);
       });
-  }, [activeDocId, doc?.status]);
+  }, [activeDocId, doc?.status, fetchAttempt]);
 
   const totalPages = doc?.pages || 1;
   const pageChunks = chunks
@@ -229,11 +239,29 @@ export function PdfViewer() {
               <SkeletonPdfPage />
             ) : pageContent.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-center text-ink-400 px-6">
-                <AlertCircle className="text-amber-500 mb-2" size={28} />
-                <h4 className="text-sm font-semibold text-ink-700">No Selectable Text</h4>
-                <p className="text-xs mt-1 max-w-xs leading-relaxed">
-                  This page does not contain any digital text. It might be a scanned document or image-only PDF.
-                </p>
+                {chunks.length === 0 ? (
+                  <>
+                    <AlertCircle className="text-amber-500 mb-2" size={28} />
+                    <h4 className="text-sm font-semibold text-ink-700">Content Loading</h4>
+                    <p className="text-xs mt-1 max-w-xs leading-relaxed">
+                      Document text is still being processed. This may take a moment for scanned or large PDFs.
+                    </p>
+                    <button
+                      onClick={() => setFetchAttempt((n) => n + 1)}
+                      className="mt-4 btn-secondary btn-sm rounded px-3 py-1.5 text-xs cursor-pointer"
+                    >
+                      Retry Loading
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <AlertCircle className="text-amber-500 mb-2" size={28} />
+                    <h4 className="text-sm font-semibold text-ink-700">No Text on This Page</h4>
+                    <p className="text-xs mt-1 max-w-xs leading-relaxed">
+                      Page {pdfPage} does not contain selectable text. It may be an image, figure, or blank page.
+                    </p>
+                  </>
+                )}
               </div>
             ) : (
               pageContent.map((para, i) => {
