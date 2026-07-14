@@ -49,6 +49,13 @@ export function PdfViewer() {
       return;
     }
 
+    // Don't fetch if document metadata is not loaded in store yet
+    if (!doc) {
+      setChunks([]);
+      setLoading(false);
+      return;
+    }
+
     // Only use cache if it has actual data
     const cached = getCachedChunks(activeDocId);
     if (cached && cached.length > 0) {
