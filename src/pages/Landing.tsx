@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowRight,
@@ -622,6 +622,49 @@ function FaqItem({ f, i, open, setOpen }: { f: (typeof FAQS)[number]; i: number;
 
 export function Landing() {
   const [faqOpen, setFaqOpen] = useState<number | null>(0);
+  const [activeSection, setActiveSection] = useState<string>('');
+
+  useEffect(() => {
+    const sections = ['features', 'workspace', 'how-it-works', 'faq'];
+    const observers = sections.map((id) => {
+      const element = document.getElementById(id);
+      if (!element) return null;
+
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            setActiveSection(id);
+          }
+        },
+        { rootMargin: '-20% 0px -60% 0px' }
+      );
+      observer.observe(element);
+      return { observer, element };
+    });
+
+    return () => {
+      observers.forEach((obs) => {
+        if (obs) {
+          obs.observer.unobserve(obs.element);
+        }
+      });
+    };
+  }, []);
+
+  // Handle hash scroll on mount
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash) {
+      const id = hash.replace('#', '');
+      const element = document.getElementById(id);
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth' });
+          setActiveSection(id);
+        }, 150);
+      }
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-paper-100 font-sans">
@@ -629,21 +672,44 @@ export function Landing() {
       {/* ── Nav ── */}
       <header className="sticky top-0 z-50 border-b border-ink-200/40 bg-paper-100/90 backdrop-blur-md">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
-          <Link to="/" className="flex items-center gap-2.5">
+          <Link
+            to="/"
+            onClick={(e) => {
+              if (window.location.pathname === '/') {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                window.history.pushState(null, '', '/');
+                setActiveSection('');
+              }
+            }}
+            className="flex items-center gap-2.5"
+          >
             <Logo size={28} />
             <span className="font-serif text-base font-semibold text-ink-800">Lumora</span>
           </Link>
 
           <nav className="hidden items-center gap-8 md:flex" aria-label="Primary">
-            {NAV_LINKS.map((l) => (
-              <a
-                key={l}
-                href={`#${l.toLowerCase().replace(/ /g, '-')}`}
-                className="text-sm text-ink-500 transition-colors hover:text-ink-800"
-              >
-                {l}
-              </a>
-            ))}
+            {NAV_LINKS.map((l) => {
+              const id = l === 'Inside Lumora' ? 'workspace' : l.toLowerCase().replace(/ /g, '-');
+              const isActive = activeSection === id;
+              return (
+                <a
+                  key={l}
+                  href={`#${id}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+                    window.history.pushState(null, '', `#${id}`);
+                    setActiveSection(id);
+                  }}
+                  className={`text-sm transition-colors duration-200 ${
+                    isActive ? 'text-crimson-700 font-medium' : 'text-ink-500 hover:text-ink-800'
+                  }`}
+                >
+                  {l}
+                </a>
+              );
+            })}
             <a
               href="https://github.com"
               target="_blank"
@@ -700,7 +766,13 @@ export function Landing() {
                 <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
               </Link>
               <a
-                href="#inside-lumora"
+                href="#workspace"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById('workspace')?.scrollIntoView({ behavior: 'smooth' });
+                  window.history.pushState(null, '', '#workspace');
+                  setActiveSection('workspace');
+                }}
                 className="group flex items-center gap-2 rounded-lg border border-ink-300 bg-transparent px-5 py-2.5 text-sm font-semibold text-ink-700 transition-all hover:border-ink-400 hover:bg-paper-200 active:scale-[0.97]"
               >
                 See Lumora in Action
@@ -747,7 +819,7 @@ export function Landing() {
       </section>
 
       {/* ── Inside Lumora — screenshots ── */}
-      <section id="inside-lumora" className="border-t border-ink-200/50 py-20">
+      <section id="workspace" className="border-t border-ink-200/50 py-20">
         <div className="mx-auto max-w-6xl px-6">
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }} variants={stagger} className="mb-12 max-w-xl">
             <motion.div variants={fadeUp}><SectionLabel>Inside Lumora</SectionLabel></motion.div>
@@ -856,15 +928,26 @@ export function Landing() {
           <div className="grid gap-8 md:grid-cols-4">
             {/* Brand */}
             <div>
-              <div className="flex items-center gap-2.5">
+              <Link
+                to="/"
+                onClick={(e) => {
+                  if (window.location.pathname === '/') {
+                    e.preventDefault();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    window.history.pushState(null, '', '/');
+                    setActiveSection('');
+                  }
+                }}
+                className="inline-flex items-center gap-2.5 hover:opacity-85 transition-opacity"
+              >
                 <Logo size={24} />
                 <span className="font-serif text-sm font-semibold text-ink-800">Lumora</span>
-              </div>
+              </Link>
               <p className="mt-3 max-w-xs text-xs leading-relaxed text-ink-400">
                 AI-powered document intelligence. Understand any PDF faster.
               </p>
               <a
-                href="https://github.com"
+                href="https://github.com/Jarjis-Alam/Lumora-AI-PDF"
                 target="_blank"
                 rel="noreferrer"
                 className="mt-3 inline-flex items-center gap-1.5 text-xs text-ink-500 transition-colors hover:text-ink-800"
@@ -878,11 +961,83 @@ export function Landing() {
               <div key={heading}>
                 <h4 className="mb-3 text-2xs font-semibold uppercase tracking-wide2 text-ink-400">{heading}</h4>
                 <ul className="space-y-2">
-                  {links.map((l) => (
-                    <li key={l}>
-                      <a href="#" className="text-xs text-ink-500 transition-colors hover:text-ink-800">{l}</a>
-                    </li>
-                  ))}
+                  {links.map((l) => {
+                    const classes = "text-xs text-ink-500 transition-colors hover:text-ink-800 cursor-pointer";
+                    
+                    if (heading === 'Product') {
+                      const id = l === 'Inside Lumora' ? 'workspace' : l.toLowerCase().replace(/ /g, '-');
+                      return (
+                        <li key={l}>
+                          <a
+                            href={`#${id}`}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+                              window.history.pushState(null, '', `#${id}`);
+                              setActiveSection(id);
+                            }}
+                            className={classes}
+                          >
+                            {l}
+                          </a>
+                        </li>
+                      );
+                    }
+
+                    if (heading === 'Resources') {
+                      if (l === 'GitHub') {
+                        return (
+                          <li key={l}>
+                            <a
+                              href="https://github.com/Jarjis-Alam/Lumora-AI-PDF"
+                              target="_blank"
+                              rel="noreferrer"
+                              className={classes}
+                            >
+                              {l}
+                            </a>
+                          </li>
+                        );
+                      }
+                      
+                      const path = `/${l.toLowerCase()}`;
+                      return (
+                        <li key={l}>
+                          <Link to={path} className={classes}>
+                            {l}
+                          </Link>
+                        </li>
+                      );
+                    }
+
+                    if (heading === 'Built with') {
+                      const urls: Record<string, string> = {
+                        React: 'https://react.dev',
+                        FastAPI: 'https://fastapi.tiangolo.com',
+                        Groq: 'https://groq.com',
+                        PostgreSQL: 'https://www.postgresql.org',
+                        Vercel: 'https://vercel.com',
+                      };
+                      return (
+                        <li key={l}>
+                          <a
+                            href={urls[l] || '#'}
+                            target="_blank"
+                            rel="noreferrer"
+                            className={classes}
+                          >
+                            {l}
+                          </a>
+                        </li>
+                      );
+                    }
+
+                    return (
+                      <li key={l}>
+                        <a href="#" className={classes}>{l}</a>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             ))}
@@ -891,11 +1046,13 @@ export function Landing() {
           <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-ink-200/50 pt-6 sm:flex-row">
             <p className="text-2xs text-ink-400">© {new Date().getFullYear()} Lumora. All rights reserved.</p>
             <div className="flex items-center gap-3 text-2xs text-ink-400">
-              <a href="#" className="transition-colors hover:text-ink-700">Privacy</a>
+              <Link to="/privacy" className="transition-colors hover:text-ink-700">Privacy</Link>
               <span className="h-3 w-px bg-ink-200" />
-              <a href="#" className="transition-colors hover:text-ink-700">Terms</a>
+              <Link to="/terms" className="transition-colors hover:text-ink-700">Terms</Link>
               <span className="h-3 w-px bg-ink-200" />
-              <a href="#" className="flex items-center gap-1 transition-colors hover:text-ink-700"><Scale size={10} /> License</a>
+              <Link to="/license" className="flex items-center gap-1 transition-colors hover:text-ink-700">
+                <Scale size={10} /> License
+              </Link>
             </div>
           </div>
         </div>

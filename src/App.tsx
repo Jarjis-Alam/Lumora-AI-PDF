@@ -10,6 +10,11 @@ import { FlashcardsPage } from './pages/FlashcardsPage';
 import { QuizPage } from './pages/QuizPage';
 import { GraphPage } from './pages/GraphPage';
 import { SearchPage } from './pages/SearchPage';
+import { DocsPage } from './pages/DocsPage';
+import { LicensePage } from './pages/LicensePage';
+import { ChangelogPage } from './pages/ChangelogPage';
+import { PrivacyPage } from './pages/PrivacyPage';
+import { TermsPage } from './pages/TermsPage';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false, staleTime: Infinity } },
@@ -24,6 +29,11 @@ export default function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Landing />} />
+            <Route path="/docs" element={<DocsPage />} />
+            <Route path="/license" element={<LicensePage />} />
+            <Route path="/changelog" element={<ChangelogPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/terms" element={<TermsPage />} />
             <Route path="/app" element={<AppLayout />}>
               <Route index element={<Dashboard />} />
               <Route path="workspace" element={<Workspace />} />
