@@ -85,7 +85,7 @@ const pollDocumentStatus = (docId: string) => {
       console.error(e);
       clearInterval(interval);
     }
-  }, 1000);
+  }, 2500);
 };
 
 export const useStore = create<LumoraState>((set) => ({

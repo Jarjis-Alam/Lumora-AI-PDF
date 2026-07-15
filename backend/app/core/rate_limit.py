@@ -49,7 +49,7 @@ class RateLimiter:
             window = 900  # 15 minutes in seconds
             group = "auth"
         elif path.startswith("/api"):
-            limit = 60
+            limit = 180
             window = 60   # 1 minute in seconds
             group = "api"
         else:
