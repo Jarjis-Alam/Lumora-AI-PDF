@@ -243,82 +243,114 @@ async def process_document_pipeline(doc_id: str, file_bytes: bytes) -> None:
     """
     logger.info("Starting processing pipeline for document: %s", doc_id)
 
-    # Initialize dependencies inside task scope
-    embeddings_service = EmbeddingsService()
-
     from app.core import database
     factory = database.testing_session_factory or database.async_session_factory
-    async with factory() as session:
-        async with UnitOfWork(session) as uow:
-            doc = await uow.documents.get_by_id(doc_id)
 
-            if not doc:
-                logger.error("Document not found in database: %s", doc_id)
-                return
+    async def _mark_failed(reason: str) -> None:
+        """Use a fresh session to mark document as failed — the original session may be broken."""
+        try:
+            async with factory() as fail_session:
+                async with UnitOfWork(fail_session) as fail_uow:
+                    doc = await fail_uow.documents.get_by_id(doc_id)
+                    if doc and doc.status == "processing":
+                        doc.status = "failed"
+                        doc.parsing_status = "failed"
+                        doc.embedding_status = "failed"
+                        doc.progress = 100.0
+                        await fail_uow.commit()
+                        logger.info("[%s] Document marked as failed: %s", doc_id, reason)
+        except Exception as mark_exc:
+            logger.error("[%s] Could not mark document as failed: %s", doc_id, mark_exc)
 
-            try:
-                # ── Phase 1: PDF Parsing & Text Block Extraction ──────
-                logger.info("[%s] Phase 1: Parsing PDF blocks...", doc_id)
-                doc.parsing_status = "processing"
-                await uow.session.flush()
-                
-                # Start parsing progress animation task
-                anim_task = asyncio.create_task(animate_progress(doc_id, target_val=25.0, steps=10, interval=0.15))
+    try:
+        # Initialize dependencies inside task scope
+        embeddings_service = EmbeddingsService()
+
+        async with factory() as session:
+            async with UnitOfWork(session) as uow:
+                doc = await uow.documents.get_by_id(doc_id)
+
+                if not doc:
+                    logger.error("Document not found in database: %s", doc_id)
+                    return
+
                 try:
-                    pages_count, chunks = await asyncio.to_thread(PDFProcessor.extract_pages_and_chunks, file_bytes)
-                    await anim_task
-                except Exception:
-                    anim_task.cancel()
-                    raise
-                
-                # Update page counts and progress
-                doc.pages = pages_count
-                doc.parsing_status = "completed"
-                doc.embedding_status = "processing"
-                doc.progress = 25.0
-                await uow.session.flush()
+                    # ── Phase 1: PDF Parsing & Text Block Extraction ──────
+                    logger.info("[%s] Phase 1: Parsing PDF blocks...", doc_id)
+                    doc.parsing_status = "processing"
+                    await uow.session.flush()
+                    
+                    # Start parsing progress animation task
+                    anim_task = asyncio.create_task(animate_progress(doc_id, target_val=25.0, steps=10, interval=0.15))
+                    try:
+                        pages_count, chunks = await asyncio.to_thread(PDFProcessor.extract_pages_and_chunks, file_bytes)
+                        await anim_task
+                    except Exception:
+                        anim_task.cancel()
+                        raise
+                    
+                    # Update page counts and progress
+                    doc.pages = pages_count
+                    doc.parsing_status = "completed"
+                    doc.embedding_status = "processing"
+                    doc.progress = 25.0
+                    await uow.session.flush()
 
-                # Start embedding progress animation task
-                anim_task = asyncio.create_task(animate_progress(doc_id, target_val=50.0, steps=15, interval=0.15))
-                try:
-                    # ── Phase 2: Compute Embeddings & Save Chunks ──────────
-                    logger.info("[%s] Phase 2: Generating vector embeddings for %d chunks...", doc_id, len(chunks))
-                    if chunks:
-                        chunk_texts = [c["text"] for c in chunks]
-                        embeddings = await asyncio.to_thread(embeddings_service.get_embeddings, chunk_texts)
-                        
-                        chunk_models = [
-                            DocumentChunk(
-                                document_id=doc_id,
-                                page=chunk["page"],
-                                paragraph=chunk["paragraph"],
-                                text=chunk["text"],
-                                embedding=embeddings[idx],
-                            )
-                            for idx, chunk in enumerate(chunks)
-                        ]
-                        uow.session.add_all(chunk_models)
-                    await anim_task
-                except Exception:
-                    anim_task.cancel()
-                    raise
-                
-                # Complete Stage 1: Document is now ready for Chat & Reading
-                doc.embedding_status = "completed"
-                doc.status = "ready"
-                doc.progress = 50.0
-                
-                # Commit database additions so user can interact immediately
-                await uow.commit()
-                logger.info("[%s] Stage 1 complete: Document ready for AI chat.", doc_id)
+                    # Start embedding progress animation task
+                    anim_task = asyncio.create_task(animate_progress(doc_id, target_val=50.0, steps=15, interval=0.15))
+                    try:
+                        # ── Phase 2: Compute Embeddings & Save Chunks ──────────
+                        logger.info("[%s] Phase 2: Generating vector embeddings for %d chunks...", doc_id, len(chunks))
+                        if chunks:
+                            chunk_texts = [c["text"] for c in chunks]
+                            embeddings = await asyncio.to_thread(embeddings_service.get_embeddings, chunk_texts)
+                            
+                            chunk_models = [
+                                DocumentChunk(
+                                    document_id=doc_id,
+                                    page=chunk["page"],
+                                    paragraph=chunk["paragraph"],
+                                    text=chunk["text"],
+                                    embedding=embeddings[idx],
+                                )
+                                for idx, chunk in enumerate(chunks)
+                            ]
+                            uow.session.add_all(chunk_models)
+                        await anim_task
+                    except Exception:
+                        anim_task.cancel()
+                        raise
+                    
+                    # Complete Stage 1: Document is now ready for Chat & Reading
+                    doc.embedding_status = "completed"
+                    doc.status = "ready"
+                    doc.progress = 50.0
+                    
+                    # Commit database additions so user can interact immediately
+                    await uow.commit()
+                    logger.info("[%s] Stage 1 complete: Document ready for AI chat.", doc_id)
 
-                # ── Phase 3-6: Dispatch AI tasks to background worker chain ─────
-                asyncio.create_task(run_background_pipeline_chain(doc_id, chunks))
+                    # ── Phase 3-6: Dispatch AI tasks to background worker chain ─────
+                    asyncio.create_task(run_background_pipeline_chain(doc_id, chunks))
 
-            except Exception as exc:
-                logger.exception("[%s] Critical failure in document processing pipeline", doc_id)
-                doc.status = "failed"
-                doc.parsing_status = "failed"
-                doc.embedding_status = "failed"
-                doc.progress = 100.0
-                await uow.commit()
+                except Exception as exc:
+                    logger.exception("[%s] Critical failure in document processing pipeline", doc_id)
+                    # Try updating in the current session first
+                    try:
+                        await uow.session.rollback()
+                        doc_fresh = await uow.documents.get_by_id(doc_id)
+                        if doc_fresh and doc_fresh.status == "processing":
+                            doc_fresh.status = "failed"
+                            doc_fresh.parsing_status = "failed"
+                            doc_fresh.embedding_status = "failed"
+                            doc_fresh.progress = 100.0
+                            await uow.commit()
+                    except Exception:
+                        # Session is broken, use a fresh one
+                        await _mark_failed(str(exc))
+
+    except Exception as outer_exc:
+        # Catches errors in session creation, UnitOfWork init, etc.
+        logger.exception("[%s] Pipeline crashed outside UnitOfWork: %s", doc_id, outer_exc)
+        await _mark_failed(str(outer_exc))
+
