@@ -39,6 +39,44 @@ async def list_documents(uow: UnitOfWork = Depends(get_uow)):
     return await uow.documents.list_all()
 
 
+@router.get("/debug-chunks/{id}")
+async def debug_chunks(id: str, uow: UnitOfWork = Depends(get_uow)):
+    from sqlalchemy import select, text
+    try:
+        doc = await uow.documents.get_by_id(id)
+        if not doc:
+            return {"status": "error", "message": f"Document {id} not found"}
+            
+        total_chunks = (await uow.session.execute(text("SELECT COUNT(*) FROM document_chunks"))).scalar()
+        doc_chunks = (await uow.session.execute(text(f"SELECT COUNT(*) FROM document_chunks WHERE document_id = '{id}'"))).scalar()
+        
+        schema_query = await uow.session.execute(text(
+            "SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'document_chunks'"
+        ))
+        schema = {r[0]: r[1] for r in schema_query.all()}
+        
+        from app.core.config import get_settings
+        settings = get_settings()
+        
+        return {
+            "status": "success",
+            "document": {
+                "id": doc.id,
+                "status": doc.status,
+                "parsing_status": doc.parsing_status,
+                "embedding_status": doc.embedding_status,
+                "progress": doc.progress,
+            },
+            "total_chunks_in_db": total_chunks,
+            "chunks_for_this_doc": doc_chunks,
+            "database_schema": schema,
+            "groq_key_configured": bool(settings.groq_api_key),
+            "environment": settings.environment
+        }
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
 
 @router.post("/documents", response_model=schemas.Document, status_code=status.HTTP_201_CREATED)
 async def upload_document(
