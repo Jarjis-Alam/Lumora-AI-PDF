@@ -51,7 +51,7 @@ async def generate_background_summary(doc_id: str, chunks: list[dict]) -> None:
                 doc = await uow.documents.get_by_id(doc_id)
                 doc.summary = summary_data
                 doc.summary_status = "completed"
-                doc.progress = min(doc.progress + 12.5, 100.0)
+                doc.progress = 65.0
                 await uow.commit()
                 logger.info("[%s] Background summary generation completed", doc_id)
             except Exception as e:
@@ -59,6 +59,7 @@ async def generate_background_summary(doc_id: str, chunks: list[dict]) -> None:
                 doc = await uow.documents.get_by_id(doc_id)
                 if doc:
                     doc.summary_status = "failed"
+                    doc.progress = 65.0
                     await uow.commit()
 
 
@@ -101,7 +102,7 @@ async def generate_background_flashcards(doc_id: str, chunks: list[dict]) -> Non
                         back=card["back"],
                     )
                 doc.flashcard_status = "completed"
-                doc.progress = min(doc.progress + 12.5, 100.0)
+                doc.progress = 75.0
                 await uow.commit()
                 logger.info("[%s] Background flashcard generation completed", doc_id)
             except Exception as e:
@@ -109,6 +110,7 @@ async def generate_background_flashcards(doc_id: str, chunks: list[dict]) -> Non
                 doc = await uow.documents.get_by_id(doc_id)
                 if doc:
                     doc.flashcard_status = "failed"
+                    doc.progress = 75.0
                     await uow.commit()
 
 
@@ -144,7 +146,7 @@ async def generate_background_quiz(doc_id: str, chunks: list[dict]) -> None:
                     
                 await uow.quizzes.bulk_create(doc_id, quiz_data)
                 doc.quiz_status = "completed"
-                doc.progress = min(doc.progress + 12.5, 100.0)
+                doc.progress = 85.0
                 await uow.commit()
                 logger.info("[%s] Background quiz generation completed", doc_id)
             except Exception as e:
@@ -152,6 +154,7 @@ async def generate_background_quiz(doc_id: str, chunks: list[dict]) -> None:
                 doc = await uow.documents.get_by_id(doc_id)
                 if doc:
                     doc.quiz_status = "failed"
+                    doc.progress = 85.0
                     await uow.commit()
 
 
@@ -198,6 +201,7 @@ async def generate_background_graph(doc_id: str, chunks: list[dict]) -> None:
                 doc = await uow.documents.get_by_id(doc_id)
                 if doc:
                     doc.graph_status = "failed"
+                    doc.progress = 100.0
                     await uow.commit()
 
 
@@ -265,6 +269,7 @@ async def process_document_pipeline(doc_id: str, file_bytes: bytes) -> None:
                     # ── Phase 1: PDF Parsing & Text Block Extraction ──────
                     logger.info("[%s] Phase 1: Parsing PDF blocks...", doc_id)
                     doc.parsing_status = "processing"
+                    doc.progress = 20.0
                     await uow.session.flush()
                     
                     pages_count, chunks = await asyncio.to_thread(PDFProcessor.extract_pages_and_chunks, file_bytes)
@@ -273,7 +278,7 @@ async def process_document_pipeline(doc_id: str, file_bytes: bytes) -> None:
                     doc.pages = pages_count
                     doc.parsing_status = "completed"
                     doc.embedding_status = "processing"
-                    doc.progress = 25.0
+                    doc.progress = 35.0
                     await uow.session.flush()
 
                     # ── Phase 2: Compute Embeddings & Save Chunks ──────────

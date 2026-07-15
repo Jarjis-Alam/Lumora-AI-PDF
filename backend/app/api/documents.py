@@ -82,7 +82,7 @@ async def upload_document(
         name=sanitized_name,
         pages=0,  # Determined during background processing
         status="processing",
-        progress=0.0,
+        progress=10.0,
         size=file_size,
         accent=pick_accent(),
         bookmarks=[],
