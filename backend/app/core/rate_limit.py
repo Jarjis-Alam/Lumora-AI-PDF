@@ -1,24 +1,30 @@
 """
 Rate limiting middleware and utility for FastAPI.
 Provides in-memory rate limiting based on client IP.
+
+NOTE: Uses pure ASGI middleware instead of BaseHTTPMiddleware to avoid
+breaking FastAPI BackgroundTasks (a known Starlette issue).
 """
 
 import time
 from typing import Dict, List, Tuple
-from fastapi import Request, Response
+from fastapi import Request
 from fastapi.responses import JSONResponse
-from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+from starlette.types import ASGIApp, Receive, Scope, Send
 
 
-def get_client_ip(request: Request) -> str:
+def get_client_ip(scope: Scope) -> str:
     """Extract client IP addressing behind potential proxies."""
-    forwarded = request.headers.get("x-forwarded-for")
+    headers = dict(scope.get("headers", []))
+    
+    forwarded = headers.get(b"x-forwarded-for")
     if forwarded:
-        return forwarded.split(",")[0].strip()
-    real_ip = request.headers.get("x-real-ip")
+        return forwarded.decode().split(",")[0].strip()
+    real_ip = headers.get(b"x-real-ip")
     if real_ip:
-        return real_ip
-    return request.client.host if request.client else "unknown"
+        return real_ip.decode()
+    client = scope.get("client")
+    return client[0] if client else "unknown"
 
 
 class RateLimiter:
@@ -70,29 +76,40 @@ class RateLimiter:
         return False, 0
 
 
-class RateLimitMiddleware(BaseHTTPMiddleware):
+class RateLimitMiddleware:
     """
-    FastAPI Middleware applying rate limits to API routes.
+    Pure ASGI middleware applying rate limits to API routes.
+    
+    Uses raw ASGI protocol instead of BaseHTTPMiddleware to avoid
+    breaking FastAPI BackgroundTasks execution.
     """
-    def __init__(self, app, limiter: RateLimiter = None):
-        super().__init__(app)
+    def __init__(self, app: ASGIApp, limiter: RateLimiter = None):
+        self.app = app
         self.limiter = limiter or RateLimiter()
 
-    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
-        path = request.url.path
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        path = scope.get("path", "")
 
         # Always permit internal paths, Swagger docs, redoc, openapi schema, and health checks
         if path in ("/health", "/docs", "/redoc", "/openapi.json"):
-            return await call_next(request)
+            await self.app(scope, receive, send)
+            return
 
-        ip = get_client_ip(request)
+        ip = get_client_ip(scope)
         is_limited, retry_after = self.limiter.is_rate_limited(ip, path)
 
         if is_limited:
-            return JSONResponse(
+            response = JSONResponse(
                 status_code=429,
                 content={"detail": "Too many requests. Please try again later."},
                 headers={"Retry-After": str(retry_after)}
             )
+            await response(scope, receive, send)
+            return
 
-        return await call_next(request)
+        await self.app(scope, receive, send)
+
