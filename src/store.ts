@@ -75,7 +75,7 @@ const pollDocumentStatus = (docId: string) => {
           documents: s.documents.map((d) => (d.id === docId ? doc : d)),
         }));
 
-        if (doc.status === 'ready' || doc.status === 'error') {
+        if ((doc.status === 'ready' && doc.progress >= 100) || doc.status === 'error' || doc.status === 'failed') {
           clearInterval(interval);
         }
       } else {
