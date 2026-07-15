@@ -39,6 +39,24 @@ async def list_documents(uow: UnitOfWork = Depends(get_uow)):
     return await uow.documents.list_all()
 
 
+@router.get("/debug-db")
+async def debug_db(uow: UnitOfWork = Depends(get_uow)):
+    from sqlalchemy import text
+    try:
+        doc_count = (await uow.session.execute(text("SELECT COUNT(*) FROM documents"))).scalar()
+        chunk_count = (await uow.session.execute(text("SELECT COUNT(*) FROM document_chunks"))).scalar()
+        sample_rows = (await uow.session.execute(text("SELECT id, document_id, page, paragraph FROM document_chunks LIMIT 5"))).all()
+        
+        return {
+            "status": "success",
+            "doc_count": doc_count,
+            "chunk_count": chunk_count,
+            "sample_chunks": [{"id": r[0], "document_id": r[1], "page": r[2], "paragraph": r[3]} for r in sample_rows]
+        }
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
 @router.post("/documents", response_model=schemas.Document, status_code=status.HTTP_201_CREATED)
 async def upload_document(
     background_tasks: BackgroundTasks,
