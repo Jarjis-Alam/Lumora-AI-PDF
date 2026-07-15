@@ -201,39 +201,26 @@ async def generate_background_graph(doc_id: str, chunks: list[dict]) -> None:
                     await uow.commit()
 
 
-async def animate_progress(doc_id: str, target_val: float, steps: int = 15, interval: float = 0.15) -> None:
-    """Increment progress smoothly in the database toward target_val to show loading bar progress."""
-    from app.core import database
-    factory = database.testing_session_factory or database.async_session_factory
-    
-    for step in range(steps):
-        await asyncio.sleep(interval)
-        async with factory() as session:
-            async with UnitOfWork(session) as uow:
-                doc = await uow.documents.get_by_id(doc_id)
-                if not doc or doc.status != "processing" or doc.progress >= target_val:
-                    return
-                # Calculate progress increment
-                diff = target_val - doc.progress
-                if diff <= 0:
-                    return
-                step_size = diff / (steps - step)
-                doc.progress = min(doc.progress + step_size, target_val - 1.0)
-                await uow.commit()
-
-
 async def run_background_pipeline_chain(doc_id: str, chunks: list[dict]) -> None:
-    """Executes background tasks in a sequence to maximize prompt/token optimizations."""
+    """Executes background tasks in a sequence to avoid database locking/race conditions on PostgreSQL."""
     # 1. Generate Summary first so other tasks can reuse its concepts
     await generate_background_summary(doc_id, chunks)
     
-    # 2. Run remaining tasks concurrently, keeping failures isolated
-    await asyncio.gather(
-        generate_background_flashcards(doc_id, chunks),
-        generate_background_quiz(doc_id, chunks),
-        generate_background_graph(doc_id, chunks),
-        return_exceptions=True
-    )
+    # 2. Run remaining tasks sequentially, keeping failures isolated and preventing database deadlocks
+    try:
+        await generate_background_flashcards(doc_id, chunks)
+    except Exception as e:
+        logger.exception("[%s] Background flashcard task failed: %s", doc_id, e)
+
+    try:
+        await generate_background_quiz(doc_id, chunks)
+    except Exception as e:
+        logger.exception("[%s] Background quiz task failed: %s", doc_id, e)
+
+    try:
+        await generate_background_graph(doc_id, chunks)
+    except Exception as e:
+        logger.exception("[%s] Background graph task failed: %s", doc_id, e)
 
 
 async def process_document_pipeline(doc_id: str, file_bytes: bytes) -> None:
@@ -280,14 +267,7 @@ async def process_document_pipeline(doc_id: str, file_bytes: bytes) -> None:
                     doc.parsing_status = "processing"
                     await uow.session.flush()
                     
-                    # Start parsing progress animation task
-                    anim_task = asyncio.create_task(animate_progress(doc_id, target_val=25.0, steps=10, interval=0.15))
-                    try:
-                        pages_count, chunks = await asyncio.to_thread(PDFProcessor.extract_pages_and_chunks, file_bytes)
-                        await anim_task
-                    except Exception:
-                        anim_task.cancel()
-                        raise
+                    pages_count, chunks = await asyncio.to_thread(PDFProcessor.extract_pages_and_chunks, file_bytes)
                     
                     # Update page counts and progress
                     doc.pages = pages_count
@@ -296,30 +276,23 @@ async def process_document_pipeline(doc_id: str, file_bytes: bytes) -> None:
                     doc.progress = 25.0
                     await uow.session.flush()
 
-                    # Start embedding progress animation task
-                    anim_task = asyncio.create_task(animate_progress(doc_id, target_val=50.0, steps=15, interval=0.15))
-                    try:
-                        # ── Phase 2: Compute Embeddings & Save Chunks ──────────
-                        logger.info("[%s] Phase 2: Generating vector embeddings for %d chunks...", doc_id, len(chunks))
-                        if chunks:
-                            chunk_texts = [c["text"] for c in chunks]
-                            embeddings = await asyncio.to_thread(embeddings_service.get_embeddings, chunk_texts)
-                            
-                            chunk_models = [
-                                DocumentChunk(
-                                    document_id=doc_id,
-                                    page=chunk["page"],
-                                    paragraph=chunk["paragraph"],
-                                    text=chunk["text"],
-                                    embedding=embeddings[idx],
-                                )
-                                for idx, chunk in enumerate(chunks)
-                            ]
-                            uow.session.add_all(chunk_models)
-                        await anim_task
-                    except Exception:
-                        anim_task.cancel()
-                        raise
+                    # ── Phase 2: Compute Embeddings & Save Chunks ──────────
+                    logger.info("[%s] Phase 2: Generating vector embeddings for %d chunks...", doc_id, len(chunks))
+                    if chunks:
+                        chunk_texts = [c["text"] for c in chunks]
+                        embeddings = await asyncio.to_thread(embeddings_service.get_embeddings, chunk_texts)
+                        
+                        chunk_models = [
+                            DocumentChunk(
+                                document_id=doc_id,
+                                page=chunk["page"],
+                                paragraph=chunk["paragraph"],
+                                text=chunk["text"],
+                                embedding=embeddings[idx],
+                            )
+                            for idx, chunk in enumerate(chunks)
+                        ]
+                        uow.session.add_all(chunk_models)
                     
                     # Complete Stage 1: Document is now ready for Chat & Reading
                     doc.embedding_status = "completed"
