@@ -304,7 +304,7 @@ async def process_document_pipeline(doc_id: str, file_bytes: bytes) -> None:
                     logger.info("[%s] Stage 1 complete: Document ready for AI chat.", doc_id)
 
                     # ── Phase 3-6: Dispatch AI tasks to background worker chain ─────
-                    asyncio.create_task(run_background_pipeline_chain(doc_id, chunks))
+                    await run_background_pipeline_chain(doc_id, chunks)
 
                 except Exception as exc:
                     logger.exception("[%s] Critical failure in document processing pipeline", doc_id)
