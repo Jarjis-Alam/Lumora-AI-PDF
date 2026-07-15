@@ -30,9 +30,10 @@ async def lifespan(app: FastAPI):
     """
     settings = get_settings()
     logger.info(
-        "Lumora backend starting — env=%s, version=%s",
+        "Lumora backend starting — env=%s, version=%s, groq_api_key_set=%s",
         settings.environment,
         settings.app_version,
+        bool(settings.groq_api_key),
     )
 
     # Quick connectivity check at startup

@@ -123,6 +123,7 @@ class PDFProcessor:
                     try:
                         logger.info("Local OCR low confidence/unavailable for page %d. Running Groq Vision OCR...", page_idx + 1)
                         ocr_text = ai_service.perform_ocr(image_bytes)
+                        logger.info("Groq Vision OCR for page %d extracted %d characters", page_idx + 1, len(ocr_text))
                     except Exception as ocr_exc:
                         logger.warning("Groq Vision OCR failed on page %d: %s", page_idx + 1, ocr_exc)
                         ocr_text = ""
