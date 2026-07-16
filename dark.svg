@@ -335,7 +335,7 @@
       <g opacity="0">
         <animate attributeName="opacity" values="0;1" dur="0.4s" begin="1.2s" fill="freeze" />
         <text x="500" y="279" font-weight="600" fill="#94A3B8">🎯 Focus:</text>
-        <text x="620" y="279" font-weight="500" fill="#F8FAFC">AI-Driven Apps &amp; P2P Systems</text>
+        <text x="620" y="279" font-weight="500" fill="#F8FAFC">AI Agentic Workflows &amp; UI Systems</text>
       </g>
 
       <!-- Portfolio -->
