@@ -70,7 +70,7 @@ export function Dashboard() {
 
   return (
     <div className="h-full overflow-y-auto paper-texture">
-      <div className="mx-auto max-w-6xl px-6 py-8 space-y-8">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 py-6 sm:py-8 space-y-8">
         
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-ink-100/40 pb-5">
@@ -96,7 +96,7 @@ export function Dashboard() {
         </div>
 
         {/* Statistics Row */}
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5">
           {[
             { label: 'Documents', value: documents.length, icon: FileText, color: '#C0392B' },
             { label: 'Flashcards', value: totalFlashcards || 324, icon: Layers, color: '#6B8E6F' },

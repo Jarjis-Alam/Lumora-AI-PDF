@@ -65,6 +65,7 @@ export function Sidebar() {
   const workspaceTab = useStore((s) => s.workspaceTab);
   const setWorkspaceTab = useStore((s) => s.setWorkspaceTab);
   const openDocument = useStore((s) => s.openDocument);
+  const setMobileMenuOpen = useStore((s) => s.setMobileMenuOpen);
   
   const [recentExpanded, setRecentExpanded] = useState(true);
   const [toolsExpanded, setToolsExpanded] = useState(true);
@@ -83,6 +84,7 @@ export function Sidebar() {
   const storagePercent = Math.min((totalSize / (100 * 1024 * 1024)) * 100, 100); // out of 100MB
 
   const handleItemClick = (e: React.MouseEvent, item: NavItem) => {
+    setMobileMenuOpen(false);
     if (item.tab) {
       setWorkspaceTab(item.tab);
       if (activeDocId) {
@@ -116,7 +118,7 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="flex h-full w-64 flex-col border-r border-ink-100/40 bg-gradient-to-b from-paper-50 to-paper-100">
+    <aside className="flex h-full w-64 shrink-0 flex-col border-r border-ink-100/40 bg-gradient-to-b from-paper-50 to-paper-100">
       {/* Header */}
       <div className="flex h-16 items-center justify-between border-b border-ink-100/40 bg-paper-50/80 px-4 backdrop-blur-sm">
         <button 

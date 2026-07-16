@@ -277,9 +277,10 @@ export function UploadZone({ compact = false }: { compact?: boolean }) {
             <motion.div
               animate={dragging ? { y: -6, scale: 1.08 } : { y: 0, scale: 1 }}
               transition={{ type: 'spring', stiffness: 300 }}
-              className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-crimson-500 to-crimson-600 text-white shadow-float"
+              className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-crimson-500 to-crimson-600 text-white shadow-float"
             >
-              <UploadCloud size={36} strokeWidth={2} />
+              <UploadCloud size={32} className="sm:hidden" strokeWidth={2} />
+              <UploadCloud size={36} className="hidden sm:block" strokeWidth={2} />
             </motion.div>
             <div>
               <h3 className="font-serif text-2xl font-bold text-ink-900">

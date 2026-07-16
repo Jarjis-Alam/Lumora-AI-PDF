@@ -289,7 +289,7 @@ export function ChatPanel() {
             }}
             placeholder="Ask anything about this document..."
             rows={1}
-            className="max-h-32 flex-1 resize-none bg-transparent px-1 py-1 text-sm text-ink-700 placeholder:text-ink-400 focus:outline-none"
+            className="max-h-32 flex-1 resize-none bg-transparent px-1 py-1 text-base sm:text-sm text-ink-700 placeholder:text-ink-400 focus:outline-none"
             style={{ minHeight: '32px' }}
           />
           {streaming ? (

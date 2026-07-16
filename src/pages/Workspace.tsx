@@ -38,6 +38,7 @@ export function Workspace() {
   const readyDocs = documents.filter((d) => d.status === 'ready');
 
   const [graphFullscreen, setGraphFullscreen] = useState(false);
+  const [activeMobileTab, setActiveMobileTab] = useState<'pdf' | 'tools'>('pdf');
 
   const panels = useResizablePanels();
 
@@ -205,26 +206,56 @@ export function Workspace() {
         </div>
       </div>
 
+      {/* Mobile Tab Switcher */}
+      <div className="flex bg-paper-100 p-2 border-b border-ink-100/40 md:hidden shrink-0">
+        <button
+          onClick={() => setActiveMobileTab('pdf')}
+          className={`flex-1 py-1.5 text-xs font-bold uppercase tracking-wide rounded-md transition-all ${
+            activeMobileTab === 'pdf'
+              ? 'bg-white shadow-soft text-crimson-600'
+              : 'text-ink-500 hover:bg-paper-200'
+          }`}
+        >
+          Document
+        </button>
+        <button
+          onClick={() => setActiveMobileTab('tools')}
+          className={`flex-1 py-1.5 text-xs font-bold uppercase tracking-wide rounded-md transition-all ${
+            activeMobileTab === 'tools'
+              ? 'bg-white shadow-soft text-crimson-600'
+              : 'text-ink-500 hover:bg-paper-200'
+          }`}
+        >
+          Tools
+        </button>
+      </div>
+
       {/* Main split-screen panel area */}
       <div
         ref={panels.containerRef}
-        className="flex flex-1 overflow-hidden"
+        className="flex flex-1 overflow-hidden relative"
         onPointerMove={panels.onPointerMove}
         onPointerUp={panels.onPointerUp}
       >
         {/* Left Side: PDF Viewer */}
-        <div className="overflow-hidden" style={{ width: `${panels.sizes.center}%` }}>
+        <div 
+          className={`overflow-hidden md:block ${activeMobileTab === 'pdf' ? 'block w-full absolute inset-0 z-10' : 'hidden md:relative md:w-auto md:z-auto'}`} 
+          style={{ width: typeof window !== 'undefined' && window.innerWidth >= 768 ? `${panels.sizes.center}%` : '100%' }}
+        >
           <PdfViewer />
         </div>
 
         {/* Resize handle */}
         <div
-          className="resize-handle border-l border-r border-ink-100/20"
+          className="resize-handle border-l border-r border-ink-100/20 hidden md:block"
           onPointerDown={panels.onPointerDown}
         />
 
         {/* Right Side: Enhanced Tabbed workspace panel */}
-        <div className="flex flex-col overflow-hidden bg-gradient-to-br from-paper-50 to-paper-100 border-l-2 border-ink-200/60" style={{ width: `${panels.sizes.right}%` }}>
+        <div 
+          className={`flex flex-col overflow-hidden bg-gradient-to-br from-paper-50 to-paper-100 md:border-l-2 md:border-ink-200/60 md:block ${activeMobileTab === 'tools' ? 'block w-full absolute inset-0 z-10' : 'hidden md:relative md:w-auto md:z-auto'}`} 
+          style={{ width: typeof window !== 'undefined' && window.innerWidth >= 768 ? `${panels.sizes.right}%` : '100%' }}
+        >
           {/* Enhanced Workspace Tabs Header */}
           <div className="relative border-b-2 border-ink-200/60 bg-paper-50/95 backdrop-blur-lg">
             <div className="flex h-14 items-center gap-1 overflow-x-auto px-3 no-scrollbar">

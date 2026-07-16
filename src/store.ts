@@ -15,9 +15,11 @@ interface LumoraState {
   pdfZoom: number;
   pdfHighlight: { page: number; paragraph: number } | null;
   isDocumentsLoading: boolean;
+  isMobileMenuOpen: boolean;
 
   setView: (v: View) => void;
   setWorkspaceTab: (t: WorkspaceTab) => void;
+  setMobileMenuOpen: (open: boolean) => void;
   selectDocument: (id: string | null) => void;
   openDocument: (id: string) => void;
   addDocument: (name: string, size: number, fileObj?: File) => string;
@@ -103,9 +105,11 @@ export const useStore = create<LumoraState>((set) => ({
   pdfZoom: 1,
   pdfHighlight: null,
   isDocumentsLoading: true,
+  isMobileMenuOpen: false,
 
   setView: (v) => set({ view: v }),
   setWorkspaceTab: (t) => set({ workspaceTab: t }),
+  setMobileMenuOpen: (open) => set({ isMobileMenuOpen: open }),
   selectDocument: (id) => set({ activeDocId: id }),
   openDocument: (id) =>
     set(() => ({
