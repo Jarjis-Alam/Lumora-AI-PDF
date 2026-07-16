@@ -27,8 +27,10 @@ import { Logo } from '../components/Logo';
 import PremiumNav from '../components/PremiumNav';
 import BentoGrid from '../components/BentoGrid';
 import ResearchCanvas from '../components/ResearchCanvas';
-      {/* ── Nav ── */}
-      <PremiumNav />
+
+const PREMIUM_PILLARS = [
+  'Verifiable citations',
+  'Local-first privacy',
   'Study-ready outputs',
   'A workspace that grows with your thinking',
 ];
@@ -47,6 +49,25 @@ const TESTIMONIALS = [
   { name: 'Daniel Park', role: 'Product Designer', icon: '🎨', quote: 'Most AI tools feel like a chat box bolted onto a PDF. Lumora feels like a real workspace designed for understanding.' },
 ];
 
+const FEATURES = [
+  { icon: FileText, title: 'Instant document import', desc: 'Drag any PDF in and Lumora extracts structure, citations, and key concepts immediately.' },
+  { icon: Layers, title: 'Connected knowledge graph', desc: 'Watch ideas become nodes and relationships as the system links concepts across your document.' },
+  { icon: CheckCircle2, title: 'Study-ready outputs', desc: 'Generate summaries, flashcards, quizzes, and notes that keep your research moving.' },
+  { icon: Shield, title: 'Private-first workflow', desc: 'Your PDF never leaves your workspace unless you choose to share it.' },
+];
+
+const WORKFLOW = [
+  { icon: Upload, title: 'Upload', detail: 'Bring in PDFs, papers, and reports in seconds.' },
+  { icon: Sparkles, title: 'Extract', detail: 'Lumora reads tables, figures, and citations with context-aware parsing.' },
+  { icon: MessageSquare, title: 'Understand', detail: 'AI builds a knowledge graph and identifies the story inside the document.' },
+  { icon: ListChecks, title: 'Review', detail: 'Create summaries, flashcards, and quizzes for fast, focused study.' },
+];
+
+const COMPARISON_ITEMS = {
+  left: ['Manual reading, note-taking, and switching apps', 'Disconnected highlights and forgotten citations', 'No structured memory support'],
+  right: ['AI-powered research workspace', 'Live graphs, citations, and summaries in one place', 'Study tools generated automatically'],
+};
+
 const FAQS = [
   { q: 'What kind of documents does Lumora support?', a: 'Lumora works with any PDF — research papers, textbooks, reports, and articles. Upload it and start asking questions immediately. The indexer handles text-based PDFs natively.' },
   { q: 'How do citations work?', a: 'Every AI response includes citation chips pointing to the exact page and paragraph. Click a citation to jump straight to that location in the document viewer — no more guessing where an answer came from.' },
@@ -60,6 +81,14 @@ const FOOTER_LINKS = {
   Resources: ['Documentation', 'GitHub', 'License', 'Changelog'],
   'Built with': ['React', 'FastAPI', 'Groq', 'PostgreSQL', 'Vercel'],
 };
+
+const NAV_LINKS = ['Features', 'Inside Lumora', 'How it works', 'FAQ'];
+
+const CINEMATIC_STEPS = [
+  { title: 'Live page parsing', body: 'Lumora turns the paper into an interactive workspace rather than just a static PDF.' },
+  { title: 'Knowledge graph grows', body: 'Nodes and relationships reveal how concepts connect across the document.' },
+  { title: 'Study tools ready', body: 'Summaries, citations, flashcards, and quiz prompts are prepared automatically.' },
+];
 
 /* ─────────────────────────────────────────────────────────────────────────── */
 /*  Motion variants                                                             */

@@ -1,0 +1,457 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 610" width="100%" height="100%">
+  <defs>
+    <!-- Background glows -->
+    <radialGradient id="purple-glow" cx="20%" cy="20%" r="60%">
+      <stop offset="0%" stop-color="#7C3AED" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#7C3AED" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="teal-glow" cx="80%" cy="80%" r="60%">
+      <stop offset="0%" stop-color="#10B981" stop-opacity="0.12" />
+      <stop offset="100%" stop-color="#10B981" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="blue-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#22D3EE" stop-opacity="0.1" />
+      <stop offset="100%" stop-color="#22D3EE" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Moving linear gradients for text and ASCII -->
+    <linearGradient id="role-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#7C3AED">
+        <animate attributeName="stop-color" values="#7C3AED;#22D3EE;#10B981;#7C3AED" dur="10s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="50%" stop-color="#22D3EE">
+        <animate attributeName="stop-color" values="#22D3EE;#10B981;#7C3AED;#22D3EE" dur="10s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="100%" stop-color="#10B981">
+        <animate attributeName="stop-color" values="#10B981;#7C3AED;#22D3EE;#10B981" dur="10s" repeatCount="indefinite" />
+      </stop>
+    </linearGradient>
+
+    <linearGradient id="ascii-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#22D3EE">
+        <animate attributeName="stop-color" values="#22D3EE;#7C3AED;#22D3EE" dur="8s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="100%" stop-color="#7C3AED">
+        <animate attributeName="stop-color" values="#7C3AED;#22D3EE;#7C3AED" dur="8s" repeatCount="indefinite" />
+      </stop>
+    </linearGradient>
+
+    <!-- Border shimmer gradients -->
+    <linearGradient id="border-grad-left" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.06)">
+        <animate attributeName="stop-color" values="rgba(255,255,255,0.06);#7C3AED;rgba(255,255,255,0.06)" dur="8s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="50%" stop-color="rgba(255,255,255,0.06)">
+        <animate attributeName="stop-color" values="rgba(255,255,255,0.06);#22D3EE;rgba(255,255,255,0.06)" dur="8s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="100%" stop-color="rgba(255,255,255,0.06)">
+        <animate attributeName="stop-color" values="rgba(255,255,255,0.06);rgba(255,255,255,0.06)" dur="8s" repeatCount="indefinite" />
+      </stop>
+    </linearGradient>
+
+    <linearGradient id="border-grad-right" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.06)">
+        <animate attributeName="stop-color" values="rgba(255,255,255,0.06);#10B981;rgba(255,255,255,0.06)" dur="8s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="50%" stop-color="rgba(255,255,255,0.06)">
+        <animate attributeName="stop-color" values="rgba(255,255,255,0.06);#22D3EE;rgba(255,255,255,0.06)" dur="8s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="100%" stop-color="rgba(255,255,255,0.06)">
+        <animate attributeName="stop-color" values="rgba(255,255,255,0.06);rgba(255,255,255,0.06)" dur="8s" repeatCount="indefinite" />
+      </stop>
+    </linearGradient>
+
+    <!-- Scanline gradient -->
+    <linearGradient id="scanline-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0" />
+      <stop offset="50%" stop-color="#FFFFFF" stop-opacity="0.04" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0" />
+    </linearGradient>
+
+    <!-- Noise filter -->
+    <filter id="noise-filter">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" stitchTiles="stitch" />
+      <feColorMatrix type="matrix" values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.03 0" />
+    </filter>
+
+    <!-- Drop shadows -->
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="16" stdDeviation="24" flood-color="#000000" flood-opacity="0.6" />
+    </filter>
+    
+    <filter id="glow-pill" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+
+    <!-- ASCII Portrait Clip -->
+    <clipPath id="clip-ascii">
+      <rect x="50" y="110" width="360" height="0">
+        <animate attributeName="height" values="0;220" dur="2s" fill="freeze" begin="0.5s" />
+      </rect>
+    </clipPath>
+
+    <!-- Typewriter clips for Right Side roles -->
+    <clipPath id="clip-text-1">
+      <rect x="500" y="145" width="0" height="30">
+        <animate attributeName="width" values="0;185;185;0;0;0" keyTimes="0;0.04;0.20;0.23;0.25;1" dur="12s" repeatCount="indefinite" />
+      </rect>
+    </clipPath>
+    <clipPath id="clip-text-2">
+      <rect x="500" y="145" width="0" height="30">
+        <animate attributeName="width" values="0;0;216;216;0;0;0" keyTimes="0;0.25;0.29;0.45;0.48;0.50;1" dur="12s" repeatCount="indefinite" />
+      </rect>
+    </clipPath>
+    <clipPath id="clip-text-3">
+      <rect x="500" y="145" width="0" height="30">
+        <animate attributeName="width" values="0;0;248;248;0;0;0" keyTimes="0;0.50;0.54;0.70;0.73;0.75;1" dur="12s" repeatCount="indefinite" />
+      </rect>
+    </clipPath>
+    <clipPath id="clip-text-4">
+      <rect x="500" y="145" width="0" height="30">
+        <animate attributeName="width" values="0;0;140;140;0;0" keyTimes="0;0.75;0.79;0.95;0.98;1" dur="12s" repeatCount="indefinite" />
+      </rect>
+    </clipPath>
+  </defs>
+
+  <style>
+    /* CSS Animations for GitHub Profile SVG */
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+    .blink {
+      animation: blink 0.8s step-end infinite;
+    }
+    .skill-pill {
+      transform-origin: center;
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), filter 0.25s ease-in-out, fill 0.25s;
+      cursor: pointer;
+    }
+    .skill-pill:hover {
+      transform: scale(1.06);
+      filter: drop-shadow(0 0 6px rgba(34, 211, 238, 0.4));
+    }
+    .social-icon {
+      transform-origin: center;
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), filter 0.25s ease-in-out;
+      cursor: pointer;
+    }
+    .social-icon:hover {
+      transform: scale(1.15);
+      filter: drop-shadow(0 0 8px rgba(124, 58, 237, 0.6));
+    }
+    .glass-panel {
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+  </style>
+
+  <!-- ── Background ── -->
+  <rect width="100%" height="100%" fill="#030712" rx="24" />
+
+  <!-- Animated floating gradient glows -->
+  <circle cx="200" cy="150" r="350" fill="url(#purple-glow)">
+    <animate attributeName="cx" values="200;280;120;200" dur="25s" repeatCount="indefinite" />
+    <animate attributeName="cy" values="150;80;220;150" dur="25s" repeatCount="indefinite" />
+  </circle>
+  <circle cx="950" cy="450" r="350" fill="url(#teal-glow)">
+    <animate attributeName="cx" values="950;870;1020;950" dur="22s" repeatCount="indefinite" />
+    <animate attributeName="cy" values="450;510;380;450" dur="22s" repeatCount="indefinite" />
+  </circle>
+  <circle cx="590" cy="300" r="250" fill="url(#blue-glow)">
+    <animate attributeName="cx" values="590;500;680;590" dur="30s" repeatCount="indefinite" />
+    <animate attributeName="cy" values="300;380;220;300" dur="30s" repeatCount="indefinite" />
+  </circle>
+
+  <!-- Floating background particles -->
+  <circle cx="120" cy="80" r="1.5" fill="#22D3EE" opacity="0.4">
+    <animate attributeName="cy" values="80;70;90;80" dur="6s" repeatCount="indefinite" />
+    <animate attributeName="opacity" values="0.4;0.8;0.4" dur="6s" repeatCount="indefinite" />
+  </circle>
+  <circle cx="450" cy="500" r="2" fill="#7C3AED" opacity="0.3">
+    <animate attributeName="cx" values="450;465;435;450" dur="8s" repeatCount="indefinite" />
+    <animate attributeName="opacity" values="0.3;0.7;0.3" dur="8s" repeatCount="indefinite" />
+  </circle>
+  <circle cx="1050" cy="180" r="1.5" fill="#10B981" opacity="0.5">
+    <animate attributeName="cy" values="180;200;160;180" dur="7s" repeatCount="indefinite" />
+    <animate attributeName="opacity" values="0.5;0.9;0.5" dur="7s" repeatCount="indefinite" />
+  </circle>
+
+  <!-- Noise Overlay for premium texture -->
+  <rect width="100%" height="100%" filter="url(#noise-filter)" rx="24" pointer-events="none" />
+
+  <!-- ── Left Side Panel (ASCII Portrait & Spec Terminal) ── -->
+  <g filter="url(#shadow)">
+    <!-- Terminal Background -->
+    <rect x="40" y="40" width="380" height="530" rx="16" fill="#0F172A" fill-opacity="0.75" stroke="url(#border-grad-left)" stroke-width="1.2" class="glass-panel" />
+    
+    <!-- macOS Buttons -->
+    <circle cx="65" cy="65" r="5.5" fill="#EF4444" />
+    <circle cx="83" cy="65" r="5.5" fill="#F59E0B" />
+    <circle cx="101" cy="65" r="5.5" fill="#10B981" />
+    <text x="230" y="70" font-family="ui-monospace, monospace" font-size="11" fill="#64748B" text-anchor="middle" letter-spacing="0.5">ascii_portrait.sh</text>
+
+    <!-- Scanline Sweep Effect -->
+    <rect x="41" y="41" width="378" height="528" rx="15" fill="url(#scanline-grad)" pointer-events="none" opacity="0.6">
+      <animate attributeName="y" values="-530;530" dur="7s" repeatCount="indefinite" />
+    </rect>
+
+    <!-- Floating Group for ASCII Portrait -->
+    <g clip-path="url(#clip-ascii)">
+      <g>
+        <animateTransform attributeName="transform" type="translate" values="0 0; 0 -6; 0 0" dur="5s" repeatCount="indefinite" />
+        <text x="230" y="130" font-family="ui-monospace, SFMono-Regular, monospace" font-size="14" font-weight="bold" fill="url(#ascii-grad)" text-anchor="middle" letter-spacing="1">
+          <tspan x="230" dy="0">      _▄▄██████▄▄_</tspan>
+          <tspan x="230" dy="19">    ▄██████████████▄</tspan>
+          <tspan x="230" dy="19">   ██████████████████</tspan>
+          <tspan x="230" dy="19">  ████▀  ▀████▀  ▀████</tspan>
+          <tspan x="230" dy="19">  ████    ████    ████</tspan>
+          <tspan x="230" dy="19">  ████▄  ▄████▄  ▄████</tspan>
+          <tspan x="230" dy="19">   ██████████████████</tspan>
+          <tspan x="230" dy="19">    ▀██████████████▀</tspan>
+          <tspan x="230" dy="19">      ▀▀████████▀▀</tspan>
+        </text>
+      </g>
+    </g>
+
+    <!-- Spec List (Reveals sequentially) -->
+    <g font-family="ui-monospace, SFMono-Regular, monospace" font-size="12" fill="#94A3B8">
+      <!-- Item 1 -->
+      <g opacity="0">
+        <animate attributeName="opacity" values="0;1" dur="0.3s" begin="2.3s" fill="freeze" />
+        <text x="75" y="355">&gt; STATUS     : <tspan fill="#10B981" font-weight="bold">ONLINE</tspan></text>
+      </g>
+      <!-- Item 2 -->
+      <g opacity="0">
+        <animate attributeName="opacity" values="0;1" dur="0.3s" begin="2.5s" fill="freeze" />
+        <text x="75" y="380">&gt; OS         : macOS / Arch</text>
+      </g>
+      <!-- Item 3 -->
+      <g opacity="0">
+        <animate attributeName="opacity" values="0;1" dur="0.3s" begin="2.7s" fill="freeze" />
+        <text x="75" y="405">&gt; CORE STACK : TypeScript / Python</text>
+      </g>
+      <!-- Item 4 -->
+      <g opacity="0">
+        <animate attributeName="opacity" values="0;1" dur="0.3s" begin="2.9s" fill="freeze" />
+        <text x="75" y="430">&gt; AI STACK   : PyTorch / Groq / LLaMA</text>
+      </g>
+      <!-- Item 5 -->
+      <g opacity="0">
+        <animate attributeName="opacity" values="0;1" dur="0.3s" begin="3.1s" fill="freeze" />
+        <text x="75" y="455">&gt; DB STACK   : PgSQL-WAL / SQLite</text>
+      </g>
+      <!-- Item 6 -->
+      <g opacity="0">
+        <animate attributeName="opacity" values="0;1" dur="0.3s" begin="3.3s" fill="freeze" />
+        <text x="75" y="480">&gt; WORKSPACE  : jarjis/lumora-workspace</text>
+      </g>
+      <!-- Cursor Block at bottom -->
+      <g opacity="0">
+        <animate attributeName="opacity" values="0;1" dur="0.2s" begin="3.6s" fill="freeze" />
+        <rect x="75" y="495" width="8" height="13" fill="#22D3EE" class="blink" />
+      </g>
+    </g>
+  </g>
+
+  <!-- ── Right Side Panel (Main Interactive Terminal) ── -->
+  <g filter="url(#shadow)">
+    <!-- Terminal Background -->
+    <rect x="460" y="40" width="680" height="530" rx="16" fill="#0F172A" fill-opacity="0.8" stroke="url(#border-grad-right)" stroke-width="1.2" class="glass-panel" />
+    
+    <!-- macOS Buttons -->
+    <circle cx="485" cy="65" r="5.5" fill="#EF4444" />
+    <circle cx="503" cy="65" r="5.5" fill="#F59E0B" />
+    <circle cx="521" cy="65" r="5.5" fill="#10B981" />
+    <text x="800" y="70" font-family="ui-monospace, monospace" font-size="11" fill="#64748B" text-anchor="middle" letter-spacing="0.5">jarjis@lumora-system:~</text>
+
+    <!-- Scanline Sweep Effect (Right) -->
+    <rect x="461" y="41" width="678" height="528" rx="15" fill="url(#scanline-grad)" pointer-events="none" opacity="0.4">
+      <animate attributeName="y" values="-530;530" dur="9s" repeatCount="indefinite" />
+    </rect>
+
+    <!-- Header Greet (Fade In) -->
+    <g opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.5s" begin="0.1s" fill="freeze" />
+      <text x="500" y="120" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="28" font-weight="bold" fill="#F8FAFC">Hi 👋 I'm Munshi Jarjis Alam</text>
+    </g>
+
+    <!-- Typewriter Roles Group -->
+    <g font-family="ui-monospace, SFMono-Regular, monospace" font-size="18" font-weight="bold">
+      <!-- Role 1 -->
+      <g clip-path="url(#clip-text-1)">
+        <text x="500" y="160" fill="url(#role-grad)">Frontend Engineer</text>
+      </g>
+      <rect x="500" y="142" width="8" height="20" fill="#22D3EE" class="blink" display="none">
+        <animate attributeName="x" values="500;685;685;500;500;500" keyTimes="0;0.04;0.20;0.23;0.25;1" dur="12s" repeatCount="indefinite" />
+        <animate attributeName="display" values="none;inline;inline;inline;none;none;none" keyTimes="0;0.001;0.01;0.20;0.23;0.25;1" dur="12s" repeatCount="indefinite" />
+      </rect>
+
+      <!-- Role 2 -->
+      <g clip-path="url(#clip-text-2)">
+        <text x="500" y="160" fill="url(#role-grad)">Full Stack Developer</text>
+      </g>
+      <rect x="500" y="142" width="8" height="20" fill="#22D3EE" class="blink" display="none">
+        <animate attributeName="x" values="500;500;716;716;500;500;500" keyTimes="0;0.25;0.29;0.45;0.48;0.50;1" dur="12s" repeatCount="indefinite" />
+        <animate attributeName="display" values="none;inline;inline;inline;none;none;none" keyTimes="0;0.249;0.25;0.45;0.48;0.50;1" dur="12s" repeatCount="indefinite" />
+      </rect>
+
+      <!-- Role 3 -->
+      <g clip-path="url(#clip-text-3)">
+        <text x="500" y="160" fill="url(#role-grad)">Open Source Contributor</text>
+      </g>
+      <rect x="500" y="142" width="8" height="20" fill="#22D3EE" class="blink" display="none">
+        <animate attributeName="x" values="500;500;748;748;500;500;500" keyTimes="0;0.50;0.54;0.70;0.73;0.75;1" dur="12s" repeatCount="indefinite" />
+        <animate attributeName="display" values="none;inline;inline;inline;none;none;none" keyTimes="0;0.499;0.50;0.70;0.73;0.75;1" dur="12s" repeatCount="indefinite" />
+      </rect>
+
+      <!-- Role 4 -->
+      <g clip-path="url(#clip-text-4)">
+        <text x="500" y="160" fill="url(#role-grad)">AI Enthusiast</text>
+      </g>
+      <rect x="500" y="142" width="8" height="20" fill="#22D3EE" class="blink" display="none">
+        <animate attributeName="x" values="500;500;640;640;500;500" keyTimes="0;0.75;0.79;0.95;0.98;1" dur="12s" repeatCount="indefinite" />
+        <animate attributeName="display" values="none;inline;inline;inline;none;none" keyTimes="0;0.749;0.75;0.95;0.98;1" dur="12s" repeatCount="indefinite" />
+      </rect>
+    </g>
+
+    <!-- Info Sections (Reveal sequentially) -->
+    <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14">
+      <!-- Location -->
+      <g opacity="0">
+        <animate attributeName="opacity" values="0;1" dur="0.4s" begin="0.8s" fill="freeze" />
+        <text x="500" y="215" font-weight="600" fill="#94A3B8">📍 Location:</text>
+        <text x="620" y="215" font-weight="500" fill="#F8FAFC">Dhaka, Bangladesh</text>
+      </g>
+      
+      <!-- Education -->
+      <g opacity="0">
+        <animate attributeName="opacity" values="0;1" dur="0.4s" begin="1.0s" fill="freeze" />
+        <text x="500" y="247" font-weight="600" fill="#94A3B8">🎓 Education:</text>
+        <text x="620" y="247" font-weight="500" fill="#F8FAFC">Computer Science &amp; Engineering</text>
+      </g>
+
+      <!-- Focus -->
+      <g opacity="0">
+        <animate attributeName="opacity" values="0;1" dur="0.4s" begin="1.2s" fill="freeze" />
+        <text x="500" y="279" font-weight="600" fill="#94A3B8">🎯 Focus:</text>
+        <text x="620" y="279" font-weight="500" fill="#F8FAFC">AI Agentic Workflows &amp; UI Systems</text>
+      </g>
+
+      <!-- Portfolio -->
+      <g opacity="0">
+        <animate attributeName="opacity" values="0;1" dur="0.4s" begin="1.4s" fill="freeze" />
+        <text x="500" y="311" font-weight="600" fill="#94A3B8">🔗 Portfolio:</text>
+        <text x="620" y="311" font-weight="500" fill="#22D3EE">lumora.ai</text>
+      </g>
+
+      <!-- Email -->
+      <g opacity="0">
+        <animate attributeName="opacity" values="0;1" dur="0.4s" begin="1.6s" fill="freeze" />
+        <text x="500" y="343" font-weight="600" fill="#94A3B8">✉️ Email:</text>
+        <text x="620" y="343" font-weight="500" fill="#F8FAFC">jarjis.alam@gmail.com</text>
+      </g>
+    </g>
+
+    <!-- Skills Header -->
+    <g opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.4s" begin="1.8s" fill="freeze" />
+      <text x="500" y="392" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="bold" fill="#64748B" letter-spacing="1.5">SKILLS</text>
+    </g>
+
+    <!-- Skills Row 1 -->
+    <!-- React -->
+    <g class="skill-pill" opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.3s" begin="1.9s" fill="freeze" />
+      <rect x="500" y="408" width="62" height="24" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+      <text x="531" y="424" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="12" fill="#F8FAFC" text-anchor="middle">React</text>
+    </g>
+    <!-- Next.js -->
+    <g class="skill-pill" opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.3s" begin="2.0s" fill="freeze" />
+      <rect x="570" y="408" width="70" height="24" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+      <text x="605" y="424" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="12" fill="#F8FAFC" text-anchor="middle">Next.js</text>
+    </g>
+    <!-- TypeScript -->
+    <g class="skill-pill" opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.3s" begin="2.1s" fill="freeze" />
+      <rect x="648" y="408" width="94" height="24" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+      <text x="695" y="424" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="12" fill="#F8FAFC" text-anchor="middle">TypeScript</text>
+    </g>
+    <!-- Tailwind -->
+    <g class="skill-pill" opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.3s" begin="2.2s" fill="freeze" />
+      <rect x="750" y="408" width="78" height="24" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+      <text x="789" y="424" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="12" fill="#F8FAFC" text-anchor="middle">Tailwind</text>
+    </g>
+    <!-- Node.js -->
+    <g class="skill-pill" opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.3s" begin="2.3s" fill="freeze" />
+      <rect x="836" y="408" width="72" height="24" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+      <text x="872" y="424" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="12" fill="#F8FAFC" text-anchor="middle">Node.js</text>
+    </g>
+    <!-- Python -->
+    <g class="skill-pill" opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.3s" begin="2.4s" fill="freeze" />
+      <rect x="916" y="408" width="68" height="24" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+      <text x="950" y="424" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="12" fill="#F8FAFC" text-anchor="middle">Python</text>
+    </g>
+
+    <!-- Skills Row 2 -->
+    <!-- Docker -->
+    <g class="skill-pill" opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.3s" begin="2.5s" fill="freeze" />
+      <rect x="500" y="440" width="70" height="24" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+      <text x="535" y="456" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="12" fill="#F8FAFC" text-anchor="middle">Docker</text>
+    </g>
+    <!-- Postgres -->
+    <g class="skill-pill" opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.3s" begin="2.6s" fill="freeze" />
+      <rect x="578" y="440" width="84" height="24" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+      <text x="620" y="456" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="12" fill="#F8FAFC" text-anchor="middle">Postgres</text>
+    </g>
+    <!-- AWS -->
+    <g class="skill-pill" opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.3s" begin="2.7s" fill="freeze" />
+      <rect x="670" y="440" width="56" height="24" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+      <text x="698" y="456" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="12" fill="#F8FAFC" text-anchor="middle">AWS</text>
+    </g>
+    <!-- Git -->
+    <g class="skill-pill" opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.3s" begin="2.8s" fill="freeze" />
+      <rect x="734" y="440" width="48" height="24" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+      <text x="758" y="456" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="12" fill="#F8FAFC" text-anchor="middle">Git</text>
+    </g>
+    <!-- Figma -->
+    <g class="skill-pill" opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.3s" begin="2.9s" fill="freeze" />
+      <rect x="790" y="440" width="62" height="24" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+      <text x="821" y="456" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="12" fill="#F8FAFC" text-anchor="middle">Figma</text>
+    </g>
+
+    <!-- Social Links (At Bottom) -->
+    <!-- GitHub Icon -->
+    <g class="social-icon" transform="translate(500, 496)" opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.4s" begin="3.1s" fill="freeze" />
+      <path fill="#F8FAFC" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482C19.138 20.197 22 16.44 22 12.017 22 6.484 17.522 2 12 2z" transform="scale(1.15)" />
+    </g>
+
+    <!-- LinkedIn Icon -->
+    <g class="social-icon" transform="translate(542, 496)" opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.4s" begin="3.2s" fill="freeze" />
+      <path fill="#F8FAFC" d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z" transform="scale(1.15)" />
+    </g>
+
+    <!-- Twitter (X) Icon -->
+    <g class="social-icon" transform="translate(584, 496)" opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.4s" begin="3.3s" fill="freeze" />
+      <path fill="#F8FAFC" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" transform="scale(1.15)" />
+    </g>
+
+    <!-- Portfolio Icon -->
+    <g class="social-icon" transform="translate(626, 496)" opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.4s" begin="3.4s" fill="freeze" />
+      <path fill="#F8FAFC" d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 17.93V15h-2v4.93A8.006 8.006 0 0 1 4.07 13H9v-2H4.07A8.006 8.006 0 0 1 11 4.07V9h2V4.07A8.006 8.006 0 0 1 19.93 11H15v2h4.93A8.006 8.006 0 0 1 13 19.93z" transform="scale(1.15)" />
+    </g>
+  </g>
+</svg>
