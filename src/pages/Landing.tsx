@@ -24,11 +24,57 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { Logo } from '../components/Logo';
-import PremiumNav from '../components/PremiumNav';
-import BentoGrid from '../components/BentoGrid';
-import ResearchCanvas from '../components/ResearchCanvas';
-      {/* ── Nav ── */}
-      <PremiumNav />
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/*  Data                                                                         */
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+const NAV_LINKS = ['Features', 'Canvas', 'How it works', 'FAQ'];
+
+const FEATURES = [
+  { icon: Upload, title: 'Upload', desc: 'Drop in a paper, report, or textbook and let Lumora start reading immediately.' },
+  { icon: AlignLeft, title: 'Understand', desc: 'Turn dense sections into clear explanations, takeaways, and cited answers.' },
+  { icon: Share2, title: 'Connect', desc: 'Link concepts into an interactive graph so ideas stop feeling isolated.' },
+  { icon: Layers, title: 'Learn', desc: 'Generate flashcards, summaries, and study prompts without leaving the workspace.' },
+  { icon: ListChecks, title: 'Remember', desc: 'Quiz yourself with structured review loops that help knowledge stick.' },
+];
+
+const TRUST_BRANDS = ['Groq', 'FastAPI', 'PostgreSQL', 'Vercel', 'React', 'Open Source'];
+
+const EDITORIAL_POINTS = [
+  'Cited answers',
+  'Interactive graphs',
+  'Study loops',
+  'Private workspace',
+];
+
+const CANVAS_ITEMS = ['PDFs', 'AI answers', 'Notes', 'Flashcards', 'Knowledge graph'];
+
+const COMPARISON_ITEMS = {
+  left: ['Read manually', 'Highlight manually', 'Search manually', 'Build notes by hand'],
+  right: ['Understand automatically', 'Answer questions with citations', 'Generate quizzes', 'Build flashcards and graphs'],
+};
+
+const WORKFLOW = [
+  { icon: Upload, title: 'Upload PDF', desc: 'Drag in any document.' },
+  { icon: Cpu, title: 'AI Processing', desc: 'Indexing & embeddings.' },
+  { icon: MessageSquare, title: 'Ask Questions', desc: 'Chat with citations.' },
+  { icon: AlignLeft, title: 'Summary', desc: 'Chapter-level takeaways.' },
+  { icon: Layers, title: 'Flashcards', desc: 'Auto-generated study cards.' },
+  { icon: ListChecks, title: 'Quiz', desc: 'Test your understanding.' },
+  { icon: Network, title: 'Knowledge Graph', desc: 'Explore connections.' },
+];
+
+const CINEMATIC_STEPS = [
+  { title: 'The paper opens', body: 'A dense PDF becomes a living surface of ideas, citations, and context.' },
+  { title: 'The concepts surface', body: 'Important terms, definitions, and relationships emerge in real time.' },
+  { title: 'The graph grows', body: 'Connections appear as the workspace begins to map the document into understanding.' },
+  { title: 'The study tools appear', body: 'Summaries, flashcards, and quizzes arrive as the story becomes easier to remember.' },
+];
+
+const PREMIUM_PILLARS = [
+  'Verifiable citations',
+  'Local-first privacy',
   'Study-ready outputs',
   'A workspace that grows with your thinking',
 ];
@@ -266,127 +312,6 @@ function HeroPreview() {
         <span className="text-xs font-semibold text-ink-600">Processing embeddings</span>
       </motion.div>
     </motion.div>
-  );
-}
-
-/* ─────────────────────────────────────────────────────────────────────────── */
-/*  Fullscreen immersive hero                                                 */
-/* ─────────────────────────────────────────────────────────────────────────── */
-
-function FullHero() {
-  const steps = [
-    'Drop PDF',
-    'Scanning',
-    'Understanding',
-    'Summary appears',
-    'Graph grows',
-    'Flashcards generated',
-    'Chat answers',
-  ];
-
-  const [step, setStep] = useState(0);
-  const [mouse, setMouse] = useState({ x: 50, y: 50 });
-
-  useEffect(() => {
-    const t = window.setInterval(() => setStep((s) => (s + 1) % steps.length), 1400);
-    return () => window.clearInterval(t);
-  }, []);
-
-  useEffect(() => {
-    const onMove = (e: MouseEvent) => {
-      const x = (e.clientX / window.innerWidth) * 100;
-      const y = (e.clientY / window.innerHeight) * 100;
-      setMouse({ x, y });
-    };
-    window.addEventListener('mousemove', onMove, { passive: true });
-    return () => window.removeEventListener('mousemove', onMove as any);
-  }, []);
-
-  return (
-    <section className="relative min-h-screen overflow-hidden bg-paper-50">
-      <div
-        className="absolute inset-0 -z-10"
-        style={{
-          backgroundImage:
-            'radial-gradient(circle at ' + mouse.x + '% ' + mouse.y + '%, rgba(255,245,240,0.12), transparent 18%), linear-gradient(120deg, rgba(242,230,227,0.06), rgba(250,244,242,0.02))',
-        }}
-      />
-
-      <div className="absolute inset-0 -z-20 opacity-30" style={{ backgroundImage: "url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'200\' height=\'200\'><filter id=\'n\'><feTurbulence baseFrequency=\'0.8\' numOctaves=\'2\' stitchTiles=\'stitch\' /></filter><rect width=\'100%\' height=\'100%\' filter=\'url(%23n)\' opacity=\'0.06\' /></svg>')" }} />
-
-      <div className="mx-auto flex min-h-screen max-w-7xl items-center justify-between px-6 py-24">
-        <div className="w-full max-w-2xl">
-          <div className="mb-4 inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-crimson-50/80 to-amber-50/60 px-4 py-2 text-sm font-semibold text-crimson-700 shadow-soft">Your research operating system</div>
-
-          <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl leading-[0.96] tracking-tight text-ink-900 lg:text-7xl">
-            Every PDF
-            <br />
-            Becomes Intelligence.
-          </h1>
-
-          <p className="mt-6 max-w-xl text-lg text-ink-600">Upload a document and watch Lumora unfold it into a research canvas: summaries, a living knowledge graph, flashcards, and answers — all connected.</p>
-
-          <div className="mt-8 flex flex-col sm:flex-row gap-4">
-            <Link to="/app" className="btn-primary btn-lg">Open Workspace</Link>
-            <a href="#canvas" className="btn-secondary btn-lg">See Research Canvas</a>
-          </div>
-        </div>
-
-        <div className="relative hidden w-[520px] shrink-0 lg:block">
-          {/* floating mockup */}
-          <motion.div
-            initial={{ opacity: 0, y: 40, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.8 }}
-            className="relative z-10 mx-auto w-[420px] rounded-2xl border border-ink-200/70 bg-paper-50 p-4 shadow-xl"
-          >
-            <div className="mb-3 flex items-center justify-between">
-              <div className="flex items-center gap-2 text-sm font-medium text-ink-700"><Logo size={18} /> Lumora</div>
-              <div className="text-2xs rounded-full bg-amber-50 px-2 py-1 text-amber-700">Live • {steps[step]}</div>
-            </div>
-
-            <div className="relative h-64 overflow-visible">
-              {/* Animated PDF pages */}
-              {[0, 1, 2, 3].map((i) => (
-                <motion.div
-                  key={i}
-                  animate={{ y: [-6 - i * 6, -2 - i * 2, -6 - i * 6], rotate: [-(i * 2), (i % 2 ? 2 : -2), -(i * 2)], x: [i * 6, i * 4, i * 6] }}
-                  transition={{ duration: 7 + i * 0.9, repeat: Infinity, ease: [0.22, 1, 0.36, 1] }}
-                  className="absolute left-1/2 top-6 -translate-x-1/2 w-[340px] rounded-lg border bg-white p-4 shadow-paper-lg"
-                  style={{ transformOrigin: '50% 10%' }}
-                >
-                  <div className="mb-2 h-3 w-28 rounded-full bg-ink-100" />
-                  <div className="space-y-2">
-                    {[80, 92, 68, 86].map((w, idx) => (
-                      <div key={idx} className="h-2 rounded-full bg-ink-100" style={{ width: `${w - i * 6}%` }} />
-                    ))}
-                  </div>
-                </motion.div>
-              ))}
-
-              {/* floating AI windows */}
-              <motion.div animate={{ x: [0, -8, 0], y: [0, -6, 0] }} transition={{ duration: 6, repeat: Infinity, ease: [0.22, 1, 0.36, 1] }} className="absolute -right-6 top-10 w-44 rounded-xl border bg-paper-50 p-3 shadow-soft">
-                <div className="text-2xs font-semibold text-ink-500">Reading page 18...</div>
-                <div className="mt-2 h-2 rounded bg-ink-100" />
-              </motion.div>
-
-              <motion.div animate={{ x: [0, 8, 0], y: [0, 6, 0] }} transition={{ duration: 7, repeat: Infinity, ease: [0.22, 1, 0.36, 1] }} className="absolute -left-6 bottom-6 w-44 rounded-xl border bg-paper-50 p-3 shadow-soft">
-                <div className="text-2xs font-semibold text-ink-500">Building graph...</div>
-                <div className="mt-2 h-2 rounded bg-ink-100" />
-              </motion.div>
-            </div>
-
-            <div className="mt-4 flex items-center justify-between">
-              <div className="text-sm font-medium text-ink-700">{steps[step]}</div>
-              <div className="text-2xs text-ink-400">8s demo</div>
-            </div>
-          </motion.div>
-
-          {/* subtle glow */}
-          <div className="pointer-events-none absolute -right-12 top-1/4 -z-20 h-40 w-40 rounded-full bg-gradient-to-br from-crimson-300/20 to-transparent blur-3xl" />
-        </div>
-      </div>
-    </section>
   );
 }
 
@@ -905,10 +830,163 @@ export function Landing() {
       </header>
 
       {/* ── Hero ── */}
-      <FullHero />
+      <section className="mx-auto max-w-6xl px-6 pb-16 pt-20 md:pt-28">
+        <div className="relative overflow-hidden rounded-[2.5rem] border border-ink-200/70 bg-gradient-to-br from-paper-50 via-paper-100 to-paper-50 p-6 shadow-card md:p-10 lg:p-12">
+          <motion.div
+            animate={{ y: [0, -10, 0], x: [0, 8, 0] }}
+            transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute -left-10 top-10 h-40 w-40 rounded-full bg-crimson-400/10 blur-3xl"
+          />
+          <motion.div
+            animate={{ y: [0, 12, 0], x: [0, -6, 0] }}
+            transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute bottom-0 right-0 h-48 w-48 rounded-full bg-amber-400/10 blur-3xl"
+          />
+          <div className="relative grid items-center gap-16 md:grid-cols-2 md:gap-20">
+          {/* Left col */}
+          <motion.div initial="hidden" animate="show" variants={stagger}>
+            <motion.div variants={fadeUp} className="mb-6 inline-flex items-center gap-2 rounded-full border-2 border-crimson-200/60 bg-gradient-to-r from-crimson-50 to-crimson-50/30 px-4 py-1.5 text-xs font-semibold text-crimson-700 shadow-glow-soft">
+              <Sparkles size={13} className="animate-pulse-glow" />
+              Your private research operating system
+            </motion.div>
 
-      {/* ── Canvas / Story — Interactive demo ── */}
-      <ResearchCanvas />
+            <motion.h1
+              variants={fadeUp}
+              className="font-serif text-5xl font-bold leading-[1.02] tracking-tight text-ink-900 md:text-6xl lg:text-7xl"
+            >
+              The research workspace<br />
+              <span className="bg-gradient-to-r from-crimson-700 via-crimson-600 to-crimson-700 bg-clip-text text-transparent">that turns reading into understanding.</span>
+            </motion.h1>
+
+            <motion.p
+              variants={fadeUp}
+              className="mt-6 max-w-lg text-base leading-[1.7] text-ink-600"
+            >
+              Upload a paper, ask questions in natural language, and turn dense material into summaries, flashcards, quizzes, and a living knowledge graph — all grounded in citations.
+            </motion.p>
+
+            <motion.div variants={fadeUp} className="mt-6">
+              <SectionShell className="rounded-[1.5rem] border border-ink-200/70 bg-paper-50/90 p-4 shadow-soft">
+                <p className="font-serif text-xl font-semibold leading-tight text-ink-800">
+                  Reading gives information. Lumora creates clarity.
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {EDITORIAL_POINTS.map((point) => (
+                    <span key={point} className="rounded-full border border-ink-200/70 bg-paper-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide2 text-ink-500">
+                      {point}
+                    </span>
+                  ))}
+                </div>
+              </SectionShell>
+            </motion.div>
+
+            <motion.div variants={fadeUp} className="mt-10 flex flex-wrap items-center gap-4">
+              <Link
+                to="/app"
+                className="btn-primary group flex items-center gap-2"
+              >
+                Open Workspace
+                <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+              </Link>
+              <a
+                href="#canvas"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById('canvas')?.scrollIntoView({ behavior: 'smooth' });
+                  window.history.pushState(null, '', '#canvas');
+                  setActiveSection('canvas');
+                }}
+                className="btn-secondary group flex items-center gap-2"
+              >
+                See AI in Action
+                <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
+              </a>
+            </motion.div>
+
+            <motion.div variants={fadeUp} className="mt-8 flex flex-wrap gap-2">
+              {TRUST_BRANDS.map((brand) => (
+                <span key={brand} className="rounded-full border border-ink-200/70 bg-paper-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide2 text-ink-500">
+                  {brand}
+                </span>
+              ))}
+            </motion.div>
+
+            <motion.div variants={fadeUp} className="mt-6 flex flex-wrap items-center gap-6 text-xs text-ink-500">
+              <span className="flex items-center gap-1.5 font-medium"><Lock size={13} className="text-emerald-600" /> Private by design</span>
+              <span className="h-4 w-px bg-ink-200" />
+              <span className="flex items-center gap-1.5 font-medium"><Zap size={13} className="text-amber-500" /> Instant indexing</span>
+              <span className="h-4 w-px bg-ink-200" />
+              <span className="flex items-center gap-1.5 font-medium"><Shield size={13} className="text-emerald-600" /> Cited answers</span>
+            </motion.div>
+          </motion.div>
+
+          {/* Right col — realistic preview */}
+          <HeroPreview />
+          </div>
+        </div>
+      </section>
+
+      {/* ── Canvas / Story ── */}
+      <section id="canvas" className="relative border-t border-ink-200/50 bg-gradient-to-b from-paper-100 to-paper-50 py-24">
+        <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-paper-100 to-transparent" />
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="mb-10">
+            <SectionShell className="p-4 shadow-soft md:p-6">
+              <div className="rounded-[1.5rem] border border-ink-200/60 bg-gradient-to-br from-paper-100 to-paper-50 p-6 md:p-8">
+                <div className="max-w-3xl text-center md:mx-auto">
+                  <div className="text-[10px] font-semibold uppercase tracking-wide2 text-crimson-600">A distinct experience</div>
+                  <div className="mt-2 font-serif text-2xl font-semibold text-ink-800 sm:text-3xl">Not just a dashboard. A workspace that feels alive.</div>
+                </div>
+              </div>
+            </SectionShell>
+          </div>
+          <div className="grid gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+            <motion.div initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }} variants={stagger}>
+              <motion.div variants={fadeUp}><SectionLabel>Research canvas</SectionLabel></motion.div>
+              <motion.h2 variants={fadeUp} className="font-serif text-4xl font-bold text-ink-800">A workspace that grows with your thinking.</motion.h2>
+              <motion.p variants={fadeUp} className="mt-4 max-w-xl text-base leading-[1.7] text-ink-600">
+                Bring PDFs, answers, notes, and flashcards into one living surface. Lumora turns reading into a flowing research experience instead of a stack of tabs.
+              </motion.p>
+              <motion.div variants={fadeUp} className="mt-6 flex flex-wrap gap-2">
+                {CANVAS_ITEMS.map((item) => (
+                  <span key={item} className="rounded-full border border-ink-200/70 bg-paper-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide2 text-ink-500">
+                    {item}
+                  </span>
+                ))}
+              </motion.div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ duration: 0.6 }}
+              className=""
+            >
+              <SectionShell className="p-4 shadow-card">
+                <div className="relative overflow-hidden rounded-[1.5rem] border border-ink-200/60 bg-gradient-to-br from-paper-100 via-paper-50 to-crimson-50/30 p-6">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(192,57,43,0.16),_transparent_38%)]" />
+                  <div className="relative grid gap-3 md:grid-cols-2">
+                    <div className="rounded-2xl border border-ink-200/60 bg-paper-50/90 p-4 shadow-soft">
+                      <div className="text-[10px] font-semibold uppercase tracking-wide2 text-ink-400">Source</div>
+                      <div className="mt-2 font-serif text-lg font-semibold text-ink-800">Deep Learning.pdf</div>
+                      <div className="mt-2 text-sm text-ink-600">A dense paper becomes a set of concepts, summaries, and moments you can revisit instantly.</div>
+                    </div>
+                    <div className="space-y-3">
+                      {['AI answer', 'Flashcards', 'Knowledge graph', 'Notes'].map((item, index) => (
+                        <div key={item} className="rounded-2xl border border-ink-200/60 bg-paper-50/80 p-3 shadow-soft" style={{ transform: `translateY(${index * 2}px)` }}>
+                          <div className="text-[10px] font-semibold uppercase tracking-wide2 text-ink-400">{item}</div>
+                          <div className="mt-1 text-sm font-medium text-ink-700">Connected to the source in one view</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </SectionShell>
+            </motion.div>
+          </div>
+        </div>
+      </section>
 
       {/* ── Why Lumora exists ── */}
       <section className="border-t border-ink-200/50 bg-paper-50 py-24">
@@ -1000,7 +1078,17 @@ export function Landing() {
             <motion.p variants={fadeUp} className="mt-3 text-base text-ink-600">Each step is designed to feel like part of a single research flow, not a collection of isolated features.</motion.p>
           </motion.div>
 
-          <BentoGrid items={FEATURES.map((f) => ({ icon: f.icon, title: f.title }))} />
+          <motion.div
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: '-100px' }}
+            variants={stagger}
+            className="grid gap-5 md:grid-cols-2 lg:grid-cols-5"
+          >
+            {FEATURES.map((f, i) => (
+              <FeatureCard key={f.title} f={f} i={i} />
+            ))}
+          </motion.div>
         </div>
       </section>
 
