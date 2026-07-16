@@ -118,36 +118,33 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="flex h-full w-72 shrink-0 flex-col border-r border-ink-200/60 bg-gradient-to-b from-paper-50 via-paper-100 to-paper-50 shadow-[0_10px_40px_rgba(28,27,25,0.06)]">
+    <aside className="flex h-full w-64 shrink-0 flex-col border-r border-ink-100/40 bg-gradient-to-b from-paper-50 to-paper-100">
       {/* Header */}
-      <div className="relative border-b border-ink-200/60 bg-paper-50/90 px-4 py-4 backdrop-blur-xl">
-        <div className="absolute inset-x-0 top-0 h-16 bg-[radial-gradient(circle_at_top_left,_rgba(192,57,43,0.10),_transparent_50%)]" />
-        <div className="relative flex items-center justify-between">
+      <div className="flex h-16 items-center justify-between border-b border-ink-100/40 bg-paper-50/80 px-4 backdrop-blur-sm">
+        <button 
+          onClick={() => navigate('/')} 
+          className="flex items-center gap-2.5 transition-all hover:opacity-80"
+        >
+          <Logo size={28} withWordmark />
+        </button>
+        <Tooltip label="Upload Document" position="right">
           <button 
-            onClick={() => navigate('/')} 
-            className="flex items-center gap-2.5 transition-all hover:opacity-80"
+            onClick={() => navigate('/app')}
+            className="btn-icon btn-sm border border-ink-200/50 bg-paper-50 text-crimson-600 hover:border-crimson-300 hover:bg-crimson-50"
           >
-            <Logo size={28} withWordmark />
+            <Plus size={14} />
           </button>
-          <Tooltip label="Upload Document" position="right">
-            <button 
-              onClick={() => navigate('/app')}
-              className="rounded-lg border border-ink-200/60 bg-paper-50 p-2 text-crimson-600 shadow-soft transition-all hover:border-crimson-300 hover:bg-crimson-50"
-            >
-              <Plus size={14} />
-            </button>
-          </Tooltip>
-        </div>
+        </Tooltip>
       </div>
 
       {/* Main navigation */}
-      <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4 no-scrollbar">
+      <nav className="flex-1 overflow-y-auto px-3 py-4 no-scrollbar space-y-6">
         
         {/* Quick Access Tools */}
-        <div className="rounded-[1.25rem] border border-ink-200/60 bg-paper-50/70 p-2 shadow-soft">
+        <div className="space-y-1">
           <button
             onClick={() => setToolsExpanded(!toolsExpanded)}
-            className="flex w-full items-center justify-between px-2 py-1.5 text-2xs font-bold uppercase tracking-wider text-ink-400 transition-colors hover:text-ink-600"
+            className="flex w-full items-center justify-between px-3 py-1.5 text-2xs font-bold uppercase tracking-wider text-ink-400 transition-colors hover:text-ink-600"
           >
             <span>Quick Access</span>
             <ChevronDown 
@@ -178,10 +175,10 @@ export function Sidebar() {
                       to={item.to}
                       onClick={(e) => handleItemClick(e, item)}
                       className={classNames(
-                        'group relative flex items-center justify-between rounded-xl border border-transparent px-3 py-2.5 text-xs font-medium transition-all duration-200',
+                        'group relative flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium transition-all duration-200',
                         isActive
-                          ? 'border-crimson-200/70 bg-gradient-to-r from-crimson-50 to-crimson-50/50 text-crimson-800 shadow-soft'
-                          : 'text-ink-600 hover:border-ink-200 hover:bg-paper-200/80 hover:text-ink-900'
+                          ? 'bg-gradient-to-r from-crimson-50 to-crimson-50/50 text-crimson-800 shadow-soft'
+                          : 'text-ink-600 hover:bg-paper-200/80 hover:text-ink-900'
                       )}
                     >
                       <div className="flex items-center gap-2.5">
@@ -222,10 +219,10 @@ export function Sidebar() {
 
         {/* Recent Documents */}
         {recentDocs.length > 0 && (
-          <div className="rounded-[1.25rem] border border-ink-200/60 bg-paper-50/70 p-2 shadow-soft">
+          <div className="space-y-1">
             <button
               onClick={() => setRecentExpanded(!recentExpanded)}
-              className="flex w-full items-center justify-between px-2 py-1.5 text-2xs font-bold uppercase tracking-wider text-ink-400 transition-colors hover:text-ink-600"
+              className="flex w-full items-center justify-between px-3 py-1.5 text-2xs font-bold uppercase tracking-wider text-ink-400 transition-colors hover:text-ink-600"
             >
               <div className="flex items-center gap-1.5">
                 <Clock size={11} />
@@ -303,7 +300,7 @@ export function Sidebar() {
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-[1.25rem] border border-ink-200/60 bg-gradient-to-br from-paper-50 to-paper-100 p-3 shadow-soft"
+            className="rounded-xl border border-ink-200/60 bg-gradient-to-br from-paper-50 to-paper-100 p-3 shadow-soft"
           >
             <div className="mb-2 flex items-center gap-1.5">
               <TrendingUp size={12} className="text-crimson-600" />
@@ -328,7 +325,7 @@ export function Sidebar() {
 
         {/* Storage Indicator */}
         {documents.length > 0 && (
-          <div className="rounded-[1.25rem] border border-ink-200/60 bg-paper-50/80 p-3 shadow-soft">
+          <div className="rounded-xl border border-ink-200/60 bg-paper-50 p-3">
             <div className="mb-2 flex items-center gap-1.5">
               <HardDrive size={12} className="text-ink-500" />
               <span className="text-2xs font-bold uppercase tracking-wider text-ink-500">Storage</span>
@@ -350,7 +347,7 @@ export function Sidebar() {
       </nav>
 
       {/* Active Document Footer */}
-      <div className="border-t border-ink-200/60 bg-paper-50/90 p-3 backdrop-blur-xl">
+      <div className="border-t border-ink-100/40 bg-paper-50/80 p-3 backdrop-blur-sm">
         {activeDoc ? (
           <motion.button
             initial={{ opacity: 0, y: 4 }}
@@ -358,7 +355,7 @@ export function Sidebar() {
             onClick={() => navigate('/app/workspace')}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="w-full rounded-[1.1rem] border border-ink-200/60 bg-gradient-to-br from-paper-50 to-paper-100 p-3 text-left shadow-soft transition-all hover:border-crimson-300 hover:shadow-card"
+            className="w-full rounded-xl border-2 border-ink-200/60 bg-gradient-to-br from-paper-50 to-paper-100 p-3 text-left shadow-soft transition-all hover:border-crimson-300 hover:shadow-card"
           >
             <div className="flex items-center gap-2.5">
               <div
@@ -392,7 +389,7 @@ export function Sidebar() {
             </div>
           </motion.button>
         ) : (
-          <div className="rounded-[1.1rem] border border-dashed border-ink-200/80 bg-paper-200/40 p-3 text-center">
+          <div className="rounded-xl border border-dashed border-ink-200/80 bg-paper-200/30 p-3 text-center">
             <FileText size={20} className="mx-auto mb-1 text-ink-300" />
             <p className="text-2xs font-medium text-ink-400">No document active</p>
           </div>

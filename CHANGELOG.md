@@ -2,19 +2,6 @@
 
 All notable changes to the Lumora document intelligence workspace will be documented in this file.
 
-## [1.2.0] - 2026-07-16
-
-### Added
-- Premium visual design tokens, including custom `mesh-gradient` styles and a flexible `SectionShell` wrapper.
-- Implemented a completely redesigned product landing page featuring high-fidelity interactive preview grids, a cinematic walkthrough, brand trusts, and polished typography.
-
-### Changed
-- Redesigned borders across panels (Chat, Quiz, Flashcards, Summary, Workspace tabs, and Sidebar) from standard double-thickness (`border-2`) to single borders (`border`) for a cleaner card-based presentation.
-- Enlarged components' card border-radii (e.g., from simple rounds to `rounded-[1.25rem]`, `rounded-[1.2rem]`, and `rounded-[1.1rem]`) to align with modern fluid design guidelines.
-- Enhanced backdrop-blur overlays globally to `backdrop-blur-xl` and implemented radial gradient backdrops on workspace load and layout screens.
-
----
-
 ## [1.1.0] - 2026-07-14
 
 ### Added

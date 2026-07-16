@@ -411,9 +411,9 @@ export function QuizPanel({ docId }: { docId: string | null }) {
   const answered = !!answers[q.id];
 
   return (
-    <div className="flex h-full flex-col bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.06),_transparent_30%),linear-gradient(180deg,_#fcfbf8_0%,_#f7f2ea_100%)]">
+    <div className="flex h-full flex-col bg-gradient-to-b from-paper-50 to-paper-100">
       {/* Enhanced Progress Header */}
-      <div className="border-b border-ink-200/60 bg-paper-50/90 px-6 py-4 shadow-soft backdrop-blur-xl">
+      <div className="border-b border-ink-100/60 bg-paper-50/95 px-6 py-4 backdrop-blur-lg shadow-soft">
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-soft">
@@ -481,10 +481,10 @@ export function QuizPanel({ docId }: { docId: string | null }) {
                       whileHover={{ scale: 1.01, x: 4 }}
                       whileTap={{ scale: 0.99 }}
                       onClick={() => setAnswers((a) => ({ ...a, [q.id]: opt }))}
-                      className={`flex w-full items-center gap-4 rounded-[1rem] border px-5 py-4 text-left transition-all ${
+                      className={`flex w-full items-center gap-4 rounded-xl border-2 px-5 py-4 text-left transition-all ${
                         selected
                           ? 'border-blue-400 bg-gradient-to-r from-blue-50 to-blue-100/50 shadow-soft'
-                          : 'border-ink-200/60 bg-paper-50/80 hover:border-ink-300 hover:bg-paper-100'
+                          : 'border-ink-200/60 bg-paper-50 hover:border-ink-300 hover:bg-paper-100'
                       }`}
                     >
                       <span
@@ -520,10 +520,10 @@ export function QuizPanel({ docId }: { docId: string | null }) {
                         whileHover={{ scale: 1.02, y: -2 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => setAnswers((a) => ({ ...a, [q.id]: opt }))}
-                        className={`rounded-[1rem] border py-6 text-center font-serif text-lg font-bold transition-all ${
+                        className={`rounded-xl border-2 py-6 text-center font-serif text-lg font-bold transition-all ${
                           selected
                             ? 'border-blue-400 bg-gradient-to-br from-blue-50 to-blue-100/50 text-blue-700 shadow-soft'
-                            : 'border-ink-200/60 bg-paper-50/80 text-ink-600 hover:border-ink-300 hover:bg-paper-100'
+                            : 'border-ink-200/60 bg-paper-50 text-ink-600 hover:border-ink-300 hover:bg-paper-100'
                         }`}
                       >
                         {opt}
@@ -548,7 +548,7 @@ export function QuizPanel({ docId }: { docId: string | null }) {
       </div>
 
       {/* Navigation Footer */}
-      <div className="flex items-center justify-between border-t border-ink-200/60 bg-paper-50/90 px-6 py-4 backdrop-blur-xl">
+      <div className="flex items-center justify-between border-t border-ink-100/60 bg-paper-50/95 px-6 py-4 backdrop-blur-lg">
         <button
           onClick={() => setCurrent((c) => Math.max(0, c - 1))}
           disabled={current === 0}

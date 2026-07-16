@@ -11,7 +11,6 @@ Lumora is an advanced document intelligence platform designed to turn static PDF
 *   **📊 Live Ingestion Tracking**: When opening a document that is currently processing in the background, a live status screen with a dynamic progress bar and completion percentage appears inside the viewer.
 *   **📈 Knowledge Graph Visualization**: Interactively explore concepts, key terms, and semantic relationship networks extracted from your documents using a dynamic graph layout powered by React Flow.
 *   **📝 Automated Study Mode**: Auto-generates high-quality summaries, recall flashcards, and quizzes tailored to the text, accessible as full-page views from the sidebar navigation.
-*   **✨ Premium Design System & Animations**: Designed with a bespoke, fluid aesthetic utilizing responsive mesh gradients, radial color glows, refined thin borders, expanded card shapes, and smooth micro-animations.
 *   **📂 Drag-and-Drop Library Dashboard**: Upload files easily, manage metadata, delete documents, and navigate your library in a clean dashboard.
 
 ---

@@ -135,9 +135,9 @@ export function ChatPanel() {
   };
 
   return (
-    <div className="flex h-full flex-col bg-[radial-gradient(circle_at_top_left,_rgba(192,57,43,0.06),_transparent_30%),linear-gradient(180deg,_#fcfbf8_0%,_#f7f2ea_100%)]">
+    <div className="flex h-full flex-col bg-gradient-to-b from-paper-50 to-paper-100">
       {/* Enhanced Header */}
-      <div className="flex h-14 items-center justify-between border-b border-ink-200/60 bg-paper-50/90 px-4 shadow-soft backdrop-blur-xl">
+      <div className="flex h-14 items-center justify-between border-b border-ink-100/80 bg-paper-50/95 px-4 backdrop-blur-lg shadow-soft">
         <div className="flex items-center gap-2.5">
           <motion.div 
             className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-crimson-600 to-crimson-500 text-paper-50 shadow-soft"
@@ -164,7 +164,7 @@ export function ChatPanel() {
       </div>
 
       {/* Messages */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-2 py-2 sm:px-4">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto">
         {doc.chat.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center px-6 py-12 text-center">
             <motion.div
@@ -208,7 +208,7 @@ export function ChatPanel() {
                   transition={{ delay: 0.25 + i * 0.05 }}
                   whileHover={{ x: 4, scale: 1.01 }}
                   onClick={() => send(p.text)}
-                  className="group flex w-full items-center gap-3 rounded-[1.1rem] border border-ink-200/60 bg-paper-50/80 px-4 py-3 text-left transition-all hover:border-crimson-300 hover:bg-crimson-50/30 hover:shadow-soft"
+                  className="group flex w-full items-center gap-3 rounded-xl border-2 border-ink-200/60 bg-paper-50 px-4 py-3 text-left transition-all hover:border-crimson-300 hover:bg-crimson-50/30 hover:shadow-soft"
                 >
                   <span className="text-2xl">{p.icon}</span>
                   <span className="flex-1 text-sm font-medium text-ink-700 group-hover:text-crimson-800">{p.text}</span>
@@ -250,7 +250,7 @@ export function ChatPanel() {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="mt-6 space-y-2 rounded-[1.25rem] border border-ink-200/60 bg-paper-50/80 p-4 shadow-soft"
+                className="mt-6 space-y-2 rounded-xl border border-ink-200/60 bg-gradient-to-br from-paper-50 to-paper-100 p-4"
               >
                 <div className="mb-2 flex items-center gap-2">
                   <TrendingUp size={12} className="text-crimson-600" />
@@ -276,8 +276,8 @@ export function ChatPanel() {
       </div>
 
       {/* Enhanced Input */}
-      <div className="border-t border-ink-200/60 bg-paper-50/90 p-4 backdrop-blur-xl">
-        <div className="relative flex items-end gap-3 rounded-[1.2rem] border border-ink-200/70 bg-paper-100/80 p-3 shadow-soft transition-all focus-within:border-crimson-400 focus-within:shadow-card">
+      <div className="border-t border-ink-100/80 bg-paper-50/95 p-4 backdrop-blur-lg">
+        <div className="relative flex items-end gap-3 rounded-2xl border-2 border-ink-200/80 bg-paper-100 p-3 shadow-soft transition-all focus-within:border-crimson-400 focus-within:shadow-card">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -390,8 +390,8 @@ function ChatBubble({
           className={classNames(
             'shadow-soft',
             isUser
-              ? 'rounded-[1.2rem] rounded-tr-md bg-gradient-to-br from-crimson-600 to-crimson-500 px-4 py-3 text-sm text-paper-50'
-              : 'rounded-[1.2rem] rounded-tl-md border border-ink-200/60 bg-gradient-to-br from-paper-50 to-paper-100 px-5 py-4'
+              ? 'rounded-2xl rounded-tr-md bg-gradient-to-br from-crimson-600 to-crimson-500 px-4 py-3 text-sm text-paper-50'
+              : 'rounded-2xl rounded-tl-md border-2 border-ink-200/60 bg-gradient-to-br from-paper-50 to-paper-100 px-5 py-4'
           )}
         >
           {isUser ? (

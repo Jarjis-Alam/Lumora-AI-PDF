@@ -77,10 +77,6 @@
     @apply bg-paper-50/95 backdrop-blur-lg border border-paper-200/80;
   }
 
-  .mesh-gradient {
-    background-image: radial-gradient(circle at top left, rgba(192, 57, 43, 0.16), transparent 38%), radial-gradient(circle at bottom right, rgba(245, 158, 11, 0.12), transparent 30%);
-  }
-
   /* Premium Button System */
   .btn {
     @apply inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-all duration-250 select-none disabled:opacity-40 disabled:cursor-not-allowed relative overflow-hidden;

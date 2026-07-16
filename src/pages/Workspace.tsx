@@ -56,30 +56,28 @@ export function Workspace() {
 
   if (!doc) {
     return (
-      <div className="h-full overflow-y-auto bg-[radial-gradient(circle_at_top_left,_rgba(192,57,43,0.08),_transparent_35%),linear-gradient(135deg,_#fcfbf8_0%,_#f7f2ea_100%)]">
-        <div className="mx-auto max-w-3xl px-6 py-20">
+      <div className="h-full overflow-y-auto bg-gradient-to-br from-paper-50 to-paper-100">
+        <div className="mx-auto max-w-2xl px-6 py-20">
           <motion.div 
             initial={{ opacity: 0, y: 20 }} 
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="mb-10 flex flex-col items-center text-center"
+            className="mb-10 text-center flex flex-col items-center"
           >
             <motion.div
               initial={{ scale: 0, rotate: -180 }}
               animate={{ scale: 1, rotate: 0 }}
               transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-              className="mb-6 flex h-24 w-24 items-center justify-center rounded-[1.8rem] bg-gradient-to-br from-crimson-500 to-crimson-600 text-4xl text-white shadow-float"
+              className="mb-6 flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-crimson-500 to-crimson-600 text-white text-4xl shadow-float"
             >
               📄
             </motion.div>
-            <div className="rounded-[2rem] border border-ink-200/70 bg-paper-50/80 p-8 shadow-card backdrop-blur-xl">
-              <h1 className="mb-3 font-serif text-3xl font-bold text-ink-900">
-                Upload a Document to Begin
-              </h1>
-              <p className="mx-auto max-w-md text-sm leading-relaxed text-ink-600">
-                Upload a PDF to unlock AI-powered summaries, interactive flashcards, quizzes, knowledge graphs, and semantic search.
-              </p>
-            </div>
+            <h1 className="font-serif text-3xl font-bold text-ink-900 mb-3">
+              Upload a Document to Begin
+            </h1>
+            <p className="mx-auto max-w-md text-sm leading-relaxed text-ink-600">
+              Upload a PDF to unlock AI-powered summaries, interactive flashcards, quizzes, knowledge graphs, and semantic search.
+            </p>
           </motion.div>
 
           <motion.div
@@ -148,7 +146,7 @@ export function Workspace() {
   return (
     <div className="flex h-full flex-col overflow-hidden bg-gradient-to-br from-paper-50 to-paper-100 select-none">
       {/* Enhanced Top bar / Breadcrumbs - Responsive */}
-      <div className="flex h-14 items-center justify-between border-b border-ink-200/60 bg-paper-50/90 px-3 shadow-soft backdrop-blur-xl sm:px-5">
+      <div className="flex h-12 items-center justify-between border-b-2 border-ink-200/60 bg-paper-50/95 px-3 sm:px-5 backdrop-blur-lg shadow-soft">
         <div className="flex min-w-0 items-center gap-2 sm:gap-3 text-xs overflow-hidden">
           <button
             onClick={() => navigate('/app')}
@@ -158,7 +156,7 @@ export function Workspace() {
             <span className="font-semibold hidden sm:inline">Library</span>
           </button>
           <ChevronRight size={12} className="text-ink-300 shrink-0 hidden sm:block" />
-          <div className="flex min-w-0 items-center gap-1.5 overflow-hidden rounded-[0.95rem] border border-ink-200/60 bg-paper-100 px-2 py-1.5 shadow-soft sm:gap-2 sm:px-3">
+          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 rounded-lg border border-ink-200/60 bg-paper-100 px-2 sm:px-3 py-1.5 shadow-soft overflow-hidden">
             <div className="h-2 w-2 rounded-full shadow-soft shrink-0" style={{ backgroundColor: doc.accent }} />
             <span className="truncate font-semibold text-ink-800 text-xs">{doc.name}</span>
           </div>
@@ -209,10 +207,10 @@ export function Workspace() {
       </div>
 
       {/* Mobile Tab Switcher */}
-      <div className="flex shrink-0 border-b border-ink-200/60 bg-paper-50/85 p-2 backdrop-blur-xl md:hidden">
+      <div className="flex bg-paper-100 p-2 border-b border-ink-100/40 md:hidden shrink-0">
         <button
           onClick={() => setActiveMobileTab('pdf')}
-          className={`flex-1 rounded-[0.9rem] py-1.5 text-xs font-bold uppercase tracking-wide transition-all ${
+          className={`flex-1 py-1.5 text-xs font-bold uppercase tracking-wide rounded-md transition-all ${
             activeMobileTab === 'pdf'
               ? 'bg-white shadow-soft text-crimson-600'
               : 'text-ink-500 hover:bg-paper-200'
@@ -222,7 +220,7 @@ export function Workspace() {
         </button>
         <button
           onClick={() => setActiveMobileTab('tools')}
-          className={`flex-1 rounded-[0.9rem] py-1.5 text-xs font-bold uppercase tracking-wide transition-all ${
+          className={`flex-1 py-1.5 text-xs font-bold uppercase tracking-wide rounded-md transition-all ${
             activeMobileTab === 'tools'
               ? 'bg-white shadow-soft text-crimson-600'
               : 'text-ink-500 hover:bg-paper-200'
@@ -259,8 +257,8 @@ export function Workspace() {
           style={{ width: typeof window !== 'undefined' && window.innerWidth >= 768 ? `${panels.sizes.right}%` : '100%' }}
         >
           {/* Enhanced Workspace Tabs Header */}
-          <div className="border-b border-ink-200/60 bg-paper-50/90 backdrop-blur-xl">
-            <div className="mx-3 my-3 flex h-12 items-center gap-1 overflow-x-auto rounded-[1.1rem] border border-ink-200/60 bg-paper-100/80 px-2 shadow-soft no-scrollbar">
+          <div className="relative border-b-2 border-ink-200/60 bg-paper-50/95 backdrop-blur-lg">
+            <div className="flex h-14 items-center gap-1 overflow-x-auto px-3 no-scrollbar">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 const active = workspaceTab === tab.id;
