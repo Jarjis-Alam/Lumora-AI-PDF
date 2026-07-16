@@ -13,6 +13,9 @@ All notable changes to the Lumora document intelligence workspace will be docume
 - Enlarged components' card border-radii (e.g., from simple rounds to `rounded-[1.25rem]`, `rounded-[1.2rem]`, and `rounded-[1.1rem]`) to align with modern fluid design guidelines.
 - Enhanced backdrop-blur overlays globally to `backdrop-blur-xl` and implemented radial gradient backdrops on workspace load and layout screens.
 
+### Removed
+- Removed the "About the Developer" section from the main landing page.
+
 ---
 
 ## [1.1.0] - 2026-07-14
