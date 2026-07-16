@@ -51,7 +51,13 @@ export function SummaryPanel({ docId }: { docId: string | null }) {
       <EmptyState
         icon={BookOpen}
         title="No document selected"
-        description="Select a document to generate and view its summary."
+        description="Select a document from the sidebar to generate and view its AI-powered summary."
+        tips={[
+          'Summaries include key takeaways and concept definitions',
+          'Chapter breakdowns help you navigate long documents',
+          'Export summaries to markdown for your notes'
+        ]}
+        accent="#10B981"
       />
     );
   }
@@ -77,6 +83,12 @@ export function SummaryPanel({ docId }: { docId: string | null }) {
             }
           },
         }}
+        tips={[
+          'AI analyzes the entire document structure',
+          'Key concepts include page references',
+          'Summaries adapt to the document type and length'
+        ]}
+        accent="#10B981"
       />
     );
   }

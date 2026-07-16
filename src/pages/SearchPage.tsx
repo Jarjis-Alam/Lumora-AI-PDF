@@ -141,6 +141,17 @@ export function SearchPage() {
           icon={Search}
           title="No documents to search"
           description="Upload a document first, then search across all your documents by meaning."
+          tips={[
+            'Semantic search finds answers based on meaning, not just keywords',
+            'Search across multiple documents simultaneously',
+            'Results show exact page and paragraph references'
+          ]}
+          prompts={[
+            'What are the main findings?',
+            'How does X relate to Y?',
+            'Explain the methodology'
+          ]}
+          accent="#C0392B"
         />
       </div>
     );
@@ -234,6 +245,17 @@ export function SearchPage() {
             icon={Search}
             title="No results found"
             description="Try rephrasing your query or using different terms."
+            tips={[
+              'Use natural language instead of keywords',
+              'Ask questions like you would to a person',
+              'Try broader or more specific queries'
+            ]}
+            prompts={[
+              'Summarize the key points',
+              'What are the limitations?',
+              'How does this compare to X?'
+            ]}
+            accent="#C0392B"
           />
         )}
 

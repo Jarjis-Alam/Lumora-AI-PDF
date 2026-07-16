@@ -115,23 +115,27 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 function HeroPreview() {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 24, rotateX: 8 }}
+      initial={{ opacity: 0, y: 32, rotateX: 12 }}
       animate={{ opacity: 1, y: 0, rotateX: 0 }}
-      transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-      style={{ perspective: 1200 }}
+      transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+      style={{ perspective: 1400 }}
       className="relative"
     >
-      {/* Soft glow behind */}
-      <div className="absolute -inset-4 -z-10 rounded-2xl bg-gradient-to-br from-crimson-100/40 via-transparent to-transparent blur-2xl" />
+      {/* Enhanced glow behind */}
+      <div className="absolute -inset-8 -z-10 rounded-3xl bg-gradient-to-br from-crimson-200/50 via-crimson-100/30 to-transparent blur-3xl animate-pulse-glow" />
+      
+      {/* Floating gradient orbs */}
+      <div className="absolute -left-8 top-1/4 -z-10 h-32 w-32 rounded-full bg-gradient-to-br from-crimson-400/20 to-transparent blur-2xl animate-float" />
+      <div className="absolute -right-8 bottom-1/4 -z-10 h-32 w-32 rounded-full bg-gradient-to-br from-amber-400/15 to-transparent blur-2xl animate-float" style={{ animationDelay: '1s' }} />
 
-      <div className="overflow-hidden rounded-xl border border-ink-200/70 bg-paper-50 shadow-[0_12px_60px_rgba(28,27,25,0.12)]">
+      <div className="overflow-hidden rounded-2xl border-2 border-ink-200/80 bg-paper-50 shadow-paper-lg">
         {/* Window chrome */}
-        <div className="flex items-center gap-1.5 border-b border-ink-200/60 bg-paper-100 px-4 py-2.5">
-          <span className="h-2.5 w-2.5 rounded-full bg-[#FF5F57]" />
-          <span className="h-2.5 w-2.5 rounded-full bg-[#FEBC2E]" />
-          <span className="h-2.5 w-2.5 rounded-full bg-[#28C840]" />
-          <span className="ml-3 flex items-center gap-1.5 text-xs text-ink-400">
-            <Logo size={14} /> Lumora Workspace
+        <div className="flex items-center gap-2 border-b border-ink-200/70 bg-gradient-to-b from-paper-100 to-paper-50 px-5 py-3">
+          <span className="h-3 w-3 rounded-full bg-[#FF5F57] shadow-soft transition-transform hover:scale-110" />
+          <span className="h-3 w-3 rounded-full bg-[#FEBC2E] shadow-soft transition-transform hover:scale-110" />
+          <span className="h-3 w-3 rounded-full bg-[#28C840] shadow-soft transition-transform hover:scale-110" />
+          <span className="ml-4 flex items-center gap-2 text-xs font-medium text-ink-500">
+            <Logo size={16} /> Lumora Workspace
           </span>
         </div>
 
@@ -293,35 +297,35 @@ function HeroPreview() {
 
       {/* Floating summary chip */}
       <motion.div
-        initial={{ opacity: 0, y: 12, x: 8 }}
-        animate={{ opacity: 1, y: 0, x: 0 }}
-        transition={{ duration: 0.5, delay: 0.8 }}
-        className="absolute -bottom-4 -left-4 hidden rounded-lg border border-ink-200/60 bg-paper-50 p-2.5 shadow-card lg:block"
+        initial={{ opacity: 0, y: 16, x: 12, scale: 0.9 }}
+        animate={{ opacity: 1, y: 0, x: 0, scale: 1 }}
+        transition={{ duration: 0.6, delay: 0.9, type: 'spring', stiffness: 200 }}
+        className="absolute -bottom-6 -left-6 hidden rounded-xl border-2 border-emerald-200/60 bg-paper-50 p-3 shadow-float lg:block"
       >
-        <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-crimson-50 text-crimson-600">
-            <AlignLeft size={13} />
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 shadow-soft">
+            <AlignLeft size={16} />
           </div>
           <div>
-            <div className="text-2xs font-semibold text-ink-700">Summary ready</div>
-            <div className="text-2xs text-ink-400">12 key takeaways generated</div>
+            <div className="text-xs font-semibold text-ink-700">Summary ready</div>
+            <div className="text-2xs text-ink-500">12 key takeaways generated</div>
           </div>
-          <CheckCircle2 size={13} className="ml-1 text-sage" />
+          <CheckCircle2 size={16} className="ml-1 text-emerald-600 animate-scale-in" />
         </div>
       </motion.div>
 
       {/* Floating processing chip */}
       <motion.div
-        initial={{ opacity: 0, y: -12, x: -8 }}
-        animate={{ opacity: 1, y: 0, x: 0 }}
-        transition={{ duration: 0.5, delay: 1 }}
-        className="absolute -top-3 -right-3 hidden items-center gap-1.5 rounded-full border border-ink-200/60 bg-paper-50 px-2.5 py-1 shadow-card sm:flex"
+        initial={{ opacity: 0, y: -16, x: -12, scale: 0.9 }}
+        animate={{ opacity: 1, y: 0, x: 0, scale: 1 }}
+        transition={{ duration: 0.6, delay: 1.1, type: 'spring', stiffness: 200 }}
+        className="absolute -top-4 -right-4 hidden items-center gap-2 rounded-full border-2 border-amber-200/60 bg-paper-50 px-4 py-2 shadow-float sm:flex"
       >
-        <span className="relative flex h-1.5 w-1.5">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-crimson-400 opacity-60" />
-          <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-crimson-500" />
+        <span className="relative flex h-2 w-2">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500" />
         </span>
-        <span className="text-2xs font-medium text-ink-500">Processing embeddings</span>
+        <span className="text-xs font-semibold text-ink-600">Processing embeddings</span>
       </motion.div>
     </motion.div>
   );
@@ -336,19 +340,19 @@ function FeatureCard({ f, i: _i }: { f: (typeof FEATURES)[number]; i: number }) 
   return (
     <motion.div
       variants={fadeUp}
-      whileHover={{ y: -3 }}
+      whileHover={{ y: -4, scale: 1.02 }}
       transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-      className="group flex h-full flex-col rounded-xl border border-ink-200/60 bg-paper-100 p-5 transition-colors hover:border-crimson-200 hover:shadow-card"
+      className="group flex h-full flex-col rounded-2xl border-2 border-ink-200/60 bg-gradient-to-br from-paper-50 to-paper-100 p-6 shadow-soft transition-all hover:border-crimson-200 hover:shadow-card"
     >
       <motion.div
-        whileHover={{ rotate: -6, scale: 1.08 }}
+        whileHover={{ rotate: -8, scale: 1.12 }}
         transition={{ type: 'spring', stiffness: 400, damping: 12 }}
-        className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-crimson-50 text-crimson-600 transition-colors group-hover:bg-crimson-100"
+        className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-crimson-50 to-crimson-100/60 text-crimson-600 shadow-soft transition-all group-hover:shadow-glow-soft"
       >
-        <Icon size={20} strokeWidth={1.6} />
+        <Icon size={22} strokeWidth={1.8} />
       </motion.div>
-      <h3 className="font-serif text-sm font-semibold text-ink-800">{f.title}</h3>
-      <p className="mt-1.5 text-xs leading-relaxed text-ink-500">{f.desc}</p>
+      <h3 className="font-serif text-base font-semibold text-ink-800">{f.title}</h3>
+      <p className="mt-2 text-sm leading-relaxed text-ink-600">{f.desc}</p>
     </motion.div>
   );
 }
@@ -670,8 +674,8 @@ export function Landing() {
     <div className="min-h-screen bg-paper-100 font-sans">
 
       {/* ── Nav ── */}
-      <header className="sticky top-0 z-50 border-b border-ink-200/40 bg-paper-100/90 backdrop-blur-md">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
+      <header className="sticky top-0 z-50 border-b border-ink-200/40 bg-paper-100/95 backdrop-blur-lg">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <Link
             to="/"
             onClick={(e) => {
@@ -682,10 +686,10 @@ export function Landing() {
                 setActiveSection('');
               }
             }}
-            className="flex items-center gap-2.5"
+            className="flex items-center gap-2.5 transition-opacity hover:opacity-80"
           >
-            <Logo size={28} />
-            <span className="font-serif text-base font-semibold text-ink-800">Lumora</span>
+            <Logo size={32} />
+            <span className="font-serif text-lg font-semibold tracking-tight text-ink-800">Lumora</span>
           </Link>
 
           <nav className="hidden items-center gap-8 md:flex" aria-label="Primary">
@@ -702,16 +706,23 @@ export function Landing() {
                     window.history.pushState(null, '', `#${id}`);
                     setActiveSection(id);
                   }}
-                  className={`text-sm transition-colors duration-200 ${
-                    isActive ? 'text-crimson-700 font-medium' : 'text-ink-500 hover:text-ink-800'
+                  className={`relative text-sm transition-colors duration-200 ${
+                    isActive ? 'text-crimson-700 font-semibold' : 'text-ink-600 hover:text-ink-900'
                   }`}
                 >
                   {l}
+                  {isActive && (
+                    <motion.div
+                      layoutId="nav-indicator"
+                      className="absolute -bottom-[21px] left-0 right-0 h-0.5 bg-gradient-to-r from-crimson-600 to-crimson-400"
+                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                    />
+                  )}
                 </a>
               );
             })}
             <a
-              href="https://github.com"
+              href="https://github.com/Jarjis-Alam/Lumora-AI-PDF"
               target="_blank"
               rel="noreferrer"
               className="flex items-center gap-1.5 text-sm text-ink-500 transition-colors hover:text-ink-800"
@@ -723,7 +734,7 @@ export function Landing() {
 
           <Link
             to="/app"
-            className="flex items-center gap-1.5 rounded-lg bg-crimson-700 px-4 py-2 text-sm font-semibold text-white shadow-soft transition-all hover:bg-crimson-800 hover:shadow-card active:scale-[0.97]"
+            className="btn-primary btn-sm flex items-center gap-1.5"
           >
             Open Workspace <ArrowRight size={14} />
           </Link>
@@ -731,39 +742,39 @@ export function Landing() {
       </header>
 
       {/* ── Hero ── */}
-      <section className="mx-auto max-w-6xl px-6 pb-12 pt-16 md:pt-24">
-        <div className="grid items-center gap-12 md:grid-cols-2 md:gap-16">
+      <section className="mx-auto max-w-6xl px-6 pb-16 pt-20 md:pt-28">
+        <div className="grid items-center gap-16 md:grid-cols-2 md:gap-20">
           {/* Left col */}
           <motion.div initial="hidden" animate="show" variants={stagger}>
-            <motion.div variants={fadeUp} className="mb-6 inline-flex items-center gap-1.5 rounded-full border border-crimson-200 bg-crimson-50/60 px-3 py-1 text-xs font-medium text-crimson-700">
-              <Sparkles size={11} />
+            <motion.div variants={fadeUp} className="mb-6 inline-flex items-center gap-2 rounded-full border-2 border-crimson-200/60 bg-gradient-to-r from-crimson-50 to-crimson-50/30 px-4 py-1.5 text-xs font-semibold text-crimson-700 shadow-glow-soft">
+              <Sparkles size={13} className="animate-pulse-glow" />
               AI-powered document intelligence
             </motion.div>
 
             <motion.h1
               variants={fadeUp}
-              className="font-serif text-5xl font-semibold leading-[1.05] tracking-tight text-ink-900 md:text-6xl"
+              className="font-serif text-5xl font-bold leading-[1.1] tracking-tight text-ink-900 md:text-6xl lg:text-7xl"
             >
               Learn Faster.<br />
-              <span className="text-crimson-700">Understand Deeper.</span>
+              <span className="bg-gradient-to-r from-crimson-700 via-crimson-600 to-crimson-700 bg-clip-text text-transparent">Understand Deeper.</span>
             </motion.h1>
 
             <motion.p
               variants={fadeUp}
-              className="mt-6 max-w-sm text-[15px] leading-[1.65] text-ink-500"
+              className="mt-6 max-w-lg text-base leading-[1.7] text-ink-600"
             >
               Lumora turns your PDFs into a private research workspace. Upload a document,
               chat with it, generate summaries and flashcards, take quizzes, and explore a
               knowledge graph — all with citations you can trust.
             </motion.p>
 
-            <motion.div variants={fadeUp} className="mt-8 flex flex-wrap items-center gap-3">
+            <motion.div variants={fadeUp} className="mt-10 flex flex-wrap items-center gap-4">
               <Link
                 to="/app"
-                className="group flex items-center gap-2 rounded-lg bg-crimson-700 px-5 py-2.5 text-sm font-semibold text-white shadow-soft transition-all hover:bg-crimson-800 hover:shadow-card active:scale-[0.97]"
+                className="btn-primary group flex items-center gap-2"
               >
                 Start Researching
-                <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
+                <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
               </Link>
               <a
                 href="#workspace"
@@ -773,20 +784,20 @@ export function Landing() {
                   window.history.pushState(null, '', '#workspace');
                   setActiveSection('workspace');
                 }}
-                className="group flex items-center gap-2 rounded-lg border border-ink-300 bg-transparent px-5 py-2.5 text-sm font-semibold text-ink-700 transition-all hover:border-ink-400 hover:bg-paper-200 active:scale-[0.97]"
+                className="btn-secondary group flex items-center gap-2"
               >
                 See Lumora in Action
-                <ArrowRight size={14} className="transition-transform group-hover:translate-x-0.5" />
+                <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
               </a>
             </motion.div>
 
             {/* Trust row */}
-            <motion.div variants={fadeUp} className="mt-8 flex items-center gap-4 text-2xs text-ink-400">
-              <span className="flex items-center gap-1"><Lock size={11} className="text-sage" /> Private by design</span>
-              <span className="h-3 w-px bg-ink-200" />
-              <span className="flex items-center gap-1"><Zap size={11} className="text-crimson-500" /> Instant indexing</span>
-              <span className="h-3 w-px bg-ink-200" />
-              <span className="flex items-center gap-1"><Shield size={11} className="text-sage" /> Cited answers</span>
+            <motion.div variants={fadeUp} className="mt-10 flex items-center gap-6 text-xs text-ink-500">
+              <span className="flex items-center gap-1.5 font-medium"><Lock size={13} className="text-emerald-600" /> Private by design</span>
+              <span className="h-4 w-px bg-ink-200" />
+              <span className="flex items-center gap-1.5 font-medium"><Zap size={13} className="text-amber-500" /> Instant indexing</span>
+              <span className="h-4 w-px bg-ink-200" />
+              <span className="flex items-center gap-1.5 font-medium"><Shield size={13} className="text-emerald-600" /> Cited answers</span>
             </motion.div>
           </motion.div>
 
@@ -796,20 +807,20 @@ export function Landing() {
       </section>
 
       {/* ── Features ── */}
-      <section id="features" className="border-t border-ink-200/50 bg-paper-50 py-20">
+      <section id="features" className="border-t border-ink-200/50 bg-gradient-to-b from-paper-50 to-paper-100 py-24">
         <div className="mx-auto max-w-6xl px-6">
-          <motion.div initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }} variants={stagger} className="mb-12 max-w-xl">
+          <motion.div initial="hidden" whileInView="show" viewport={{ once: true, margin: '-100px' }} variants={stagger} className="mb-16 max-w-2xl">
             <motion.div variants={fadeUp}><SectionLabel>Features</SectionLabel></motion.div>
-            <motion.h2 variants={fadeUp} className="font-serif text-3xl font-semibold text-ink-800">Everything you need in one place</motion.h2>
-            <motion.p variants={fadeUp} className="mt-2 text-sm text-ink-500">A complete document intelligence workspace — not just a chatbot.</motion.p>
+            <motion.h2 variants={fadeUp} className="font-serif text-4xl font-bold text-ink-800">Everything you need in one place</motion.h2>
+            <motion.p variants={fadeUp} className="mt-3 text-base text-ink-600">A complete document intelligence workspace — not just a chatbot.</motion.p>
           </motion.div>
 
           <motion.div
             initial="hidden"
             whileInView="show"
-            viewport={{ once: true, margin: '-80px' }}
+            viewport={{ once: true, margin: '-100px' }}
             variants={stagger}
-            className="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
+            className="grid gap-5 md:grid-cols-2 lg:grid-cols-3"
           >
             {FEATURES.map((f, i) => (
               <FeatureCard key={f.title} f={f} i={i} />

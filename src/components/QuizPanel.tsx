@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   ListChecks,
   RefreshCw,
@@ -9,6 +9,9 @@ import {
   RotateCw,
   ChevronRight,
   HelpCircle,
+  Layers,
+  AlertCircle,
+  ChevronLeft,
 } from 'lucide-react';
 import { useStore } from '../store';
 import { EmptyState } from './EmptyState';
@@ -34,7 +37,13 @@ export function QuizPanel({ docId }: { docId: string | null }) {
       <EmptyState
         icon={ListChecks}
         title="No document selected"
-        description="Select a document to generate and take a quiz."
+        description="Select a document from the sidebar to generate and take a quiz."
+        tips={[
+          'Quizzes test your understanding across the entire document',
+          'Questions include multiple choice, true/false, and short answer',
+          'Get instant feedback with explanations for each answer'
+        ]}
+        accent="#3B82F6"
       />
     );
   }
@@ -60,6 +69,12 @@ export function QuizPanel({ docId }: { docId: string | null }) {
             }
           },
         }}
+        tips={[
+          'Questions are tailored to the difficulty of your material',
+          'Track weak topics to focus your studying',
+          'Retake quizzes to improve your score'
+        ]}
+        accent="#3B82F6"
       />
     );
   }
@@ -90,117 +105,213 @@ export function QuizPanel({ docId }: { docId: string | null }) {
       })
     ));
 
+    // Determine grade and color
+    const getGrade = (score: number) => {
+      if (score >= 90) return { grade: 'A+', color: 'emerald', message: 'Outstanding!' };
+      if (score >= 80) return { grade: 'A', color: 'emerald', message: 'Excellent work!' };
+      if (score >= 70) return { grade: 'B', color: 'blue', message: 'Good job!' };
+      if (score >= 60) return { grade: 'C', color: 'amber', message: 'Keep practicing!' };
+      return { grade: 'D', color: 'red', message: 'Review the material' };
+    };
+
+    const { grade, color, message } = getGrade(score);
+
     return (
-      <div className="h-full overflow-y-auto bg-paper-50/20">
-        <div className="mx-auto max-w-2xl px-6 py-8">
+      <div className="h-full overflow-y-auto bg-gradient-to-b from-paper-50 to-paper-100">
+        <div className="mx-auto max-w-3xl px-6 py-12">
+          {/* Certificate/Results Card */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="mb-6 text-center card p-6 space-y-4 bg-paper-50 border border-ink-200"
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="mb-8 relative overflow-hidden rounded-2xl border-2 border-ink-200/60 bg-gradient-to-br from-paper-50 to-paper-100 p-8 shadow-paper-lg"
           >
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-crimson-50 text-crimson-600">
-              <Award size={30} />
-            </div>
-            <div>
-              <h2 className="font-serif text-xl font-bold text-ink-800">Quiz Complete</h2>
-              <p className="mt-1 text-xs text-ink-400">Review your answers below</p>
-            </div>
-            <div className="flex justify-center gap-6 pt-2">
-              <div className="text-center">
-                <div className="font-serif text-3xl font-bold text-crimson-600">{score}%</div>
-                <div className="text-[10px] font-semibold text-ink-400 uppercase tracking-wide2">Score</div>
-              </div>
-              <div className="h-10 w-px bg-ink-100" />
-              <div className="text-center">
-                <div className="font-serif text-3xl font-bold text-ink-800">{correct} / {quiz.length}</div>
-                <div className="text-[10px] font-semibold text-ink-400 uppercase tracking-wide2">Correct</div>
-              </div>
-            </div>
-
-            {weakTopics.length > 0 && (
-              <div className="border-t border-ink-100/35 pt-4 text-left max-w-sm mx-auto">
-                <h4 className="text-[10px] font-bold uppercase tracking-wider text-amber-700 mb-1.5 flex items-center gap-1">
-                  ⚠️ Weak Topics detected:
-                </h4>
-                <ul className="list-disc list-inside text-xs text-ink-500 space-y-0.5">
-                  {weakTopics.map((topic) => (
-                    <li key={topic} className="font-medium">{topic}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            <div className="flex justify-center gap-2 pt-2">
-              <button
-                onClick={() => {
-                  setSubmitted(false);
-                  setStarted(false);
-                  setAnswers({});
-                  setCurrent(0);
-                }}
-                className="btn-primary btn-sm rounded px-3 py-2 flex items-center gap-1 cursor-pointer"
+            {/* Decorative corner elements */}
+            <div className="absolute top-0 left-0 h-32 w-32 bg-gradient-to-br from-crimson-100/40 to-transparent rounded-br-full" />
+            <div className="absolute bottom-0 right-0 h-32 w-32 bg-gradient-to-tl from-crimson-100/40 to-transparent rounded-tl-full" />
+            
+            <div className="relative text-center space-y-6">
+              {/* Trophy/Award Icon */}
+              <motion.div
+                initial={{ scale: 0, rotate: -180 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ delay: 0.3, type: 'spring', stiffness: 200 }}
+                className={`mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br shadow-float ${
+                  score >= 80 ? 'from-emerald-500 to-emerald-600' :
+                  score >= 60 ? 'from-amber-500 to-amber-600' :
+                  'from-red-500 to-red-600'
+                } text-white`}
               >
-                <RotateCw size={12} /> Retry Quiz
-              </button>
+                <Award size={48} strokeWidth={2} />
+              </motion.div>
+
+              {/* Title */}
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                <h2 className="font-serif text-3xl font-bold text-ink-900">Quiz Complete!</h2>
+                <p className="mt-2 text-sm text-ink-600">{message}</p>
+              </motion.div>
+
+              {/* Score Display */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.5, type: 'spring' }}
+                className="flex justify-center gap-8 pt-4"
+              >
+                <div className="text-center">
+                  <div className={`font-serif text-6xl font-bold ${
+                    score >= 80 ? 'text-emerald-600' :
+                    score >= 60 ? 'text-amber-600' :
+                    'text-red-600'
+                  }`}>
+                    {score}%
+                  </div>
+                  <div className="text-xs font-semibold text-ink-500 uppercase tracking-wider mt-1">
+                    Final Score
+                  </div>
+                </div>
+                <div className="h-16 w-px bg-ink-200" />
+                <div className="text-center">
+                  <div className="font-serif text-6xl font-bold text-ink-800">{grade}</div>
+                  <div className="text-xs font-semibold text-ink-500 uppercase tracking-wider mt-1">
+                    Grade
+                  </div>
+                </div>
+                <div className="h-16 w-px bg-ink-200" />
+                <div className="text-center">
+                  <div className="font-serif text-6xl font-bold text-ink-800">{correct}/{quiz.length}</div>
+                  <div className="text-xs font-semibold text-ink-500 uppercase tracking-wider mt-1">
+                    Correct
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Weak Topics */}
               {weakTopics.length > 0 && (
-                <button
-                  onClick={() => setWorkspaceTab('flashcards')}
-                  className="btn-secondary btn-sm rounded px-3 py-2 flex items-center gap-1 border-amber-200 bg-amber-50/20 text-amber-800 hover:bg-amber-50 cursor-pointer"
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 }}
+                  className="mx-auto max-w-md rounded-xl border-2 border-amber-200/60 bg-gradient-to-br from-amber-50 to-amber-100/30 p-4 text-left shadow-soft"
                 >
-                  Review Flashcards
-                </button>
+                  <h4 className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-800">
+                    <AlertCircle size={14} />
+                    Areas for Review
+                  </h4>
+                  <ul className="space-y-1">
+                    {weakTopics.map((topic) => (
+                      <li key={topic} className="flex items-center gap-2 text-xs font-medium text-amber-700">
+                        <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                        {topic}
+                      </li>
+                    ))}
+                  </ul>
+                </motion.div>
               )}
-              <button
-                onClick={async () => {
-                  setGenerating(true);
-                  try {
-                    await generateQuiz(doc.id);
+
+              {/* Action Buttons */}
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 }}
+                className="flex flex-wrap justify-center gap-3 pt-6"
+              >
+                <button
+                  onClick={() => {
                     setSubmitted(false);
                     setStarted(false);
                     setAnswers({});
                     setCurrent(0);
-                  } finally {
-                    setGenerating(false);
-                  }
-                }}
-                className="btn-secondary btn-sm rounded px-3 py-2 flex items-center gap-1 cursor-pointer"
-              >
-                <RefreshCw size={12} /> Generate Again
-              </button>
+                  }}
+                  className="btn-primary gap-2"
+                >
+                  <RotateCw size={16} /> Retry Quiz
+                </button>
+                {weakTopics.length > 0 && (
+                  <button
+                    onClick={() => setWorkspaceTab('flashcards')}
+                    className="btn-secondary gap-2 border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100"
+                  >
+                    <Layers size={16} /> Study Flashcards
+                  </button>
+                )}
+                <button
+                  onClick={async () => {
+                    setGenerating(true);
+                    try {
+                      await generateQuiz(doc.id);
+                      setSubmitted(false);
+                      setStarted(false);
+                      setAnswers({});
+                      setCurrent(0);
+                    } finally {
+                      setGenerating(false);
+                    }
+                  }}
+                  className="btn-secondary gap-2"
+                >
+                  <RefreshCw size={16} /> New Quiz
+                </button>
+              </motion.div>
             </div>
           </motion.div>
 
-          <div className="space-y-3">
+          {/* Question Review */}
+          <div className="space-y-4">
+            <h3 className="flex items-center gap-2 text-sm font-bold text-ink-700">
+              <HelpCircle size={16} className="text-crimson-600" />
+              Review Your Answers
+            </h3>
             {quiz.map((q, i) => {
               const userAnswer = answers[q.id] || '(no answer)';
               const isCorrect = userAnswer.trim().toLowerCase() === q.answer.trim().toLowerCase();
               return (
                 <motion.div
                   key={q.id}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                  className="card p-4 hover:shadow-card transition-shadow space-y-3 border-l-4"
-                  style={{ borderLeftColor: isCorrect ? '#10B981' : '#EF4444' }}
+                  initial={{ opacity: 0, x: -12 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.8 + i * 0.05 }}
+                  className={`rounded-xl border-2 p-4 shadow-soft transition-all hover:shadow-card ${
+                    isCorrect 
+                      ? 'border-emerald-200/60 bg-gradient-to-br from-emerald-50 to-emerald-100/30' 
+                      : 'border-red-200/60 bg-gradient-to-br from-red-50 to-red-100/30'
+                  }`}
                 >
-                  <div className="flex items-start gap-2.5">
+                  <div className="flex items-start gap-3 mb-3">
                     {isCorrect ? (
-                      <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-emerald-500" />
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-500 text-white">
+                        <CheckCircle2 size={18} />
+                      </div>
                     ) : (
-                      <XCircle size={16} className="mt-0.5 shrink-0 text-red-500" />
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-red-500 text-white">
+                        <XCircle size={18} />
+                      </div>
                     )}
-                    <h4 className="text-sm font-semibold text-ink-800 leading-normal">{q.question}</h4>
-                  </div>
-                  <div className="pl-6 space-y-2 text-xs">
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-2xs font-semibold">
-                      <span className={isCorrect ? 'text-emerald-700' : 'text-red-700'}>
-                        Your Answer: {userAnswer}
-                      </span>
-                      {!isCorrect && <span className="text-emerald-700">Correct Answer: {q.answer}</span>}
+                    <div className="flex-1">
+                      <span className="text-2xs font-bold text-ink-500 uppercase tracking-wider">Question {i + 1}</span>
+                      <h4 className="mt-1 text-sm font-semibold text-ink-800 leading-relaxed">{q.question}</h4>
                     </div>
-                    <div className="bg-paper-100 p-2.5 rounded text-xs text-ink-500 font-body leading-relaxed flex gap-2">
-                      <HelpCircle size={14} className="shrink-0 mt-0.5 text-crimson-600" />
-                      <span>{q.explanation}</span>
+                  </div>
+                  
+                  <div className="ml-11 space-y-2 text-xs">
+                    <div className="flex items-center gap-2">
+                      <span className={`font-semibold ${isCorrect ? 'text-emerald-700' : 'text-red-700'}`}>
+                        Your Answer:
+                      </span>
+                      <span className="text-ink-700">{userAnswer}</span>
+                    </div>
+                    {!isCorrect && (
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-emerald-700">Correct Answer:</span>
+                        <span className="text-ink-700">{q.answer}</span>
+                      </div>
+                    )}
+                    <div className="rounded-lg border border-ink-200/60 bg-paper-50 p-3 mt-2">
+                      <p className="text-xs leading-relaxed text-ink-600">{q.explanation}</p>
                     </div>
                   </div>
                 </motion.div>
@@ -214,162 +325,253 @@ export function QuizPanel({ docId }: { docId: string | null }) {
 
   if (!started) {
     return (
-      <div className="flex h-full flex-col items-center justify-center px-6 text-center space-y-6">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-crimson-50 text-crimson-600 shadow-soft">
-          <ListChecks size={28} strokeWidth={1.5} />
-        </div>
-        <div className="space-y-1.5">
-          <h2 className="font-serif text-xl font-bold text-ink-800 tracking-editorial">Ready to test your knowledge?</h2>
-          <p className="max-w-xs text-xs text-ink-400 leading-relaxed mx-auto">
-            {quiz.length} auto-generated questions from {doc.name} to assess your understanding.
-          </p>
-        </div>
-        <div className="flex flex-wrap justify-center gap-1.5 pt-1">
-          {['easy', 'medium', 'hard'].map((d) => {
-            const count = quiz.filter((q) => q.difficulty === d).length;
-            if (count === 0) return null;
-            return (
-              <span key={d} className="chip border border-ink-200 bg-paper-50 text-ink-500 capitalize px-2 py-0.5 text-[10px]">
-                {d}: {count} Q
-              </span>
-            );
-          })}
-        </div>
-        <div className="flex gap-2.5 pt-2">
-          <button onClick={() => setStarted(true)} className="btn-primary btn-sm rounded px-4 py-2 flex items-center gap-1.5 text-xs">
-            Start Quiz <ChevronRight size={14} />
-          </button>
-          <button
-            onClick={async () => {
-              setGenerating(true);
-              try {
-                await generateQuiz(doc.id);
-              } finally {
-                setGenerating(false);
-              }
-            }}
-            className="btn-secondary btn-sm rounded px-3 py-2 flex items-center gap-1.5 text-xs"
+      <div className="flex h-full flex-col items-center justify-center px-6 bg-gradient-to-b from-paper-50 to-paper-100">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="max-w-lg text-center space-y-6"
+        >
+          <motion.div
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+            className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-float"
           >
-            <RefreshCw size={12} /> Regenerate
-          </button>
-        </div>
+            <ListChecks size={40} strokeWidth={2} />
+          </motion.div>
+          
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="space-y-2"
+          >
+            <h2 className="font-serif text-2xl font-bold text-ink-900">Ready to Test Your Knowledge?</h2>
+            <p className="text-sm text-ink-600 leading-relaxed max-w-md mx-auto">
+              {quiz.length} carefully crafted questions from <span className="font-semibold text-ink-800">{doc.name}</span> to assess your understanding.
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="flex flex-wrap justify-center gap-2 pt-2"
+          >
+            {['easy', 'medium', 'hard'].map((d) => {
+              const count = quiz.filter((q) => q.difficulty === d).length;
+              if (count === 0) return null;
+              const colors = {
+                easy: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+                medium: 'border-amber-200 bg-amber-50 text-amber-700',
+                hard: 'border-red-200 bg-red-50 text-red-700',
+              };
+              return (
+                <span key={d} className={`chip ${colors[d as keyof typeof colors]} capitalize`}>
+                  {d}: {count} question{count > 1 ? 's' : ''}
+                </span>
+              );
+            })}
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="flex flex-wrap justify-center gap-3 pt-4"
+          >
+            <button 
+              onClick={() => setStarted(true)} 
+              className="btn-primary gap-2"
+            >
+              Start Quiz <ChevronRight size={18} />
+            </button>
+            <button
+              onClick={async () => {
+                setGenerating(true);
+                try {
+                  await generateQuiz(doc.id);
+                } finally {
+                  setGenerating(false);
+                }
+              }}
+              className="btn-secondary gap-2"
+            >
+              <RefreshCw size={16} /> New Questions
+            </button>
+          </motion.div>
+        </motion.div>
       </div>
     );
   }
 
   const q = quiz[current];
   const progress = ((current + 1) / quiz.length) * 100;
+  const answered = !!answers[q.id];
 
   return (
-    <div className="flex h-full flex-col bg-paper-50/20">
-      {/* Quiz Progress header */}
-      <div className="border-b border-ink-100/40 px-6 py-3.5 bg-paper-50">
-        <div className="mb-2 flex items-center justify-between text-[10px] font-semibold text-ink-400 uppercase tracking-wide2">
-          <span>Question {current + 1} of {quiz.length}</span>
-          <span className="chip border border-ink-200 bg-paper-100 text-ink-500">{q.difficulty}</span>
+    <div className="flex h-full flex-col bg-gradient-to-b from-paper-50 to-paper-100">
+      {/* Enhanced Progress Header */}
+      <div className="border-b border-ink-100/60 bg-paper-50/95 px-6 py-4 backdrop-blur-lg shadow-soft">
+        <div className="mb-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-soft">
+              <ListChecks size={20} />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-ink-800">
+                Question {current + 1} of {quiz.length}
+              </p>
+              <p className="text-xs text-ink-500">{Object.keys(answers).length} answered</p>
+            </div>
+          </div>
+          <span className={`chip ${
+            q.difficulty === 'easy' ? 'chip-success' :
+            q.difficulty === 'medium' ? 'chip-warning' :
+            'border-red-200 bg-red-50 text-red-700'
+          } capitalize`}>
+            {q.difficulty}
+          </span>
         </div>
-        <div className="h-1.5 overflow-hidden rounded-full bg-ink-100">
+        
+        {/* Premium Progress Bar */}
+        <div className="relative h-2 overflow-hidden rounded-full bg-ink-100 shadow-inset">
           <motion.div
-            className="h-full rounded-full bg-crimson-500"
+            className="h-full rounded-full bg-gradient-to-r from-blue-500 to-blue-400"
             animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.4, ease: 'easeOut' }}
           />
+          <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent pointer-events-none" />
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 py-6 font-body">
-        <div className="mx-auto max-w-2xl space-y-5">
-          <div className="space-y-2">
-            <span className="chip bg-crimson-50 text-crimson-700 font-semibold tracking-wider text-[9px] uppercase px-1.5 py-0.5 rounded">
-              {q.type === 'truefalse' ? 'True / False' : q.type.toUpperCase()}
-            </span>
-            <h3 className="font-serif text-lg font-bold leading-relaxed text-ink-800">{q.question}</h3>
-          </div>
+      {/* Question Area */}
+      <div className="flex-1 overflow-y-auto px-6 py-8">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={current}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+            className="mx-auto max-w-2xl space-y-6"
+          >
+            {/* Question Card */}
+            <div className="rounded-2xl border-2 border-ink-200/60 bg-gradient-to-br from-paper-50 to-paper-100 p-6 shadow-paper">
+              <span className="chip chip-primary uppercase tracking-wider">
+                {q.type === 'truefalse' ? 'True / False' : q.type === 'mcq' ? 'Multiple Choice' : 'Short Answer'}
+              </span>
+              <h3 className="mt-4 font-serif text-xl font-bold leading-relaxed text-ink-900">
+                {q.question}
+              </h3>
+            </div>
 
-          {q.type === 'mcq' && q.options && (
-            <div className="space-y-2">
-              {q.options.map((opt) => {
-                const selected = answers[q.id] === opt;
-                return (
-                  <button
-                    key={opt}
-                    onClick={() => setAnswers((a) => ({ ...a, [q.id]: opt }))}
-                    className={`flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-left text-xs font-semibold transition-all ${
-                      selected
-                        ? 'border-crimson-400 bg-crimson-50/40 text-ink-850 shadow-soft'
-                        : 'border-ink-100 bg-paper-50 text-ink-600 hover:border-ink-250 hover:bg-paper-100/50'
-                    }`}
-                  >
-                    <span
-                      className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${
-                        selected ? 'border-crimson-500 bg-crimson-500 text-white' : 'border-ink-200'
+            {/* Answer Options */}
+            <div className="space-y-3">
+              {q.type === 'mcq' && q.options && (
+                q.options.map((opt, idx) => {
+                  const selected = answers[q.id] === opt;
+                  return (
+                    <motion.button
+                      key={opt}
+                      initial={{ opacity: 0, x: -12 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                      whileHover={{ scale: 1.01, x: 4 }}
+                      whileTap={{ scale: 0.99 }}
+                      onClick={() => setAnswers((a) => ({ ...a, [q.id]: opt }))}
+                      className={`flex w-full items-center gap-4 rounded-xl border-2 px-5 py-4 text-left transition-all ${
+                        selected
+                          ? 'border-blue-400 bg-gradient-to-r from-blue-50 to-blue-100/50 shadow-soft'
+                          : 'border-ink-200/60 bg-paper-50 hover:border-ink-300 hover:bg-paper-100'
                       }`}
                     >
-                      {selected && <div className="h-1.5 w-1.5 rounded-full bg-paper-50" />}
-                    </span>
-                    <span>{opt}</span>
-                  </button>
-                );
-              })}
-            </div>
-          )}
+                      <span
+                        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-all ${
+                          selected 
+                            ? 'border-blue-500 bg-blue-500' 
+                            : 'border-ink-300'
+                        }`}
+                      >
+                        {selected && (
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="h-2.5 w-2.5 rounded-full bg-white"
+                          />
+                        )}
+                      </span>
+                      <span className={`text-sm font-medium ${selected ? 'text-ink-900' : 'text-ink-700'}`}>
+                        {opt}
+                      </span>
+                    </motion.button>
+                  );
+                })
+              )}
 
-          {q.type === 'truefalse' && (
-            <div className="grid grid-cols-2 gap-3">
-              {['True', 'False'].map((opt) => {
-                const selected = answers[q.id] === opt;
-                return (
-                  <button
-                    key={opt}
-                    onClick={() => setAnswers((a) => ({ ...a, [q.id]: opt }))}
-                    className={`rounded-lg border px-4 py-5 text-center font-serif text-base font-bold transition-all ${
-                      selected
-                        ? 'border-crimson-400 bg-crimson-50/40 text-crimson-700'
-                        : 'border-ink-100 bg-paper-50 text-ink-600 hover:border-ink-250 hover:bg-paper-100/50'
-                    }`}
-                  >
-                    {opt}
-                  </button>
-                );
-              })}
-            </div>
-          )}
+              {q.type === 'truefalse' && (
+                <div className="grid grid-cols-2 gap-4">
+                  {['True', 'False'].map((opt) => {
+                    const selected = answers[q.id] === opt;
+                    return (
+                      <motion.button
+                        key={opt}
+                        whileHover={{ scale: 1.02, y: -2 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => setAnswers((a) => ({ ...a, [q.id]: opt }))}
+                        className={`rounded-xl border-2 py-6 text-center font-serif text-lg font-bold transition-all ${
+                          selected
+                            ? 'border-blue-400 bg-gradient-to-br from-blue-50 to-blue-100/50 text-blue-700 shadow-soft'
+                            : 'border-ink-200/60 bg-paper-50 text-ink-600 hover:border-ink-300 hover:bg-paper-100'
+                        }`}
+                      >
+                        {opt}
+                      </motion.button>
+                    );
+                  })}
+                </div>
+              )}
 
-          {q.type === 'short' && (
-            <textarea
-              value={answers[q.id] || ''}
-              onChange={(e) => setAnswers((a) => ({ ...a, [q.id]: e.target.value }))}
-              placeholder="Type your explanation..."
-              rows={4}
-              className="input text-xs font-body"
-            />
-          )}
-        </div>
+              {q.type === 'short' && (
+                <textarea
+                  value={answers[q.id] || ''}
+                  onChange={(e) => setAnswers((a) => ({ ...a, [q.id]: e.target.value }))}
+                  placeholder="Type your answer here..."
+                  rows={5}
+                  className="input text-sm"
+                />
+              )}
+            </div>
+          </motion.div>
+        </AnimatePresence>
       </div>
 
-      <div className="flex items-center justify-between border-t border-ink-100/40 px-6 py-3.5 bg-paper-50">
+      {/* Navigation Footer */}
+      <div className="flex items-center justify-between border-t border-ink-100/60 bg-paper-50/95 px-6 py-4 backdrop-blur-lg">
         <button
           onClick={() => setCurrent((c) => Math.max(0, c - 1))}
           disabled={current === 0}
-          className="btn-ghost btn-sm rounded px-3 py-1.5 text-xs font-semibold"
+          className="btn-secondary gap-2 disabled:opacity-40"
         >
-          Previous
+          <ChevronLeft size={16} /> Previous
         </button>
+        
         {current === quiz.length - 1 ? (
           <button
             onClick={() => setSubmitted(true)}
-            disabled={!answers[q.id]}
-            className="btn-primary btn-sm rounded px-4 py-2 text-xs"
+            disabled={!answered}
+            className="btn-primary gap-2 disabled:opacity-50"
           >
-            Submit Quiz
+            Submit Quiz <CheckCircle2 size={18} />
           </button>
         ) : (
           <button
             onClick={() => setCurrent((c) => Math.min(quiz.length - 1, c + 1))}
-            disabled={!answers[q.id]}
-            className="btn-primary btn-sm rounded px-4 py-2 flex items-center gap-1 text-xs"
+            disabled={!answered}
+            className="btn-primary gap-2 disabled:opacity-50"
           >
-            Next <ChevronRight size={13} />
+            Next Question <ChevronRight size={18} />
           </button>
         )}
       </div>

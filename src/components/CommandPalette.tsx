@@ -1,7 +1,24 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, FileText, MessageSquare, AlignLeft, Layers, ListChecks, Share2, HelpCircle, CornerDownLeft } from 'lucide-react';
+import { 
+  Search, 
+  FileText, 
+  MessageSquare, 
+  AlignLeft, 
+  Layers, 
+  ListChecks, 
+  Share2, 
+  HelpCircle, 
+  CornerDownLeft,
+  Command,
+  Clock,
+  Sparkles,
+  TrendingUp,
+  Zap,
+  ArrowUpCircle,
+  ArrowDownCircle
+} from 'lucide-react';
 import { useStore } from '../store';
 
 export function CommandPalette() {
@@ -14,6 +31,7 @@ export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [recentActions, setRecentActions] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -40,33 +58,57 @@ export function CommandPalette() {
   const readyDocs = documents.filter((d) => d.status === 'ready');
 
   const navigationCommands = [
-    { label: 'Go to Library', icon: FileText, action: () => navigate('/app') },
+    { label: 'Go to Library', icon: FileText, action: () => navigate('/app'), category: 'Navigation', badge: 'Home' },
+    { label: 'Search All Documents', icon: Search, action: () => navigate('/app/search'), category: 'Navigation', badge: 'Search' },
     ...(activeDocId
       ? [
-          { label: 'Open AI Chat', icon: MessageSquare, action: () => { setWorkspaceTab('chat'); navigate('/app/workspace'); } },
-          { label: 'Open Summaries', icon: AlignLeft, action: () => { setWorkspaceTab('summary'); navigate('/app/workspace'); } },
-          { label: 'Open Flashcards', icon: Layers, action: () => { setWorkspaceTab('flashcards'); navigate('/app/workspace'); } },
-          { label: 'Open Quiz', icon: ListChecks, action: () => { setWorkspaceTab('quiz'); navigate('/app/workspace'); } },
-          { label: 'Open Concept Graph', icon: Share2, action: () => { setWorkspaceTab('graph'); navigate('/app/workspace'); } },
+          { label: 'Open AI Chat', icon: MessageSquare, action: () => { setWorkspaceTab('chat'); navigate('/app/workspace'); }, category: 'Workspace', badge: 'Chat' },
+          { label: 'View Summary', icon: AlignLeft, action: () => { setWorkspaceTab('summary'); navigate('/app/workspace'); }, category: 'Workspace', badge: 'Summary' },
+          { label: 'Study Flashcards', icon: Layers, action: () => { setWorkspaceTab('flashcards'); navigate('/app/workspace'); }, category: 'Workspace', badge: 'Study' },
+          { label: 'Take Quiz', icon: ListChecks, action: () => { setWorkspaceTab('quiz'); navigate('/app/workspace'); }, category: 'Workspace', badge: 'Quiz' },
+          { label: 'Explore Knowledge Graph', icon: Share2, action: () => { setWorkspaceTab('graph'); navigate('/app/workspace'); }, category: 'Workspace', badge: 'Graph' },
         ]
       : []),
   ];
 
   const documentCommands = readyDocs.map((doc) => ({
-    label: `Open: ${doc.name}`,
+    label: doc.name,
     icon: FileText,
     action: () => {
       openDocument(doc.id);
       setWorkspaceTab('chat');
       navigate('/app/workspace');
+      addRecentAction(`Open: ${doc.name}`);
     },
+    category: 'Documents',
+    badge: `${doc.pages}p`,
   }));
 
   const allCommands = [...navigationCommands, ...documentCommands];
 
+  const addRecentAction = (label: string) => {
+    setRecentActions((prev) => {
+      const filtered = prev.filter((a) => a !== label);
+      return [label, ...filtered].slice(0, 5);
+    });
+  };
+
   const filtered = allCommands.filter((cmd) =>
-    cmd.label.toLowerCase().includes(query.toLowerCase())
+    cmd.label.toLowerCase().includes(query.toLowerCase()) ||
+    (cmd.category && cmd.category.toLowerCase().includes(query.toLowerCase()))
   );
+
+  // Group commands by category
+  const groupedCommands = filtered.reduce((acc, cmd) => {
+    const category = cmd.category || 'Other';
+    if (!acc[category]) acc[category] = [];
+    acc[category].push(cmd);
+    return acc;
+  }, {} as Record<string, typeof filtered>);
+
+  const recentCommands = allCommands.filter((cmd) => 
+    recentActions.some((action) => cmd.label.includes(action) || action.includes(cmd.label))
+  ).slice(0, 3);
 
   useEffect(() => {
     setSelectedIndex(0);
@@ -91,80 +133,253 @@ export function CommandPalette() {
   return (
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh] px-4">
-          {/* Backdrop */}
+        <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[12vh] px-4">
+          {/* Enhanced Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setOpen(false)}
-            className="absolute inset-0 bg-ink-950/40 backdrop-blur-sm"
+            className="absolute inset-0 bg-gradient-to-b from-ink-950/60 to-ink-950/40 backdrop-blur-md"
           />
 
-          {/* Palette container */}
+          {/* Enhanced Palette container */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.97, y: -8 }}
+            initial={{ opacity: 0, scale: 0.95, y: -20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.97, y: -8 }}
-            transition={{ duration: 0.15, ease: 'easeOut' }}
-            className="relative w-full max-w-lg overflow-hidden rounded-xl border border-ink-200 bg-paper-50 shadow-lift flex flex-col max-h-[380px]"
+            exit={{ opacity: 0, scale: 0.95, y: -20 }}
+            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            className="relative w-full max-w-2xl overflow-hidden rounded-2xl border-2 border-ink-200/60 bg-gradient-to-br from-paper-50 to-paper-100 shadow-paper-lg flex flex-col max-h-[500px]"
           >
-            {/* Input */}
-            <div className="flex h-12 items-center border-b border-ink-100 bg-white px-4 gap-2">
-              <Search size={16} className="text-ink-400" />
-              <input
-                ref={inputRef}
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Search commands or documents... (Ctrl+K to toggle)"
-                className="flex-1 bg-transparent text-xs text-ink-800 focus:outline-none placeholder:text-ink-300"
-              />
+            {/* Header with enhanced input */}
+            <div className="relative border-b-2 border-ink-200/60 bg-paper-50/95 backdrop-blur-lg">
+              <div className="flex items-center gap-3 px-5 py-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-crimson-500 to-crimson-600 text-white shadow-soft">
+                  <Command size={20} />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 rounded-xl border-2 border-ink-200/60 bg-white px-4 py-2.5 shadow-soft transition-all focus-within:border-crimson-400 focus-within:shadow-card">
+                    <Search size={18} className="text-ink-400" />
+                    <input
+                      ref={inputRef}
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      placeholder="Search commands, documents, or actions..."
+                      className="flex-1 bg-transparent text-sm font-medium text-ink-900 focus:outline-none placeholder:text-ink-400"
+                    />
+                    {query && (
+                      <motion.button
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => setQuery('')}
+                        className="rounded-lg bg-ink-100 px-2 py-1 text-2xs font-bold text-ink-600 hover:bg-ink-200"
+                      >
+                        Clear
+                      </motion.button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick stats */}
+              <div className="flex items-center gap-3 px-5 pb-3 text-xs">
+                <span className="flex items-center gap-1.5 text-ink-500">
+                  <Zap size={12} className="text-crimson-600" />
+                  <span className="font-semibold">{filtered.length}</span> results
+                </span>
+                {recentCommands.length > 0 && !query && (
+                  <>
+                    <span className="h-1 w-1 rounded-full bg-ink-300" />
+                    <span className="flex items-center gap-1.5 text-ink-500">
+                      <Clock size={12} className="text-blue-600" />
+                      <span className="font-semibold">{recentCommands.length}</span> recent
+                    </span>
+                  </>
+                )}
+              </div>
             </div>
 
-            {/* List */}
-            <div className="flex-1 overflow-y-auto p-1.5 space-y-0.5 no-scrollbar">
-              {filtered.length > 0 ? (
-                filtered.map((cmd, i) => {
-                  const Icon = cmd.icon;
-                  const selected = i === selectedIndex;
-                  return (
-                    <button
-                      key={cmd.label}
-                      onClick={() => {
-                        cmd.action();
-                        setOpen(false);
-                      }}
-                      onMouseEnter={() => setSelectedIndex(i)}
-                      className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs transition-colors cursor-pointer ${
-                        selected ? 'bg-crimson-50 text-crimson-800' : 'text-ink-600 hover:bg-paper-100'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <Icon size={14} className={selected ? 'text-crimson-600' : 'text-ink-400'} />
-                        <span className="truncate font-medium">{cmd.label}</span>
-                      </div>
-                      {selected && (
-                        <span className="flex items-center gap-0.5 text-[9px] font-bold text-crimson-500 uppercase">
-                          <span>Select</span>
-                          <CornerDownLeft size={8} strokeWidth={2.5} />
-                        </span>
-                      )}
-                    </button>
-                  );
-                })
-              ) : (
-                <div className="py-6 text-center text-xs text-ink-400 flex flex-col items-center justify-center gap-1.5">
-                  <HelpCircle size={20} className="text-ink-300/80" />
-                  <span>No matching commands or files</span>
+            {/* Results list */}
+            <div className="flex-1 overflow-y-auto p-3 space-y-3">
+              {/* Recent commands when no query */}
+              {!query && recentCommands.length > 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 px-2">
+                    <Clock size={14} className="text-ink-400" />
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-ink-600">Recent</h3>
+                  </div>
+                  <div className="space-y-1">
+                    {recentCommands.map((cmd, i) => {
+                      const Icon = cmd.icon;
+                      return (
+                        <motion.button
+                          key={cmd.label}
+                          initial={{ opacity: 0, x: -12 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.05 }}
+                          onClick={() => {
+                            cmd.action();
+                            setOpen(false);
+                          }}
+                          className="flex w-full items-center justify-between rounded-xl border-2 border-blue-200/60 bg-gradient-to-r from-blue-50 to-blue-100/50 px-4 py-2.5 text-left transition-all hover:border-blue-300 hover:shadow-soft"
+                        >
+                          <div className="flex items-center gap-3 min-w-0 flex-1">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500 text-white">
+                              <Icon size={16} />
+                            </div>
+                            <span className="truncate text-sm font-semibold text-ink-900">{cmd.label}</span>
+                          </div>
+                          <span className="chip chip-secondary text-2xs">{cmd.badge}</span>
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Grouped commands */}
+              {query && filtered.length > 0 ? (
+                Object.entries(groupedCommands).map(([category, commands], categoryIndex) => (
+                  <div key={category} className="space-y-2">
+                    <div className="flex items-center gap-2 px-2">
+                      <Sparkles size={14} className="text-crimson-600" />
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-ink-600">{category}</h3>
+                      <div className="h-px flex-1 bg-gradient-to-r from-ink-200 to-transparent" />
+                    </div>
+                    <div className="space-y-1">
+                      {commands.map((cmd, i) => {
+                        const Icon = cmd.icon;
+                        const globalIndex = filtered.indexOf(cmd);
+                        const selected = globalIndex === selectedIndex;
+                        return (
+                          <motion.button
+                            key={cmd.label}
+                            initial={{ opacity: 0, x: -12 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: categoryIndex * 0.1 + i * 0.03 }}
+                            onClick={() => {
+                              cmd.action();
+                              addRecentAction(cmd.label);
+                              setOpen(false);
+                            }}
+                            onMouseEnter={() => setSelectedIndex(globalIndex)}
+                            whileHover={{ x: 4, scale: 1.01 }}
+                            whileTap={{ scale: 0.99 }}
+                            className={`flex w-full items-center justify-between rounded-xl border-2 px-4 py-3 text-left transition-all ${
+                              selected
+                                ? 'border-crimson-400 bg-gradient-to-r from-crimson-50 to-crimson-100/50 shadow-soft'
+                                : 'border-ink-200/60 bg-paper-50 hover:border-ink-300 hover:bg-paper-100'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3 min-w-0 flex-1">
+                              <div className={`flex h-8 w-8 items-center justify-center rounded-lg transition-all ${
+                                selected 
+                                  ? 'bg-crimson-500 text-white' 
+                                  : 'bg-ink-100 text-ink-600'
+                              }`}>
+                                <Icon size={16} />
+                              </div>
+                              <span className={`truncate text-sm font-semibold ${
+                                selected ? 'text-crimson-900' : 'text-ink-800'
+                              }`}>
+                                {cmd.label}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {cmd.badge && (
+                                <span className="chip text-2xs">{cmd.badge}</span>
+                              )}
+                              {selected && (
+                                <span className="flex items-center gap-1 rounded-lg bg-crimson-500 px-2 py-1 text-2xs font-bold text-white">
+                                  <CornerDownLeft size={10} />
+                                </span>
+                              )}
+                            </div>
+                          </motion.button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))
+              ) : query && filtered.length === 0 ? (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="flex flex-col items-center justify-center py-12 text-center"
+                >
+                  <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-ink-100 text-ink-400">
+                    <HelpCircle size={28} />
+                  </div>
+                  <p className="text-sm font-semibold text-ink-700">No matching commands</p>
+                  <p className="mt-1 text-xs text-ink-500">Try a different search term</p>
+                </motion.div>
+              ) : null}
+
+              {/* Suggestions when empty */}
+              {!query && recentCommands.length === 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 px-2">
+                    <TrendingUp size={14} className="text-emerald-600" />
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-ink-600">Quick Actions</h3>
+                  </div>
+                  <div className="space-y-1">
+                    {navigationCommands.slice(0, 4).map((cmd, i) => {
+                      const Icon = cmd.icon;
+                      return (
+                        <motion.button
+                          key={cmd.label}
+                          initial={{ opacity: 0, x: -12 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.08 }}
+                          onClick={() => {
+                            cmd.action();
+                            addRecentAction(cmd.label);
+                            setOpen(false);
+                          }}
+                          whileHover={{ x: 4, scale: 1.01 }}
+                          className="flex w-full items-center justify-between rounded-xl border-2 border-ink-200/60 bg-paper-50 px-4 py-2.5 text-left transition-all hover:border-ink-300 hover:bg-paper-100"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-ink-100 text-ink-600">
+                              <Icon size={16} />
+                            </div>
+                            <span className="text-sm font-semibold text-ink-800">{cmd.label}</span>
+                          </div>
+                          {cmd.badge && <span className="chip text-2xs">{cmd.badge}</span>}
+                        </motion.button>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* Footer hints */}
-            <div className="flex items-center justify-between border-t border-ink-100 bg-paper-100 px-4 py-2 text-[9px] font-medium text-ink-400 uppercase tracking-wider">
-              <span>Use ↑↓ arrows to navigate</span>
-              <span>Esc to close</span>
+            {/* Enhanced footer with keyboard hints */}
+            <div className="border-t-2 border-ink-200/60 bg-gradient-to-r from-paper-100 to-paper-50 px-5 py-3">
+              <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center gap-3">
+                  <span className="flex items-center gap-1.5 text-ink-600">
+                    <span className="kbd-key">↑</span>
+                    <span className="kbd-key">↓</span>
+                    <span className="font-medium">Navigate</span>
+                  </span>
+                  <span className="flex items-center gap-1.5 text-ink-600">
+                    <span className="kbd-key">↵</span>
+                    <span className="font-medium">Select</span>
+                  </span>
+                  <span className="flex items-center gap-1.5 text-ink-600">
+                    <span className="kbd-key">Esc</span>
+                    <span className="font-medium">Close</span>
+                  </span>
+                </div>
+                <span className="flex items-center gap-1.5 text-ink-500">
+                  <Command size={12} />
+                  <span className="font-semibold">⌘K</span>
+                </span>
+              </div>
             </div>
           </motion.div>
         </div>

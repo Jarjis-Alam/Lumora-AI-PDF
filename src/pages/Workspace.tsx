@@ -55,50 +55,83 @@ export function Workspace() {
 
   if (!doc) {
     return (
-      <div className="h-full overflow-y-auto paper-texture">
-        <div className="mx-auto max-w-2xl px-6 py-16">
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-8 text-center flex flex-col items-center">
-            <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-crimson-50 text-3xl font-semibold shadow-soft animate-breathe">
+      <div className="h-full overflow-y-auto bg-gradient-to-br from-paper-50 to-paper-100">
+        <div className="mx-auto max-w-2xl px-6 py-20">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }} 
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="mb-10 text-center flex flex-col items-center"
+          >
+            <motion.div
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+              className="mb-6 flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-crimson-500 to-crimson-600 text-white text-4xl shadow-float"
+            >
               📄
-            </div>
-            <h1 className="font-serif text-2xl font-semibold tracking-editorial text-ink-800">
-              Upload a PDF to begin your research
+            </motion.div>
+            <h1 className="font-serif text-3xl font-bold text-ink-900 mb-3">
+              Upload a Document to Begin
             </h1>
-            <p className="mx-auto mt-2 max-w-sm text-xs leading-relaxed text-ink-500">
-              Upload a document to extract concept structures, flashcards, interactive quizzes, and zoomable knowledge graphs.
+            <p className="mx-auto max-w-md text-sm leading-relaxed text-ink-600">
+              Upload a PDF to unlock AI-powered summaries, interactive flashcards, quizzes, knowledge graphs, and semantic search.
             </p>
           </motion.div>
 
-          <div className="mb-12">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="mb-12"
+          >
             <UploadZone />
-          </div>
+          </motion.div>
 
           {/* Document picker */}
           {readyDocs.length > 0 && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}>
-              <p className="mb-3 text-[10px] font-bold uppercase tracking-wider text-ink-400">
-                Or open an existing document
-              </p>
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }} 
+              animate={{ opacity: 1, y: 0 }} 
+              transition={{ delay: 0.4 }}
+            >
+              <div className="mb-4 flex items-center gap-2">
+                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-ink-200 to-transparent" />
+                <p className="text-xs font-bold uppercase tracking-wider text-ink-500">
+                  Or continue with recent
+                </p>
+                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-ink-200 to-transparent" />
+              </div>
               <div className="space-y-2">
-                {readyDocs.slice(0, 5).map((d) => (
+                {readyDocs.slice(0, 5).map((d, idx) => (
                   <motion.button
                     key={d.id}
-                    whileHover={{ x: 2 }}
-                    onClick={() => {
-                      openDocument(d.id);
-                    }}
-                    className="group flex w-full items-center gap-3 rounded-lg border border-ink-100 bg-paper-50 px-4 py-3 text-left transition-colors hover:border-ink-200 hover:bg-paper-100"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.5 + idx * 0.08 }}
+                    whileHover={{ x: 4, scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
+                    onClick={() => openDocument(d.id)}
+                    className="group flex w-full items-center gap-4 rounded-xl border-2 border-ink-200/60 bg-gradient-to-br from-paper-50 to-paper-100 px-4 py-3.5 shadow-soft transition-all hover:border-ink-300 hover:shadow-card"
                   >
-                    <div className="h-8 w-1 rounded-full" style={{ backgroundColor: d.accent }} />
-                    <FileText size={15} className="text-ink-400" />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-ink-700">{d.name}</p>
-                      <p className="text-2xs text-ink-400">
+                    <div 
+                      className="h-10 w-2 rounded-full shadow-soft" 
+                      style={{ backgroundColor: d.accent }} 
+                    />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-ink-100 to-ink-200">
+                      <FileText size={18} className="text-ink-600" />
+                    </div>
+                    <div className="min-w-0 flex-1 text-left">
+                      <p className="truncate text-sm font-bold text-ink-900">{d.name}</p>
+                      <p className="text-xs text-ink-500">
                         {d.pages} pages
                         {d.lastOpenedAt ? ` · ${timeAgo(d.lastOpenedAt)}` : ''}
                       </p>
                     </div>
-                    <ArrowRight size={15} className="text-ink-300 transition-transform group-hover:translate-x-0.5" />
+                    <ArrowRight 
+                      size={18} 
+                      className="text-ink-400 transition-transform group-hover:translate-x-1 group-hover:text-crimson-600" 
+                    />
                   </motion.button>
                 ))}
               </div>
@@ -110,38 +143,63 @@ export function Workspace() {
   }
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-paper-100 select-none">
-      {/* Top bar / Breadcrumbs */}
-      <div className="flex h-11 items-center justify-between border-b border-ink-100/40 bg-paper-50/80 px-4 backdrop-blur-md">
-        <div className="flex min-w-0 items-center gap-2 text-xs">
+    <div className="flex h-full flex-col overflow-hidden bg-gradient-to-br from-paper-50 to-paper-100 select-none">
+      {/* Enhanced Top bar / Breadcrumbs - Responsive */}
+      <div className="flex h-12 items-center justify-between border-b-2 border-ink-200/60 bg-paper-50/95 px-3 sm:px-5 backdrop-blur-lg shadow-soft">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-3 text-xs overflow-hidden">
           <button
             onClick={() => navigate('/app')}
-            className="flex items-center gap-1 text-ink-400 hover:text-ink-700 transition-colors"
+            className="flex items-center gap-1 sm:gap-1.5 rounded-lg px-2 sm:px-2.5 py-1.5 text-ink-500 transition-all hover:bg-ink-100 hover:text-ink-800 shrink-0"
           >
-            <ArrowLeft size={13} />
-            <span>Library</span>
+            <ArrowLeft size={14} />
+            <span className="font-semibold hidden sm:inline">Library</span>
           </button>
-          <ChevronRight size={10} className="text-ink-300" />
-          <div className="flex items-center gap-1.5 min-w-0">
-            <div className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: doc.accent }} />
-            <span className="truncate font-medium text-ink-700">{doc.name}</span>
+          <ChevronRight size={12} className="text-ink-300 shrink-0 hidden sm:block" />
+          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 rounded-lg border border-ink-200/60 bg-paper-100 px-2 sm:px-3 py-1.5 shadow-soft overflow-hidden">
+            <div className="h-2 w-2 rounded-full shadow-soft shrink-0" style={{ backgroundColor: doc.accent }} />
+            <span className="truncate font-semibold text-ink-800 text-xs">{doc.name}</span>
           </div>
-          <span className="text-[10px] text-ink-400 px-1.5 py-0.5 rounded bg-paper-200">{doc.pages} pages</span>
+          <span className="chip chip-secondary text-2xs hidden lg:inline-block">{doc.pages} pages</span>
         </div>
 
         <div className="flex items-center gap-2">
           {doc.status === 'processing' && (
-            <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-200/50 rounded-full px-2 py-0.5 text-[10px] font-medium text-amber-700">
-              <Cpu size={10} className="animate-pulse" />
-              <span>Analyzing ({Math.round(doc.progress)}%)</span>
-            </div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="flex items-center gap-1.5 sm:gap-2 rounded-full border-2 border-amber-200/60 bg-gradient-to-r from-amber-50 to-amber-100/50 px-2 sm:px-3 py-1 sm:py-1.5 shadow-soft"
+            >
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+              >
+                <Cpu size={14} className="text-amber-600" />
+              </motion.div>
+              <span className="text-xs font-bold text-amber-800 hidden sm:inline">
+                Processing {Math.round(doc.progress)}%
+              </span>
+              <span className="text-xs font-bold text-amber-800 sm:hidden">
+                {Math.round(doc.progress)}%
+              </span>
+            </motion.div>
+          )}
+          {doc.status === 'ready' && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="flex items-center gap-1.5 rounded-full border-2 border-emerald-200/60 bg-gradient-to-r from-emerald-50 to-emerald-100/50 px-2 sm:px-3 py-1 sm:py-1.5 shadow-soft"
+            >
+              <div className="h-2 w-2 rounded-full bg-emerald-500" />
+              <span className="text-xs font-bold text-emerald-800 hidden sm:inline">Ready</span>
+            </motion.div>
           )}
           <Tooltip label="Expand Knowledge Graph" position="bottom">
             <button
-              onClick={() => setWorkspaceTab('graph')}
-              className="btn-ghost btn-sm border border-ink-100/40 bg-paper-50"
+              onClick={() => setGraphFullscreen(true)}
+              className="btn-secondary gap-1.5 text-xs px-2 sm:px-3"
             >
-              <Share2 size={13} />
+              <Share2 size={14} />
+              <span className="hidden lg:inline">Graph</span>
             </button>
           </Tooltip>
         </div>
@@ -165,49 +223,78 @@ export function Workspace() {
           onPointerDown={panels.onPointerDown}
         />
 
-        {/* Right Side: Tabbed workspace panel */}
-        <div className="flex flex-col overflow-hidden bg-paper-50" style={{ width: `${panels.sizes.right}%` }}>
-          {/* Workspace Tabs Header */}
-          <div className="flex h-11 items-center border-b border-ink-100/40 bg-paper-100/50 px-2 gap-1 overflow-x-auto no-scrollbar">
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
-              const active = workspaceTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setWorkspaceTab(tab.id)}
-                  className={`group relative flex items-center gap-1.5 rounded px-2.5 py-1 text-xs font-semibold transition-all duration-150 ${
-                    active ? 'text-crimson-800' : 'text-ink-500 hover:bg-paper-200/50 hover:text-ink-800'
-                  }`}
-                >
-                  {active && (
-                    <motion.div
-                      layoutId="workspace-active-tab"
-                      className="absolute inset-0 rounded bg-crimson-50"
-                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                    />
-                  )}
-                  <Icon
-                    size={13}
-                    className={`relative z-10 transition-transform duration-200 ${
-                      active ? 'text-crimson-600' : 'text-ink-400 group-hover:scale-105'
+        {/* Right Side: Enhanced Tabbed workspace panel */}
+        <div className="flex flex-col overflow-hidden bg-gradient-to-br from-paper-50 to-paper-100 border-l-2 border-ink-200/60" style={{ width: `${panels.sizes.right}%` }}>
+          {/* Enhanced Workspace Tabs Header */}
+          <div className="relative border-b-2 border-ink-200/60 bg-paper-50/95 backdrop-blur-lg">
+            <div className="flex h-14 items-center gap-1 overflow-x-auto px-3 no-scrollbar">
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                const active = workspaceTab === tab.id;
+                
+                // Check if feature is available
+                const isAvailable = () => {
+                  if (tab.id === 'summary') return !!doc.summary;
+                  if (tab.id === 'flashcards') return doc.flashcards.length > 0;
+                  if (tab.id === 'quiz') return doc.quiz.length > 0;
+                  if (tab.id === 'graph') return !!doc.graph;
+                  return true; // chat and search always available
+                };
+                
+                const available = isAvailable();
+                
+                return (
+                  <motion.button
+                    key={tab.id}
+                    onClick={() => setWorkspaceTab(tab.id)}
+                    whileHover={{ y: -2 }}
+                    whileTap={{ scale: 0.97 }}
+                    className={`group relative flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
+                      active 
+                        ? 'text-white' 
+                        : available
+                        ? 'text-ink-600 hover:text-ink-900'
+                        : 'text-ink-400 opacity-60'
                     }`}
-                  />
-                  <span className="relative z-10">{tab.label}</span>
-                </button>
-              );
-            })}
+                  >
+                    {active && (
+                      <motion.div
+                        layoutId="workspace-active-tab"
+                        className="absolute inset-0 rounded-xl bg-gradient-to-br from-crimson-500 to-crimson-600 shadow-float"
+                        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                      />
+                    )}
+                    
+                    {!active && available && (
+                      <div className="absolute inset-0 rounded-xl border-2 border-ink-200/60 bg-paper-100 opacity-0 transition-opacity group-hover:opacity-100" />
+                    )}
+                    
+                    <Icon
+                      size={16}
+                      className={`relative z-10 transition-transform ${
+                        active ? 'scale-110' : 'group-hover:scale-105'
+                      }`}
+                    />
+                    <span className="relative z-10 whitespace-nowrap">{tab.label}</span>
+                    
+                    {available && !active && (
+                      <div className="relative z-10 h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-soft" />
+                    )}
+                  </motion.button>
+                );
+              })}
+            </div>
           </div>
 
-          {/* Active Tab Panel Content */}
+          {/* Active Tab Panel Content with enhanced transitions */}
           <div className="flex-1 overflow-hidden">
             <AnimatePresence mode="wait">
               <motion.div
                 key={workspaceTab}
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
-                transition={{ duration: 0.15, ease: 'easeOut' }}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
                 className="h-full w-full overflow-hidden"
               >
                 {workspaceTab === 'chat' && <ChatPanel />}
@@ -313,81 +400,155 @@ function LocalDocSearchTab({ docId }: { docId: string | null }) {
   };
 
   return (
-    <div className="flex h-full flex-col bg-paper-50 p-4">
-      <div className="mb-3">
-        <h3 className="font-serif text-sm font-semibold text-ink-800 mb-1">Search in Document</h3>
-        <p className="text-[10px] text-ink-400">Search by meaning across pages of {doc?.name}.</p>
-      </div>
+    <div className="flex h-full flex-col bg-gradient-to-b from-paper-50 to-paper-100 p-6">
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -12 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-5"
+      >
+        <div className="mb-2 flex items-center gap-2">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-crimson-500 to-crimson-600 text-white shadow-soft">
+            <Search size={18} />
+          </div>
+          <div>
+            <h3 className="font-serif text-base font-bold text-ink-900">Document Search</h3>
+            <p className="text-xs text-ink-600">Search by meaning in {doc?.name}</p>
+          </div>
+        </div>
+      </motion.div>
 
-      <div className="relative mb-4">
-        <div className="flex items-center gap-1.5 rounded-lg border border-ink-200 bg-paper-100 p-1.5 transition-colors focus-within:border-crimson-300">
-          <Search size={14} className="ml-1 text-ink-400" />
+      {/* Enhanced Search Bar */}
+      <motion.div
+        initial={{ opacity: 0, y: -12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="mb-5"
+      >
+        <div className="flex items-center gap-2 rounded-xl border-2 border-ink-200/60 bg-paper-100 p-2 shadow-soft transition-all focus-within:border-crimson-400 focus-within:shadow-card">
+          <Search size={16} className="ml-2 text-ink-400" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            placeholder="Search ideas... e.g. self-attention"
-            className="flex-1 bg-transparent px-1 py-1 text-xs text-ink-700 placeholder:text-ink-300 focus:outline-none"
+            placeholder="Ask a question or search for concepts..."
+            className="flex-1 bg-transparent px-2 py-2 text-sm text-ink-800 placeholder:text-ink-400 focus:outline-none"
           />
           <button
             onClick={handleSearch}
             disabled={!query.trim() || searching}
-            className="btn-primary btn-sm rounded px-3 py-1 text-[11px]"
+            className="btn-primary gap-2 disabled:opacity-50"
           >
             {searching ? (
-              <span className="flex gap-0.5">
-                <span className="h-1 w-1 bg-white rounded-full animate-pulse-soft" />
-                <span className="h-1 w-1 bg-white rounded-full animate-pulse-soft" style={{ animationDelay: '150ms' }} />
-                <span className="h-1 w-1 bg-white rounded-full animate-pulse-soft" style={{ animationDelay: '300ms' }} />
-              </span>
-            ) : 'Search'}
+              <>
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                >
+                  <Sparkles size={14} />
+                </motion.div>
+                Searching
+              </>
+            ) : (
+              <>
+                <Sparkles size={14} />
+                Search
+              </>
+            )}
           </button>
         </div>
-      </div>
+      </motion.div>
 
-      <div className="flex-1 overflow-y-auto space-y-2 no-scrollbar">
+      {/* Results Area */}
+      <div className="flex-1 overflow-y-auto space-y-3">
         {searching && (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {[0, 1, 2].map((i) => (
-              <div key={i} className="card p-3 space-y-2">
-                <div className="skeleton h-3 w-1/4" />
-                <div className="skeleton h-3.5 w-full" />
-                <div className="skeleton h-3.5 w-5/6" />
-              </div>
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
+                className="rounded-xl border-2 border-ink-200/60 bg-paper-50 p-4 space-y-2"
+              >
+                <div className="skeleton h-4 w-1/3" />
+                <div className="skeleton h-4 w-full" />
+                <div className="skeleton h-4 w-5/6" />
+              </motion.div>
             ))}
           </div>
         )}
 
         {results && results.length === 0 && !searching && (
-          <div className="text-center py-10 text-xs text-ink-400">No semantic matches found.</div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex flex-col items-center justify-center py-16 text-center"
+          >
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-ink-100 text-ink-400">
+              <Search size={28} />
+            </div>
+            <p className="text-sm font-semibold text-ink-700">No matches found</p>
+            <p className="mt-1 text-xs text-ink-500">Try different keywords or rephrase your query</p>
+          </motion.div>
         )}
 
         {results && results.length > 0 && (
-          <div className="space-y-2">
-            <p className="text-[10px] text-ink-400 px-1">{results.length} matches found</p>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="space-y-3"
+          >
+            <p className="text-xs font-semibold text-ink-600 px-1">
+              Found {results.length} relevant passage{results.length > 1 ? 's' : ''}
+            </p>
             {results.map((r, i) => (
-              <button
+              <motion.button
                 key={i}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+                whileHover={{ scale: 1.01, y: -2 }}
+                whileTap={{ scale: 0.99 }}
                 onClick={() => jumpTo(r)}
-                className="card w-full p-3 text-left hover:border-crimson-300 hover:bg-crimson-50/10 transition-all flex flex-col gap-1"
+                className="w-full rounded-xl border-2 border-ink-200/60 bg-gradient-to-br from-paper-50 to-paper-100 p-4 text-left shadow-soft transition-all hover:border-crimson-300 hover:shadow-card"
               >
-                <div className="flex items-center justify-between text-[10px] text-ink-400">
-                  <span className="font-semibold text-crimson-700">p. {r.page} · Paragraph {r.paragraph + 1}</span>
-                  <span className="text-2xs font-semibold px-1 py-0.5 rounded bg-crimson-50 text-crimson-600">
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-xs font-bold text-crimson-700">
+                    Page {r.page} · Paragraph {r.paragraph + 1}
+                  </span>
+                  <span className="chip chip-success text-2xs">
                     {(r.score * 100).toFixed(0)}% match
                   </span>
                 </div>
-                <p className="text-xs text-ink-600 leading-relaxed font-body">{r.text}</p>
-              </button>
+                <p className="text-sm leading-relaxed text-ink-700">{r.text}</p>
+              </motion.button>
             ))}
-          </div>
+          </motion.div>
         )}
 
         {!results && !searching && (
-          <div className="flex flex-col items-center justify-center py-20 text-center text-ink-400">
-            <Sparkles size={24} className="text-crimson-500/50 mb-2 animate-breathe" />
-            <p className="text-xs">Type a question or term to find relevant paragraphs in this document.</p>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2 }}
+            className="flex flex-col items-center justify-center py-20 text-center"
+          >
+            <motion.div
+              animate={{ 
+                scale: [1, 1.1, 1],
+                rotate: [0, 5, -5, 0]
+              }}
+              transition={{ duration: 3, repeat: Infinity }}
+              className="mb-4 text-6xl"
+            >
+              🔍
+            </motion.div>
+            <p className="text-sm font-semibold text-ink-700 mb-2">Ready to search</p>
+            <p className="max-w-xs text-xs leading-relaxed text-ink-500">
+              Enter a question or topic to find relevant passages in this document
+            </p>
+          </motion.div>
         )}
       </div>
     </div>

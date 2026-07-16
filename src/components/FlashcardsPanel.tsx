@@ -131,7 +131,13 @@ export function FlashcardsPanel({ docId }: { docId: string | null }) {
       <EmptyState
         icon={Layers}
         title="No document selected"
-        description="Select a document to generate and study flashcards."
+        description="Select a document from the sidebar to generate and study flashcards."
+        tips={[
+          'Flashcards are auto-generated from key concepts in your document',
+          'Use difficulty ratings to focus on challenging material',
+          'Track your progress with the completion percentage'
+        ]}
+        accent="#8B5CF6"
       />
     );
   }
@@ -157,6 +163,12 @@ export function FlashcardsPanel({ docId }: { docId: string | null }) {
             }
           },
         }}
+        tips={[
+          'AI extracts the most important concepts automatically',
+          'Each card includes the source page for reference',
+          'Cards are organized by difficulty level'
+        ]}
+        accent="#8B5CF6"
       />
     );
   }
@@ -175,149 +187,258 @@ export function FlashcardsPanel({ docId }: { docId: string | null }) {
   if (studyMode) {
     if (sessionComplete) {
       return (
-        <div className="flex h-full flex-col items-center justify-center px-6 py-8 bg-paper-50/20">
+        <div className="flex h-full flex-col items-center justify-center px-6 py-12 bg-gradient-to-b from-paper-50 to-paper-100">
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="card max-w-md w-full p-6 text-center space-y-5"
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="card-elevated max-w-md w-full p-8 text-center space-y-6"
           >
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-crimson-50 text-crimson-600">
-              <Layers size={24} />
-            </div>
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+              className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-float"
+            >
+              <CheckCircle size={40} strokeWidth={2} />
+            </motion.div>
+            
             <div>
-              <h2 className="font-serif text-lg font-bold text-ink-800">Study Session Complete!</h2>
-              <p className="text-xs text-ink-400 mt-1">You reviewed {cards.length} cards from {doc.name}.</p>
+              <motion.h2
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="font-serif text-2xl font-bold text-ink-800"
+              >
+                Study Session Complete!
+              </motion.h2>
+              <motion.p
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35 }}
+                className="text-sm text-ink-500 mt-2"
+              >
+                You reviewed <span className="font-semibold text-ink-700">{cards.length} cards</span> from {doc.name}.
+              </motion.p>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 pt-2">
-              <div className="rounded-lg border border-emerald-100 bg-emerald-50/30 p-3 text-center">
-                <div className="text-xl font-bold text-emerald-700">{masteredIds.size}</div>
-                <div className="text-[10px] font-medium text-emerald-600 uppercase tracking-wider">Mastered</div>
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="grid grid-cols-2 gap-4 pt-2"
+            >
+              <div className="rounded-xl border-2 border-emerald-200/60 bg-gradient-to-br from-emerald-50 to-emerald-100/30 p-4 text-center shadow-soft">
+                <div className="text-3xl font-bold text-emerald-700">{masteredIds.size}</div>
+                <div className="text-xs font-semibold text-emerald-600 uppercase tracking-wider mt-1">Mastered</div>
               </div>
-              <div className="rounded-lg border border-amber-100 bg-amber-50/30 p-3 text-center">
-                <div className="text-xl font-bold text-amber-700">{reviewIds.size}</div>
-                <div className="text-[10px] font-medium text-amber-600 uppercase tracking-wider">Need Review</div>
+              <div className="rounded-xl border-2 border-amber-200/60 bg-gradient-to-br from-amber-50 to-amber-100/30 p-4 text-center shadow-soft">
+                <div className="text-3xl font-bold text-amber-700">{reviewIds.size}</div>
+                <div className="text-xs font-semibold text-amber-600 uppercase tracking-wider mt-1">Review</div>
               </div>
-            </div>
+            </motion.div>
 
-            <div className="flex gap-2 pt-2">
-              <button onClick={handleStartStudy} className="btn-primary flex-1 btn-sm rounded py-2">
-                <RotateCw size={13} /> Study Again
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.45 }}
+              className="flex gap-3 pt-4"
+            >
+              <button onClick={handleStartStudy} className="btn-primary flex-1 gap-2">
+                <RotateCw size={16} /> Study Again
               </button>
               <button
                 onClick={() => {
                   setStudyMode(false);
                   setShuffled(null);
                 }}
-                className="btn-secondary flex-1 btn-sm rounded py-2"
+                className="btn-secondary flex-1"
               >
                 Exit Session
               </button>
-            </div>
+            </motion.div>
           </motion.div>
         </div>
       );
     }
 
     const card = cards[studyIndex];
-    // Calculate progress as completed (easy) cards divided by base deck size
     const baseLength = doc?.flashcards.length || 1;
     const progressPercent = Math.min(100, (masteredIds.size / baseLength) * 100);
 
     return (
-      <div className="flex h-full flex-col bg-paper-50/30 px-6 py-6 overflow-y-auto">
-        <div className="max-w-xl w-full mx-auto space-y-6">
-          {/* Header & progress bar */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-medium text-ink-500">
-                Card {studyIndex + 1} of {cards.length}
-              </span>
-              <button
-                onClick={() => {
-                  setStudyMode(false);
-                  setShuffled(null);
-                }}
-                className="text-ink-400 hover:text-ink-700 flex items-center gap-1 transition-colors font-semibold cursor-pointer"
-              >
-                <X size={13} /> Exit Study
-              </button>
+      <div className="flex h-full flex-col bg-gradient-to-b from-paper-100 to-paper-200/60 px-6 py-8 overflow-y-auto">
+        <div className="max-w-2xl w-full mx-auto space-y-8">
+          {/* Enhanced Header & Progress */}
+          <motion.div
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-violet-600 text-white shadow-soft">
+                  <Layers size={20} />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-ink-800">
+                    Card {studyIndex + 1} of {cards.length}
+                  </p>
+                  <p className="text-xs text-ink-500">{masteredIds.size} mastered</p>
+                </div>
+              </div>
+              <Tooltip label="Exit study mode (Esc)" position="bottom">
+                <button
+                  onClick={() => {
+                    setStudyMode(false);
+                    setShuffled(null);
+                  }}
+                  className="btn-icon border-2 border-ink-200/60 bg-paper-50"
+                >
+                  <X size={16} />
+                </button>
+              </Tooltip>
             </div>
-            <div className="h-1.5 w-full bg-ink-100 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-crimson-500 transition-all duration-300"
-                style={{ width: `${progressPercent}%` }}
+            
+            {/* Premium Progress Bar */}
+            <div className="relative h-2 w-full bg-ink-100 rounded-full overflow-hidden shadow-inset">
+              <motion.div
+                className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full"
+                initial={{ width: 0 }}
+                animate={{ width: `${progressPercent}%` }}
+                transition={{ duration: 0.5, ease: 'easeOut' }}
               />
+              <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent pointer-events-none" />
             </div>
-          </div>
+          </motion.div>
 
-          {/* Flashcard container */}
-          <div className="w-full" style={{ perspective: '1000px' }}>
+          {/* Enhanced Flashcard with 3D flip */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full"
+            style={{ perspective: '1200px' }}
+          >
             <motion.div
               onClick={() => setFlipped((v) => !v)}
-              className="relative w-full h-[260px] cursor-pointer text-left block focus:outline-none"
+              className="relative w-full h-80 cursor-pointer"
               style={{ transformStyle: 'preserve-3d' }}
               animate={{ rotateY: flipped ? 180 : 0 }}
-              transition={{ duration: 0.5, ease: 'easeInOut' }}
+              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
               {/* Front */}
               <div
-                className="absolute inset-0 flex flex-col justify-between rounded-xl border border-ink-200/60 bg-paper-50 p-6 shadow-soft"
+                className="absolute inset-0 flex flex-col justify-between rounded-2xl border-2 border-violet-200/60 bg-gradient-to-br from-violet-50 to-violet-100/30 p-8 shadow-paper-lg"
                 style={{ backfaceVisibility: 'hidden' }}
               >
-                <span className="text-[10px] font-bold uppercase tracking-wide2 text-crimson-600 bg-crimson-50 rounded px-1.5 py-0.5 w-fit">Question</span>
-                <p className="font-serif text-base font-semibold leading-relaxed text-ink-800 my-4 text-center">{card.front}</p>
-                <span className="text-[10px] text-ink-300 text-center uppercase tracking-wider block">Click or space to flip</span>
+                <div className="flex items-center justify-between">
+                  <span className="chip chip-primary">Question</span>
+                  <span className="text-xs font-semibold text-violet-600">{studyIndex + 1}/{cards.length}</span>
+                </div>
+                <p className="font-serif text-xl font-bold leading-relaxed text-ink-900 text-center px-4">
+                  {card.front}
+                </p>
+                <div className="flex items-center justify-center gap-2 text-xs text-ink-400">
+                  <Keyboard size={14} />
+                  <span>Press <kbd className="kbd-key">Space</kbd> or click to flip</span>
+                </div>
               </div>
+              
               {/* Back */}
               <div
-                className="absolute inset-0 flex flex-col justify-between rounded-xl border border-crimson-200/50 bg-crimson-50/20 p-6 shadow-soft"
+                className="absolute inset-0 flex flex-col justify-between rounded-2xl border-2 border-emerald-200/60 bg-gradient-to-br from-emerald-50 to-emerald-100/30 p-8 shadow-paper-lg"
                 style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
               >
-                <span className="text-[10px] font-bold uppercase tracking-wide2 text-crimson-700 bg-crimson-50 rounded px-1.5 py-0.5 w-fit">Answer</span>
-                <p className="text-xs leading-relaxed text-ink-700 my-4 text-center font-body">{card.back}</p>
-                <span className="text-[10px] text-ink-400 text-center uppercase tracking-wider block">Click or space to flip back</span>
+                <div className="flex items-center justify-between">
+                  <span className="chip chip-success">Answer</span>
+                  <span className="text-xs font-semibold text-emerald-600">{studyIndex + 1}/{cards.length}</span>
+                </div>
+                <p className="text-base leading-relaxed text-ink-700 text-center px-4">
+                  {card.back}
+                </p>
+                <div className="flex items-center justify-center gap-2 text-xs text-ink-400">
+                  <Keyboard size={14} />
+                  <span>Press <kbd className="kbd-key">Space</kbd> to flip back</span>
+                </div>
               </div>
             </motion.div>
-          </div>
+          </motion.div>
 
-          {/* Action buttons / difficulty ratings spaced repetition */}
-          <div className="flex flex-col gap-4 items-center">
-            <div className="flex gap-2 w-full">
-              <button
+          {/* Enhanced Difficulty Buttons */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="space-y-4"
+          >
+            <div className="grid grid-cols-3 gap-3">
+              <motion.button
                 onClick={() => markCard(card.id, 'hard')}
-                className="flex-1 flex flex-col items-center justify-center gap-0.5 border border-red-200 bg-red-50/30 rounded-lg py-2.5 text-red-800 hover:bg-red-100/50 active:scale-[0.98] transition-all cursor-pointer"
+                whileHover={{ scale: 1.03, y: -2 }}
+                whileTap={{ scale: 0.97 }}
+                className="flex flex-col items-center gap-2 border-2 border-red-200/80 bg-gradient-to-br from-red-50 to-red-100/30 rounded-xl py-4 px-3 text-red-800 hover:shadow-soft transition-all"
               >
-                <span className="text-xs font-semibold">Hard</span>
-                <span className="text-[8px] text-red-500 font-medium">Re-queue very soon</span>
-              </button>
-              <button
+                <AlertCircle size={20} />
+                <div className="text-center">
+                  <div className="text-sm font-bold">Hard</div>
+                  <div className="text-2xs text-red-600 mt-0.5">Review soon</div>
+                </div>
+                <kbd className="kbd-key text-2xs">1</kbd>
+              </motion.button>
+              
+              <motion.button
                 onClick={() => markCard(card.id, 'medium')}
-                className="flex-1 flex flex-col items-center justify-center gap-0.5 border border-amber-200 bg-amber-50/30 rounded-lg py-2.5 text-amber-800 hover:bg-amber-100/50 active:scale-[0.98] transition-all cursor-pointer"
+                whileHover={{ scale: 1.03, y: -2 }}
+                whileTap={{ scale: 0.97 }}
+                className="flex flex-col items-center gap-2 border-2 border-amber-200/80 bg-gradient-to-br from-amber-50 to-amber-100/30 rounded-xl py-4 px-3 text-amber-800 hover:shadow-soft transition-all"
               >
-                <span className="text-xs font-semibold">Medium</span>
-                <span className="text-[8px] text-amber-500 font-medium">Later in session</span>
-              </button>
-              <button
+                <RefreshCw size={20} />
+                <div className="text-center">
+                  <div className="text-sm font-bold">Medium</div>
+                  <div className="text-2xs text-amber-600 mt-0.5">Review later</div>
+                </div>
+                <kbd className="kbd-key text-2xs">2</kbd>
+              </motion.button>
+              
+              <motion.button
                 onClick={() => markCard(card.id, 'easy')}
-                className="flex-1 flex flex-col items-center justify-center gap-0.5 border border-emerald-200 bg-emerald-50/30 rounded-lg py-2.5 text-emerald-800 hover:bg-emerald-100/50 active:scale-[0.98] transition-all cursor-pointer"
+                whileHover={{ scale: 1.03, y: -2 }}
+                whileTap={{ scale: 0.97 }}
+                className="flex flex-col items-center gap-2 border-2 border-emerald-200/80 bg-gradient-to-br from-emerald-50 to-emerald-100/30 rounded-xl py-4 px-3 text-emerald-800 hover:shadow-soft transition-all"
               >
-                <span className="text-xs font-semibold">Easy</span>
-                <span className="text-[8px] text-emerald-500 font-medium">Mastered</span>
-              </button>
+                <CheckCircle size={20} />
+                <div className="text-center">
+                  <div className="text-sm font-bold">Easy</div>
+                  <div className="text-2xs text-emerald-600 mt-0.5">Mastered!</div>
+                </div>
+                <kbd className="kbd-key text-2xs">3</kbd>
+              </motion.button>
             </div>
 
-            <div className="flex items-center justify-between w-full text-[10px] text-ink-400 border-t border-ink-100/30 pt-3">
-              <span className="flex items-center gap-1"><Keyboard size={12} /> Keyboard shortcuts:</span>
-              <span className="space-x-1.5">
-                <span className="px-1 py-0.5 rounded bg-paper-200">Space: flip</span>
-                <span className="px-1 py-0.5 rounded bg-paper-200">Arrows: nav</span>
-                <span className="px-1 py-0.5 rounded bg-paper-200">1: hard</span>
-                <span className="px-1 py-0.5 rounded bg-paper-200">2: medium</span>
-                <span className="px-1 py-0.5 rounded bg-paper-200">3: easy</span>
-              </span>
+            {/* Keyboard Shortcuts Guide */}
+            <div className="rounded-xl border border-ink-200/60 bg-paper-50 p-4">
+              <div className="flex items-center justify-between text-xs">
+                <span className="flex items-center gap-2 font-semibold text-ink-700">
+                  <Keyboard size={14} className="text-violet-600" />
+                  Keyboard Shortcuts
+                </span>
+                <div className="flex items-center gap-2 text-ink-500">
+                  <span className="flex items-center gap-1">
+                    <kbd className="kbd-key text-2xs">←</kbd>
+                    <kbd className="kbd-key text-2xs">→</kbd>
+                    Navigate
+                  </span>
+                  <span className="text-ink-300">·</span>
+                  <span className="flex items-center gap-1">
+                    <kbd className="kbd-key text-2xs">Space</kbd>
+                    Flip
+                  </span>
+                </div>
+              </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     );

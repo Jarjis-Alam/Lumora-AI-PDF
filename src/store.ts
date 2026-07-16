@@ -45,7 +45,11 @@ interface LumoraState {
   fetchDocuments: () => Promise<void>;
 }
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
+if (!API_BASE) {
+  console.error('[Lumora] VITE_API_BASE_URL is not set. API requests will fail.');
+}
 
 function updateDoc(docs: Document[], id: string, fn: (d: Document) => Document): Document[] {
   return docs.map((d) => (d.id === id ? fn(d) : d));

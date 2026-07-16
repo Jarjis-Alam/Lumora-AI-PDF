@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Send, Copy, RefreshCw, Trash2, Sparkles, User } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Send, Copy, RefreshCw, Trash2, Sparkles, User, Check, Zap, BookOpen, Brain, TrendingUp } from 'lucide-react';
 import { useStore } from '../store';
 import { Markdown } from './Markdown';
 import { EmptyState } from './EmptyState';
@@ -11,11 +11,11 @@ import { uid } from '../lib/utils';
 import type { ChatMessage } from '../types';
 
 const SUGGESTED_PROMPTS = [
-  'Summarize this document',
-  'Explain this section',
-  'What are the key ideas?',
-  'Generate flashcards',
-  'Create a quiz',
+  { icon: '📝', text: 'Summarize this document', color: 'crimson' },
+  { icon: '💡', text: 'Explain the key concepts', color: 'amber' },
+  { icon: '🎯', text: 'What are the main takeaways?', color: 'emerald' },
+  { icon: '🗂️', text: 'Generate flashcards', color: 'violet' },
+  { icon: '📊', text: 'Create a quiz', color: 'blue' },
 ];
 
 function getFollowUps(lastMsgContent: string): string[] {
@@ -70,7 +70,13 @@ export function ChatPanel() {
       <EmptyState
         icon={Sparkles}
         title="No document selected"
-        description="Select a document from the sidebar to start chatting with it."
+        description="Select a document from the sidebar to start an AI-powered conversation."
+        tips={[
+          'Chat responses are always grounded in your document with citations',
+          'Ask follow-up questions to dive deeper into specific topics',
+          'Use the citation chips to jump to the exact source paragraph'
+        ]}
+        accent="#C0392B"
       />
     );
   }
@@ -129,22 +135,29 @@ export function ChatPanel() {
   };
 
   return (
-    <div className="flex h-full flex-col bg-paper-50">
-      {/* Header */}
-      <div className="flex h-11 items-center justify-between border-b border-ink-100/80 px-3">
-        <div className="flex items-center gap-2">
-          <div className="flex h-6 w-6 items-center justify-center rounded-md bg-crimson-600 text-paper-50">
-            <Sparkles size={13} />
+    <div className="flex h-full flex-col bg-gradient-to-b from-paper-50 to-paper-100">
+      {/* Enhanced Header */}
+      <div className="flex h-14 items-center justify-between border-b border-ink-100/80 bg-paper-50/95 px-4 backdrop-blur-lg shadow-soft">
+        <div className="flex items-center gap-2.5">
+          <motion.div 
+            className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-crimson-600 to-crimson-500 text-paper-50 shadow-soft"
+            whileHover={{ scale: 1.05, rotate: 5 }}
+            transition={{ type: 'spring', stiffness: 400 }}
+          >
+            <Sparkles size={16} />
+          </motion.div>
+          <div>
+            <span className="text-sm font-semibold text-ink-800">AI Chat</span>
+            <p className="text-2xs text-ink-400">{doc.chat.length} messages</p>
           </div>
-          <span className="text-sm font-medium text-ink-700">AI Chat</span>
         </div>
         {doc.chat.length > 0 && (
           <Tooltip label="Clear conversation" position="bottom">
             <button
               onClick={() => clearChat(doc.id)}
-              className="btn-ghost btn-sm text-ink-400"
+              className="btn-icon border border-ink-200/50 bg-paper-100 text-ink-500 hover:border-red-300 hover:bg-red-50 hover:text-red-600"
             >
-              <Trash2 size={13} />
+              <Trash2 size={14} />
             </button>
           </Tooltip>
         )}
@@ -153,63 +166,118 @@ export function ChatPanel() {
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto">
         {doc.chat.length === 0 ? (
-          <div className="flex h-full flex-col items-center justify-center px-6 text-center">
-            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-crimson-50 text-crimson-600">
-              <Sparkles size={24} strokeWidth={1.5} />
-            </div>
-            <h3 className="font-serif text-lg font-semibold text-ink-700">Ask about this document</h3>
-            <p className="mt-1.5 max-w-xs text-sm text-ink-400">
-              I can summarize, explain, and generate study materials from {doc.name}.
-            </p>
-            <div className="mt-6 w-full max-w-sm space-y-2">
-              {SUGGESTED_PROMPTS.map((p) => (
-                <button
-                  key={p}
-                  onClick={() => send(p)}
-                  className="flex w-full items-center gap-2 rounded-lg border border-ink-100 px-3 py-2.5 text-left text-sm text-ink-600 transition-all hover:border-crimson-200 hover:bg-crimson-50/30"
+          <div className="flex h-full flex-col items-center justify-center px-6 py-12 text-center">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+              className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-crimson-50 to-crimson-100/50 text-crimson-600 shadow-soft"
+            >
+              <Sparkles size={32} strokeWidth={1.5} className="animate-pulse-glow" />
+            </motion.div>
+            <motion.h3
+              initial={{ y: 8, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.1 }}
+              className="font-serif text-xl font-bold text-ink-800"
+            >
+              Ask me anything about this document
+            </motion.h3>
+            <motion.p
+              initial={{ y: 8, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.15 }}
+              className="mt-2 max-w-md text-sm leading-relaxed text-ink-500"
+            >
+              I can summarize, explain concepts, generate study materials, and answer questions from <span className="font-semibold text-ink-700">{doc.name}</span>.
+            </motion.p>
+            
+            {/* Enhanced Suggested Prompts */}
+            <motion.div
+              initial={{ y: 12, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="mt-8 w-full max-w-lg space-y-2"
+            >
+              <p className="mb-3 text-2xs font-bold uppercase tracking-wider text-ink-400">Suggested prompts</p>
+              {SUGGESTED_PROMPTS.map((p, i) => (
+                <motion.button
+                  key={p.text}
+                  initial={{ x: -8, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.25 + i * 0.05 }}
+                  whileHover={{ x: 4, scale: 1.01 }}
+                  onClick={() => send(p.text)}
+                  className="group flex w-full items-center gap-3 rounded-xl border-2 border-ink-200/60 bg-paper-50 px-4 py-3 text-left transition-all hover:border-crimson-300 hover:bg-crimson-50/30 hover:shadow-soft"
                 >
-                  <Sparkles size={13} className="text-crimson-400" />
-                  {p}
-                </button>
+                  <span className="text-2xl">{p.icon}</span>
+                  <span className="flex-1 text-sm font-medium text-ink-700 group-hover:text-crimson-800">{p.text}</span>
+                  <Sparkles size={14} className="text-ink-300 opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100 group-hover:text-crimson-500" />
+                </motion.button>
               ))}
-            </div>
+            </motion.div>
+
+            {/* Features highlight */}
+            <motion.div
+              initial={{ y: 12, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              className="mt-10 flex items-center gap-6 text-2xs text-ink-400"
+            >
+              <span className="flex items-center gap-1.5"><Zap size={12} className="text-amber-500" /> Instant responses</span>
+              <span className="flex items-center gap-1.5"><BookOpen size={12} className="text-emerald-600" /> Cited answers</span>
+              <span className="flex items-center gap-1.5"><Brain size={12} className="text-violet-600" /> Context aware</span>
+            </motion.div>
           </div>
         ) : (
-          <div className="space-y-4 p-4">
-            {doc.chat.map((msg) => (
-              <ChatBubble
-                key={msg.id}
-                msg={msg}
-                onRegenerate={regenerate}
-                onNavigate={(v) => { setView(v); navigate(`/app/${v}`); }}
-              />
-            ))}
+          <div className="space-y-6 p-4">
+            <AnimatePresence initial={false}>
+              {doc.chat.map((msg, index) => (
+                <ChatBubble
+                  key={msg.id}
+                  msg={msg}
+                  index={index}
+                  onRegenerate={regenerate}
+                  onNavigate={(v) => { setView(v); navigate(`/app/${v}`); }}
+                  streaming={streaming && index === doc.chat.length - 1}
+                />
+              ))}
+            </AnimatePresence>
 
-            {/* Suggested Follow-Ups */}
+            {/* Enhanced Suggested Follow-Ups */}
             {!streaming && doc.chat.length > 0 && (
               <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="mt-6 flex flex-wrap gap-2 justify-start pt-2 border-t border-ink-100/30"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="mt-6 space-y-2 rounded-xl border border-ink-200/60 bg-gradient-to-br from-paper-50 to-paper-100 p-4"
               >
-                {getFollowUps(doc.chat[doc.chat.length - 1].content).map((prompt) => (
-                  <button
-                    key={prompt}
-                    onClick={() => send(prompt)}
-                    className="rounded-full border border-ink-200 bg-paper-100 px-3 py-1.5 text-[11px] font-medium text-ink-600 hover:border-crimson-300 hover:bg-crimson-50/20 hover:text-crimson-800 transition-all cursor-pointer"
-                  >
-                    💬 {prompt}
-                  </button>
-                ))}
+                <div className="mb-2 flex items-center gap-2">
+                  <TrendingUp size={12} className="text-crimson-600" />
+                  <span className="text-2xs font-bold uppercase tracking-wider text-ink-500">Continue the conversation</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {getFollowUps(doc.chat[doc.chat.length - 1].content).map((prompt) => (
+                    <motion.button
+                      key={prompt}
+                      whileHover={{ scale: 1.02, y: -1 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => send(prompt)}
+                      className="chip chip-secondary hover:chip-primary cursor-pointer transition-all"
+                    >
+                      {prompt}
+                    </motion.button>
+                  ))}
+                </div>
               </motion.div>
             )}
           </div>
         )}
       </div>
 
-      {/* Input */}
-      <div className="border-t border-ink-100/80 p-3">
-        <div className="relative flex items-end gap-2 rounded-xl border border-ink-200 bg-paper-100 p-2 transition-colors focus-within:border-crimson-300">
+      {/* Enhanced Input */}
+      <div className="border-t border-ink-100/80 bg-paper-50/95 p-4 backdrop-blur-lg">
+        <div className="relative flex items-end gap-3 rounded-2xl border-2 border-ink-200/80 bg-paper-100 p-3 shadow-soft transition-all focus-within:border-crimson-400 focus-within:shadow-card">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -221,32 +289,41 @@ export function ChatPanel() {
             }}
             placeholder="Ask anything about this document..."
             rows={1}
-            className="max-h-32 flex-1 resize-none bg-transparent px-2 py-1.5 text-sm text-ink-700 placeholder:text-ink-300 focus:outline-none"
-            style={{ minHeight: '36px' }}
+            className="max-h-32 flex-1 resize-none bg-transparent px-1 py-1 text-sm text-ink-700 placeholder:text-ink-400 focus:outline-none"
+            style={{ minHeight: '32px' }}
           />
           {streaming ? (
             <Tooltip label="Stop generating" position="top">
-              <button
+              <motion.button
                 onClick={stopGeneration}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-ink-800 text-paper-50 transition-all hover:bg-ink-950 animate-pulse cursor-pointer"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-ink-800 to-ink-900 text-paper-50 shadow-soft transition-all hover:shadow-card"
               >
-                <span className="h-2.5 w-2.5 bg-white rounded-sm" />
-              </button>
+                <motion.div
+                  animate={{ scale: [1, 0.9, 1] }}
+                  transition={{ repeat: Infinity, duration: 1.5 }}
+                  className="h-3 w-3 rounded-sm bg-white"
+                />
+              </motion.button>
             </Tooltip>
           ) : (
-            <Tooltip label="Send message" position="top">
-              <button
+            <Tooltip label="Send message (Enter)" position="top">
+              <motion.button
                 onClick={() => send(input)}
                 disabled={!input.trim()}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-crimson-600 text-paper-50 transition-all hover:bg-crimson-700 disabled:opacity-40 cursor-pointer"
+                whileHover={{ scale: input.trim() ? 1.05 : 1 }}
+                whileTap={{ scale: input.trim() ? 0.95 : 1 }}
+                className="btn-primary h-10 w-10 shrink-0 rounded-xl p-0 disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                <Send size={15} />
-              </button>
+                <Send size={16} />
+              </motion.button>
             </Tooltip>
           )}
         </div>
-        <p className="mt-1.5 text-center text-2xs text-ink-300">
-          Press Enter to send · Shift+Enter for new line
+        <p className="mt-2 text-center text-2xs text-ink-400">
+          <kbd className="rounded bg-paper-200 px-1.5 py-0.5 font-mono text-[10px]">Enter</kbd> to send · 
+          <kbd className="ml-1 rounded bg-paper-200 px-1.5 py-0.5 font-mono text-[10px]">Shift + Enter</kbd> for new line
         </p>
       </div>
     </div>
@@ -255,12 +332,16 @@ export function ChatPanel() {
 
 function ChatBubble({
   msg,
+  index,
   onRegenerate,
   onNavigate,
+  streaming = false,
 }: {
   msg: ChatMessage;
+  index: number;
   onRegenerate: () => void;
   onNavigate: (v: 'flashcards' | 'quiz') => void;
+  streaming?: boolean;
 }) {
   const [copied, setCopied] = useState(false);
   const isUser = msg.role === 'user';
@@ -268,79 +349,130 @@ function ChatBubble({
   const copy = () => {
     navigator.clipboard.writeText(msg.content);
     setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, y: 12, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ duration: 0.3, delay: index * 0.05 }}
       className={isUser ? 'flex justify-end' : 'flex justify-start'}
     >
-      <div className={isUser ? 'max-w-[85%]' : 'max-w-[90%] w-full'}>
-        <div className="mb-1 flex items-center gap-2">
-          <div
-            className={`flex h-6 w-6 items-center justify-center rounded-md ${
-              isUser ? 'bg-ink-200 text-ink-600' : 'bg-crimson-600 text-paper-50'
-            }`}
+      <div className={isUser ? 'max-w-[80%]' : 'max-w-[90%] w-full'}>
+        <div className="mb-2 flex items-center gap-2.5">
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: index * 0.05 + 0.1, type: 'spring', stiffness: 500 }}
+            className={classNames(
+              'flex h-7 w-7 items-center justify-center rounded-lg shadow-soft',
+              isUser 
+                ? 'bg-gradient-to-br from-ink-200 to-ink-300 text-ink-700' 
+                : 'bg-gradient-to-br from-crimson-600 to-crimson-500 text-paper-50'
+            )}
           >
-            {isUser ? <User size={12} /> : <Sparkles size={12} />}
-          </div>
-          <span className="text-2xs font-medium text-ink-400">
+            {isUser ? <User size={14} /> : <Sparkles size={14} />}
+          </motion.div>
+          <span className="text-xs font-semibold text-ink-700">
             {isUser ? 'You' : 'Lumora AI'}
           </span>
-          <span className="text-2xs text-ink-300">
+          <span className="text-2xs text-ink-400">
             {formatTime(msg.createdAt)}
           </span>
         </div>
-        <div
-          className={
+        
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: index * 0.05 + 0.15 }}
+          className={classNames(
+            'shadow-soft',
             isUser
-              ? 'rounded-2xl rounded-tr-sm bg-crimson-600 px-4 py-2.5 text-sm text-paper-50'
-              : 'rounded-2xl rounded-tl-sm border border-ink-100 bg-paper-50 px-4 py-3'
-          }
+              ? 'rounded-2xl rounded-tr-md bg-gradient-to-br from-crimson-600 to-crimson-500 px-4 py-3 text-sm text-paper-50'
+              : 'rounded-2xl rounded-tl-md border-2 border-ink-200/60 bg-gradient-to-br from-paper-50 to-paper-100 px-5 py-4'
+          )}
         >
           {isUser ? (
-            <p className="whitespace-pre-wrap">{msg.content}</p>
+            <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
           ) : msg.content ? (
-            <Markdown content={msg.content} citations={msg.citations} />
+            <div className="prose-editorial">
+              <Markdown content={msg.content} citations={msg.citations} />
+            </div>
           ) : (
-            <div className="flex items-center gap-2 py-2">
-              <span className="flex items-center gap-1">
-                <span className="h-2 w-2 rounded-full bg-crimson-400 animate-pulse-soft" style={{ animationDelay: '0ms' }} />
-                <span className="h-2 w-2 rounded-full bg-crimson-400 animate-pulse-soft" style={{ animationDelay: '200ms' }} />
-                <span className="h-2 w-2 rounded-full bg-crimson-400 animate-pulse-soft" style={{ animationDelay: '400ms' }} />
+            <div className="flex items-center gap-3 py-2">
+              <div className="flex items-center gap-1.5">
+                {[0, 1, 2].map((i) => (
+                  <motion.span
+                    key={i}
+                    className="h-2.5 w-2.5 rounded-full bg-crimson-400"
+                    animate={{
+                      scale: [1, 1.3, 1],
+                      opacity: [0.5, 1, 0.5],
+                    }}
+                    transition={{
+                      duration: 1.2,
+                      repeat: Infinity,
+                      delay: i * 0.2,
+                    }}
+                  />
+                ))}
+              </div>
+              <span className="text-xs font-medium text-ink-500">
+                {streaming ? 'Searching through document...' : 'Thinking...'}
               </span>
-              <span className="text-2xs text-ink-400">Thinking...</span>
             </div>
           )}
           {msg.streaming && msg.content && (
-            <span className="ml-0.5 inline-block h-4 w-0.5 animate-blink-caret bg-crimson-500 align-middle" />
+            <motion.span
+              animate={{ opacity: [1, 0, 1] }}
+              transition={{ duration: 0.8, repeat: Infinity }}
+              className="ml-1 inline-block h-5 w-0.5 bg-crimson-500 align-middle"
+            />
           )}
-        </div>
+        </motion.div>
+        
         {!isUser && msg.content && !msg.streaming && (
-          <div className="mt-1.5 flex items-center gap-1">
+          <motion.div
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="mt-2 flex flex-wrap items-center gap-1.5"
+          >
             <Tooltip label={copied ? 'Copied!' : 'Copy response'} position="top">
-              <button onClick={copy} className="flex items-center gap-1 rounded px-1.5 py-1 text-2xs text-ink-400 hover:bg-paper-200 hover:text-ink-600">
-                {copied ? 'Copied' : <><Copy size={11} /> Copy</>}
+              <button 
+                onClick={copy} 
+                className="btn-icon btn-xs border border-ink-200/50 bg-paper-100"
+              >
+                {copied ? <Check size={12} className="text-emerald-600" /> : <Copy size={12} />}
               </button>
             </Tooltip>
             <Tooltip label="Regenerate response" position="top">
-              <button onClick={onRegenerate} className="flex items-center gap-1 rounded px-1.5 py-1 text-2xs text-ink-400 hover:bg-paper-200 hover:text-ink-600">
-                <RefreshCw size={11} /> Regenerate
+              <button 
+                onClick={onRegenerate} 
+                className="btn-icon btn-xs border border-ink-200/50 bg-paper-100"
+              >
+                <RefreshCw size={12} />
               </button>
             </Tooltip>
             {msg.content.toLowerCase().includes('flashcard') && (
-              <button onClick={() => onNavigate('flashcards')} className="flex items-center gap-1 rounded px-1.5 py-1 text-2xs text-crimson-600 hover:bg-crimson-50">
+              <button 
+                onClick={() => onNavigate('flashcards')} 
+                className="chip chip-primary cursor-pointer"
+              >
                 View Flashcards →
               </button>
             )}
             {msg.content.toLowerCase().includes('quiz') && (
-              <button onClick={() => onNavigate('quiz')} className="flex items-center gap-1 rounded px-1.5 py-1 text-2xs text-crimson-600 hover:bg-crimson-50">
+              <button 
+                onClick={() => onNavigate('quiz')} 
+                className="chip chip-primary cursor-pointer"
+              >
                 View Quiz →
               </button>
             )}
-          </div>
+          </motion.div>
         )}
       </div>
     </motion.div>
