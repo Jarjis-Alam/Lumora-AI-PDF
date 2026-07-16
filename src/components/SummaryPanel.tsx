@@ -120,7 +120,7 @@ export function SummaryPanel({ docId }: { docId: string | null }) {
   };
 
   return (
-    <div ref={scrollContainerRef} className="h-full overflow-y-auto relative bg-paper-50/30">
+    <div ref={scrollContainerRef} className="relative h-full overflow-y-auto bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.06),_transparent_30%),linear-gradient(180deg,_#fcfbf8_0%,_#f7f2ea_100%)]">
       {/* Scroll reading progress bar */}
       <div className="sticky top-0 z-20 h-[3px] w-full bg-ink-100/30">
         <div
@@ -164,7 +164,7 @@ export function SummaryPanel({ docId }: { docId: string | null }) {
         </div>
 
         {/* Tabs Bar */}
-        <div className="flex border-b border-ink-100/50 pb-2 mb-4 overflow-x-auto gap-2 no-scrollbar">
+        <div className="mb-4 flex gap-2 overflow-x-auto border-b border-ink-200/60 pb-2 no-scrollbar">
           {[
             { id: 'overview' as const, label: 'Overview' },
             { id: 'takeaways' as const, label: 'Key Takeaways' },
@@ -177,10 +177,10 @@ export function SummaryPanel({ docId }: { docId: string | null }) {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-3 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer ${
+                className={`cursor-pointer rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
                   active
                     ? 'bg-crimson-50 text-crimson-800 shadow-soft'
-                    : 'text-ink-500 hover:bg-paper-200/50 hover:text-ink-850'
+                    : 'text-ink-500 hover:bg-paper-200/50 hover:text-ink-800'
                 }`}
               >
                 {tab.label}
@@ -305,7 +305,7 @@ function Section({ icon: Icon, title, children }: { icon: any; title: string; ch
     <motion.section
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-xl border border-ink-100/60 bg-paper-50 p-4 shadow-soft"
+      className="rounded-[1.2rem] border border-ink-200/60 bg-paper-50/80 p-4 shadow-soft"
     >
       <button
         onClick={() => setCollapsed(!collapsed)}

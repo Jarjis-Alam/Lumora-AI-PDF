@@ -445,7 +445,7 @@ export function FlashcardsPanel({ docId }: { docId: string | null }) {
   }
 
   return (
-    <div className="h-full overflow-y-auto bg-paper-50/30">
+    <div className="h-full overflow-y-auto bg-[radial-gradient(circle_at_top_left,_rgba(139,92,246,0.06),_transparent_30%),linear-gradient(180deg,_#fcfbf8_0%,_#f7f2ea_100%)]">
       <div className="mx-auto max-w-4xl px-6 py-6">
         <div className="mb-5 flex items-center justify-between">
           <div>
@@ -518,7 +518,7 @@ export function FlashcardsPanel({ docId }: { docId: string | null }) {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.04 }}
-              className="card group relative p-4 hover:shadow-card hover:border-ink-200 transition-all flex flex-col justify-between"
+              className="group relative flex flex-col justify-between rounded-[1.2rem] border border-ink-200/60 bg-paper-50/80 p-4 shadow-soft transition-all hover:border-ink-300 hover:shadow-card"
             >
               {editingId === card.id ? (
                 <div className="space-y-2 w-full">
