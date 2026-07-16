@@ -461,5 +461,6 @@ export const useStore = create<LumoraState>((set) => ({
   },
 }));
 
-// Fetch documents automatically on startup
-useStore.getState().fetchDocuments();
+// Clear stale cache on startup for a fresh session
+_cachedDocuments = null;
+_cachedDocumentsAt = 0;
